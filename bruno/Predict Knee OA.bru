@@ -1,0 +1,17 @@
+meta {
+  name: Predict Knee OA
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://127.0.0.1:8000/predict
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "image_path": "/content/drive/MyDrive/Digital_Knee_X_ray_Images/MedicalExpert-II/4Severe/SevereG4 (206).png"
+  }
+}
