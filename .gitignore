@@ -47,3 +47,6 @@ model_weights/**/*.weights
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Data
+dataset/
