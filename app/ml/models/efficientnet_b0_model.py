@@ -22,7 +22,7 @@ class EfficientNetB0Model(BaseModel):
         """
         Loads trained weight checkpoints from the local disk or Drive
         """
-        checkpoint = torch.load(path, map_location=device)
+        checkpoint = torch.load(path, map_location=device, weights_only=True)
         self.model.load_state_dict(checkpoint)
         self.model.eval()
         self.model.to(device)

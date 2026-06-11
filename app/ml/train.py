@@ -125,7 +125,7 @@ def main():
     print("\n=== STAGE 2: FINE-TUNING TOÀN BỘ MÔ HÌNH ===")
     # Load best weights from Stage 1
     if os.path.exists(stage1_checkpoint_path):
-        model.load_state_dict(torch.load(stage1_checkpoint_path))
+        model.load_state_dict(torch.load(stage1_checkpoint_path, weights_only=True))
         print(f"Loaded weights from Stage 1: {stage1_checkpoint_path}")
         
     # Unfreeze all parameters
