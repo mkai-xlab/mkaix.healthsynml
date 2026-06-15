@@ -1,14 +1,7 @@
 import os
-import torch
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
 import cv2
-from torch.utils.data import DataLoader
-import numpy as np
 import torchvision.transforms as transforms
-import timm
-import torch.nn as nn
-from tqdm import tqdm
-import torch.optim as optim
 
 class KneeXRayDataset(Dataset):
 
@@ -24,10 +17,9 @@ class KneeXRayDataset(Dataset):
                 self.image_paths.append(os.path.join(category_path, file_path))
                 self.labels.append(i)
 
-
     # load image from path -> numpy array (rgb)
-    def load_image_from_path(self,imagePath):
-        img_bgr = cv2.imread(imagePath)
+    def load_image_from_path(self, image_path):
+        img_bgr = cv2.imread(image_path)
         img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
         return img_rgb
         
@@ -49,12 +41,10 @@ class KneeXRayDataset(Dataset):
         # load data 
         self.load_datas()
 
-        
-    
     # len of dataset
     def __len__(self):
         return len(self.labels)
-        
+
     # get item
     def __getitem__(self, idx):
         image = self.load_image_from_path(self.image_paths[idx])

@@ -13,13 +13,24 @@ class BaseModel(nn.Module):
         
     def forward(self, x):
         pass
-        
+
+    def freeze_backbone(self):
+        for param in self.parameters():
+            param.requires_grad = False
+
+        if self.use_timm:
+            for param in self.model.classifier.parameters():
+                param.requires_grad = True
+        else:
+            for param in self.model.classifier.parameters():
+                param.requires_grad = True
+
     def load_weights(self, path: str, device: torch.device):
         """
         Loads weight checkpoint from disk onto the target device.
         """
         raise NotImplementedError("Subclasses must implement load_weights method")
-        
+
     def fit(self, epoch, data_loader, optimizer, criterion, device):
         self.to(device)
         self.train()
@@ -92,4 +103,18 @@ class BaseModel(nn.Module):
         """
         return self(x)
 
+# save state dict
+def save_model_dict(model: nn.Module, path, epoc: int, optimizer: torch.optim.Optimizer, bess_acc: int):
+    entrypoint = dict()
+    entrypoint["model"] = model.state_dict()
+    entrypoint["optimizer"] = optimizer.state_dict()
+    entrypoint["epoch"] = epoc
+    entrypoint["best_acc"] = bess_acc
+    torch.save(entrypoint, path)
 
+# load state dict
+def load_model_dict(model: nn.Module, path, optimizer: torch.optim.Optimizer):
+    entrypoint = torch.load(path)
+    model.load_state_dict(entrypoint["model"])
+    optimizer.load_state_dict(entrypoint["optimizer"])
+    return entrypoint["epoch"], entrypoint["best_acc"]
