@@ -1,4 +1,5 @@
 import torch
+import torch.nn as nn
 # import timm
 from app.ml.models.base_model import BaseModel
 import torchvision.models as models
@@ -10,9 +11,17 @@ class DenseNet121Model(BaseModel):
     """
     def __init__(self, num_classes: int = 5, pretrained: bool = True):
         super(DenseNet121Model, self).__init__()
-        # Initialize DenseNet-121 using timm, mapping to 5 output classes (KL Grade 0 to 4)
-        # self.model = timm.create_model('densenet121', pretrained=pretrained, num_classes=num_classes)
-        self.model = models.densenet121(pretrained=pretrained,num_classes= num_classes)
+
+        # The 'pretrained' argument is deprecated. Use 'weights' instead.
+        weights = models.DenseNet121_Weights.DEFAULT if pretrained else None
+        self.model = models.densenet121(weights=weights)
+
+        # Replace the classifier with a new one for our number of classes
+        num_ftrs = self.model.classifier.in_features
+        self.model.classifier = nn.Linear(num_ftrs, num_classes)
+
+        # Add a flag for the base model to know this is not a timm model
+        self.use_timm = False
         
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
@@ -30,4 +39,3 @@ class DenseNet121Model(BaseModel):
     #     self.model.eval()
     #     self.model.to(device)
     #     print(f"[Model] Successfully loaded weights from {path}")
-
