@@ -16,3 +16,7 @@ tensorflow>=2.13.0
 # Testing
 pytest>=7.4.0
 httpx>=0.24.0
+
+# AWS SDK
+boto3>=1.28.0
+

@@ -51,3 +51,4 @@ htmlcov/
 # Data
 dataset/
 /data/
+.terraform/

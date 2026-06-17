@@ -1,7 +1,10 @@
+import io
 import torch
 import torch.nn as nn
 import tqdm
 from sklearn.metrics import classification_report
+from app.core.config import settings
+from app.utils.s3_utils import upload_to_s3, download_from_s3
 
 class BaseModel(nn.Module):
     """
@@ -105,16 +108,30 @@ class BaseModel(nn.Module):
 
 # save state dict
 def save_model_dict(model: nn.Module, path, epoc: int, optimizer: torch.optim.Optimizer, bess_acc: int):
+    s3_key = str(path).replace("\\", "/")
+    bucket = settings.AWS_S3_MODELS_BUCKET
+    
+    print(f"Saving checkpoint to S3: s3://{bucket}/{s3_key}")
     entrypoint = dict()
     entrypoint["model"] = model.state_dict()
     entrypoint["optimizer"] = optimizer.state_dict()
     entrypoint["epoch"] = epoc
     entrypoint["best_acc"] = bess_acc
-    torch.save(entrypoint, path)
+    
+    buffer = io.BytesIO()
+    torch.save(entrypoint, buffer)
+    buffer.seek(0)
+    upload_to_s3(buffer, bucket, s3_key)
 
 # load state dict
-def load_model_dict(model: nn.Module, path, optimizer: torch.optim.Optimizer):
-    entrypoint = torch.load(path)
+def load_model_dict(model: nn.Module, path, optimizer: torch.optim.Optimizer, device: torch.device = torch.device("cpu")):
+    s3_key = str(path).replace("\\", "/")
+    bucket = settings.AWS_S3_MODELS_BUCKET
+    
+    print(f"Loading checkpoint from S3: s3://{bucket}/{s3_key}")
+    buffer = download_from_s3(bucket, s3_key)
+    entrypoint = torch.load(buffer, map_location=device)
+    
     model.load_state_dict(entrypoint["model"])
     optimizer.load_state_dict(entrypoint["optimizer"])
     return entrypoint["epoch"], entrypoint["best_acc"]

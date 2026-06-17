@@ -1,4 +1,6 @@
 import os
+
+from fastapi._compat import shared
 from torch.utils.data import Dataset
 import cv2
 import torchvision.transforms as transforms
@@ -68,16 +70,29 @@ class SquarePadOpenCV(object):
 def get_transforms(img_size=224):
     train_transform = transforms.Compose([
         SquarePadOpenCV(),
-        transforms.ToTensor(),
+        transforms.ToPILImage(),
+        transforms.RandomAffine(
+            degrees= 5,
+            translate=(0.1, 0.1),
+            scale=(0.8, 1.2),
+            shear=5,
+        ),
+        transforms.ColorJitter(
+            brightness=0.4,
+            contrast=0.4,
+            saturation=0.4,
+            hue=0.1),
         transforms.Resize((img_size, img_size)),
         transforms.RandomHorizontalFlip(p=0.5),
+        transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
     
     val_transform = transforms.Compose([
         SquarePadOpenCV(),
-        transforms.ToTensor(),
+        transforms.ToPILImage(),
         transforms.Resize((img_size, img_size)),
+        transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
     return train_transform, val_transform
