@@ -34,7 +34,7 @@ class BaseModel(nn.Module):
         """
         raise NotImplementedError("Subclasses must implement load_weights method")
 
-    def fit(self, epoch, data_loader, optimizer, criterion, device):
+    def fit(self, epoch, data_loader, optimizer, criterion, device, scheduler):
         self.to(device)
         self.train()
 
@@ -58,6 +58,7 @@ class BaseModel(nn.Module):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+            scheduler.step()
 
             running_loss += loss.item() * labels.size(0)
             total += labels.size(0)
@@ -107,7 +108,7 @@ class BaseModel(nn.Module):
         return self(x)
 
 # save state dict
-def save_model_dict(model: nn.Module, path, epoc: int, optimizer: torch.optim.Optimizer, bess_acc: int):
+def save_model_dict(model: nn.Module, path, epoc: int, optimizer: torch.optim.Optimizer, bess_acc):
     s3_key = str(path).replace("\\", "/")
     bucket = settings.AWS_S3_MODELS_BUCKET
     
