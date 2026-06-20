@@ -52,3 +52,4 @@ htmlcov/
 dataset/
 /data/
 .terraform/
+/bruno/test_images/

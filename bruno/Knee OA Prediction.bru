@@ -1,0 +1,29 @@
+meta {
+  name: Knee OA Prediction
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://127.0.0.1:8000/predict
+  body: multipartForm
+  seq: 1
+}
+
+body:multipart-form {
+  file: @file(/path/to/your/knee_xray_image.jpg)
+}
+
+docs {
+  # To use this request in Bruno:
+  # 1. Make sure your FastAPI server is running.
+  #    (Run `uvicorn main:app --reload` from your project root)
+  #
+  # 2. In the 'body:multipart-form' section above, change the file path.
+  #    Click on `@file(...)` and select an X-ray image from your computer.
+  #
+  # 3. Hit the "Send" button (the blue play icon).
+  #
+  # 4. The API response will appear in the right-hand panel, showing the
+  #    'logits' and 'confidence_scores' for the uploaded image.
+}

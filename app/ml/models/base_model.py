@@ -125,7 +125,7 @@ def save_model_dict(model: nn.Module, path, epoc: int, optimizer: torch.optim.Op
     upload_to_s3(buffer, bucket, s3_key)
 
 # load state dict
-def load_model_dict(model: nn.Module, path, optimizer: torch.optim.Optimizer, device: torch.device = torch.device("cpu")):
+def load_model_dict(model: nn.Module, path, optimizer: torch.optim.Optimizer = None, device: torch.device = torch.device("cpu")):
     s3_key = str(path).replace("\\", "/")
     bucket = settings.AWS_S3_MODELS_BUCKET
     
@@ -134,5 +134,6 @@ def load_model_dict(model: nn.Module, path, optimizer: torch.optim.Optimizer, de
     entrypoint = torch.load(buffer, map_location=device)
     
     model.load_state_dict(entrypoint["model"])
-    optimizer.load_state_dict(entrypoint["optimizer"])
+    if optimizer is not None:
+        optimizer.load_state_dict(entrypoint["optimizer"])
     return entrypoint["epoch"], entrypoint["best_acc"]
