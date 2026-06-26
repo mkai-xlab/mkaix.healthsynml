@@ -1,8 +1,11 @@
 import io
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import tqdm
 from sklearn.metrics import classification_report
+from torchvision.ops import sigmoid_focal_loss
+
 from app.core.config import settings
 from app.utils.s3_utils import upload_to_s3, download_from_s3
 
@@ -18,122 +21,116 @@ class BaseModel(nn.Module):
         pass
 
     def freeze_backbone(self):
-        for param in self.parameters():
-            param.requires_grad = False
+        for name, param in self.model.named_parameters():
+            if 'classifier' not in name:
+                param.requires_grad = False
 
-        if self.use_timm:
-            for param in self.model.classifier.parameters():
-                param.requires_grad = True
-        else:
-            for param in self.model.classifier.parameters():
-                param.requires_grad = True
+    def unfreeze_backbone(self):
+        for param in self.model.parameters():
+            param.requires_grad = True
 
-    def load_weights(self, path: str, device: torch.device):
-        """
-        Loads weight checkpoint from disk onto the target device.
-        """
-        raise NotImplementedError("Subclasses must implement load_weights method")
-
-    def fit(self, epoch, data_loader, optimizer, criterion, device, scheduler):
+    def fit(self, epoch, data_loader, optimizer, criterion, device, scheduler=None):
         self.to(device)
         self.train()
 
         running_loss = 0.0
         total = 0
         correct = 0
-        progress_bar = tqdm.tqdm(data_loader)
-        num_iters = len(data_loader)
+        progress_bar = tqdm.tqdm(data_loader, desc=f"Epoch {epoch+1} [TRAIN]")
+        
+        for images, labels in progress_bar:
+            images, labels = images.to(device), labels.to(device)
 
-        for idx, (images, labels) in enumerate(progress_bar):
-            # load to device
-            images = images.to(device)
-            labels = labels.to(device)
-
-            # forward
-            output = self(images)
-            loss = criterion(output, labels)
-
-            progress_bar.set_description("Epoch {}: Iteration {}/{}. Loss {:.3f}".format(epoch+1, idx+1, num_iters, loss))
-            # backward
             optimizer.zero_grad()
+            output = self(images)
+
+            # --- Loss Calculation ---
+            if criterion == "focal_loss":
+                # Convert labels to one-hot format for focal loss
+                targets = F.one_hot(labels, num_classes=output.shape[1]).float()
+                loss = sigmoid_focal_loss(output, targets, alpha=0.25, gamma=2.0, reduction='mean')
+            else:
+                # Standard loss function (e.g., CrossEntropyLoss)
+                loss = criterion(output, labels)
+
             loss.backward()
             optimizer.step()
-            scheduler.step()
+            
+            if scheduler and not isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
+                scheduler.step()
 
             running_loss += loss.item() * labels.size(0)
-            total += labels.size(0)
             _, predicted = torch.max(output.data, 1)
+            total += labels.size(0)
             correct += (predicted == labels).sum().item()
+            
+            progress_bar.set_postfix(loss=f"{loss.item():.4f}", acc=f"{100*correct/total:.2f}%")
 
         return running_loss / total, 100 * correct / total
 
     def evaluate(self, epoch, data_loader, criterion, device):
-        all_predictions = []
-        all_labels = []
         self.to(device)
         self.eval()
+        
         running_loss = 0.0
         total = 0
         correct = 0
-        num_iters = len(data_loader)
-        progress_bar = tqdm.tqdm(data_loader)
-        for idx, (images, labels) in enumerate(progress_bar):
-            # load to device
-            images = images.to(device)
-            labels = labels.to(device)
+        all_predictions = []
+        all_labels = []
+        
+        progress_bar = tqdm.tqdm(data_loader, desc=f"Epoch {epoch+1} [VALIDATE]")
 
-            # forward
-            output = self(images)
-            loss = criterion(output, labels)
-            progress_bar.set_description("Epoch {}: Iteration {}/{}. Loss {:.3f}".format(epoch+1, idx+1, num_iters, loss))
+        with torch.no_grad():
+            for images, labels in progress_bar:
+                images, labels = images.to(device), labels.to(device)
+                output = self(images)
 
-            # calc loss
-            running_loss += loss.item() * labels.size(0)
-            total += labels.size(0)
-            _, predicted = torch.max(output.data, 1)
-            correct += (predicted == labels).sum().item()
+                if criterion == "focal_loss":
+                    targets = F.one_hot(labels, num_classes=output.shape[1]).float()
+                    loss = sigmoid_focal_loss(output, targets, alpha=0.25, gamma=2.0, reduction='mean')
+                else:
+                    loss = criterion(output, labels)
 
-            # report
-            all_labels.extend(labels.cpu().tolist())
-            all_predictions.extend(predicted.cpu().tolist())
+                running_loss += loss.item() * labels.size(0)
+                _, predicted = torch.max(output.data, 1)
+                total += labels.size(0)
+                correct += (predicted == labels).sum().item()
+                
+                all_labels.extend(labels.cpu().numpy())
+                all_predictions.extend(predicted.cpu().numpy())
+                
+                progress_bar.set_postfix(loss=f"{loss.item():.4f}", acc=f"{100*correct/total:.2f}%")
 
-        report = classification_report(y_true=all_labels, y_pred=all_predictions)
-
+        report = classification_report(y_true=all_labels, y_pred=all_predictions, zero_division=0)
         return running_loss / total, 100 * correct / total, report
 
-    def predict(self, x):
-        """
-        Runs forward pass and returns raw logits/probabilities.
-        """
-        return self(x)
+# ... (save_model_dict and load_model_dict need to be updated to handle scheduler)
+def save_model_dict(model: nn.Module, path, epoc: int, optimizer: torch.optim.Optimizer, scheduler, bess_acc):
+    # This function might need to handle S3 or local saving based on a config
+    # For now, assuming local saving for simplicity based on recent user changes
+    checkpoint = {
+        "model": model.state_dict(),
+        "optimizer": optimizer.state_dict(),
+        "scheduler": scheduler.state_dict(),
+        "epoch": epoc,
+        "best_acc": bess_acc
+    }
+    torch.save(checkpoint, path)
 
-# save state dict
-def save_model_dict(model: nn.Module, path, epoc: int, optimizer: torch.optim.Optimizer, bess_acc):
-    s3_key = str(path).replace("\\", "/")
-    bucket = settings.AWS_S3_MODELS_BUCKET
+def load_model_dict(model: nn.Module, path, optimizer: torch.optim.Optimizer = None, scheduler=None, device: torch.device = torch.device("cpu")):
+    # This function might need to handle S3 or local loading
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"Checkpoint file not found at {path}")
+        
+    checkpoint = torch.load(path, map_location=device)
     
-    print(f"Saving checkpoint to S3: s3://{bucket}/{s3_key}")
-    entrypoint = dict()
-    entrypoint["model"] = model.state_dict()
-    entrypoint["optimizer"] = optimizer.state_dict()
-    entrypoint["epoch"] = epoc
-    entrypoint["best_acc"] = bess_acc
-    
-    buffer = io.BytesIO()
-    torch.save(entrypoint, buffer)
-    buffer.seek(0)
-    upload_to_s3(buffer, bucket, s3_key)
-
-# load state dict
-def load_model_dict(model: nn.Module, path, optimizer: torch.optim.Optimizer = None, device: torch.device = torch.device("cpu")):
-    s3_key = str(path).replace("\\", "/")
-    bucket = settings.AWS_S3_MODELS_BUCKET
-    
-    print(f"Loading checkpoint from S3: s3://{bucket}/{s3_key}")
-    buffer = download_from_s3(bucket, s3_key)
-    entrypoint = torch.load(buffer, map_location=device)
-    
-    model.load_state_dict(entrypoint["model"])
-    if optimizer is not None:
-        optimizer.load_state_dict(entrypoint["optimizer"])
-    return entrypoint["epoch"], entrypoint["best_acc"]
+    model.load_state_dict(checkpoint["model"])
+    if optimizer is not None and "optimizer" in checkpoint:
+        optimizer.load_state_dict(checkpoint["optimizer"])
+    if scheduler is not None and "scheduler" in checkpoint:
+        try:
+            scheduler.load_state_dict(checkpoint["scheduler"])
+        except Exception as e:
+            print(f"Warning: Could not load scheduler state dict: {e}")
+            
+    return checkpoint.get("epoch", 0), checkpoint.get("best_acc", 0.0)

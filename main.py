@@ -3,7 +3,6 @@ import os
 import torch
 import torch.nn.functional as F
 from fastapi import FastAPI, UploadFile, File, HTTPException
-from PIL import Image
 import numpy as np
 import cv2
 from contextlib import asynccontextmanager
@@ -24,8 +23,8 @@ def load_best_model_from_s3(model: torch.nn.Module, model_name: str, device: tor
     """
     Loads the best model weights from an S3 bucket.
     """
-    model_sates_path = "models_states"
-    model_save_dir = os.path.join(model_sates_path, model_name)
+    checkpoint_dir = "checkpoints"
+    model_save_dir = os.path.join(checkpoint_dir, model_name)
     best_model_key = os.path.join(model_save_dir, "best_model.pth").replace("\\", "/")
 
     print(f"Attempting to load best model for '{model_name}' from S3 key: '{best_model_key}'")
