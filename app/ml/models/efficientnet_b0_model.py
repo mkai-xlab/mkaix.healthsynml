@@ -1,42 +1,58 @@
 import torch
 import torch.nn as nn
-# import timm
 from app.ml.models.base_model import BaseModel
 import torchvision.models as models
 
 class EfficientNetB0Model(BaseModel):
     """
     EfficientNet-B0 model wrapper subclass for Knee Osteoarthritis Kellgren-Lawrence Grade classification.
+    Implements a custom freeze_backbone method for partial fine-tuning.
     """
-    def __init__(self, num_classes: int = 5, pretrained: bool = True):
+    def __init__(self, num_classes: int = 5, pretrained: bool = True, dropout_rate: float = 0.5):
         super(EfficientNetB0Model, self).__init__()
         
-        # The 'pretrained' argument is deprecated. Use 'weights' instead.
         weights = models.EfficientNet_B0_Weights.DEFAULT if pretrained else None
         self.model = models.efficientnet_b0(weights=weights)
 
-        # Replace the classifier with a new one for our number of classes
         num_ftrs = self.model.classifier[1].in_features
+        # Increase dropout rate for better regularization
         self.model.classifier = nn.Sequential(
-            nn.Dropout(p=0.2, inplace=True),
+            nn.Dropout(p=dropout_rate, inplace=True),
             nn.Linear(num_ftrs, num_classes),
         )
         
-        # Add a flag for the base model to know this is not a timm model
         self.use_timm = False
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
-        Runs standard forward pass
+        Runs standard forward pass.
         """
         return self.model(x)
+
+    def freeze_backbone(self):
+        """
+        Custom freezing strategy for EfficientNet-B0.
+        Freezes the early blocks (0-3) and leaves the deeper blocks (4-7)
+        and the classifier head trainable for fine-tuning.
+        """
+        print("Applying custom freezing strategy for EfficientNet-B0.")
         
-    # def load_weights(self, path: str, device: torch.device):
-    #     """
-    #     Loads trained weight checkpoints from the local disk or Drive
-    #     """
-    #     checkpoint = torch.load(path, map_location=device, weights_only=True)
-    #     self.model.load_state_dict(checkpoint)
-    #     self.model.eval()
-    #     self.model.to(device)
-    #     print(f"[Model] Successfully loaded weights from {path}")
+        for param in self.model.parameters():
+            param.requires_grad = False
+            
+        for i in range(4, 8):
+            print(f"  - Unfreezing feature block {i}...")
+            for param in self.model.features[i].parameters():
+                param.requires_grad = True
+
+        print("  - Unfreezing classifier head...")
+        for param in self.model.classifier.parameters():
+            param.requires_grad = True
+
+    def unfreeze_backbone(self):
+        """
+        Unfreezes all parameters in the model for full fine-tuning.
+        """
+        print("Unfreezing all layers for full fine-tuning.")
+        for param in self.model.parameters():
+            param.requires_grad = True

@@ -53,7 +53,7 @@ def run_training(
     epochs: int = 100, 
     batch_size: int = 32, 
     img_size: int = 224, 
-    lr: float = 1e-3,
+    lr: float = 1e-4,
     fine_tune: bool = False,
     use_focal_loss: bool = False
 ):
@@ -65,13 +65,6 @@ def run_training(
     dataset_info = get_dataset_info(dataset_name)
     dataset_root_path = dataset_info["default_path"]
     
-    # This logic was incorrect and has been removed.
-    # The path from the registry is now used directly.
-    # if dataset_name == "kaggle":
-    #     dataset_root_path = dataset_root_path / f"kneeKL{img_size}"
-
-    print(f"Using dataset: '{dataset_name}' from root path: {dataset_root_path}")
-    
     train_loader, val_loader = prepare_dataloaders(
         dataset_name=dataset_name,
         root_path=dataset_root_path,
@@ -81,34 +74,55 @@ def run_training(
 
     model = get_model(model_name, num_classes=5, pretrained=True)
     
+    # --- Configuration Summary ---
+    print("\n" + "="*50)
+    print("TRAINING CONFIGURATION SUMMARY")
+    print("="*50)
+    print(f"  - Model: {model_name}")
+    print(f"  - Dataset: {dataset_name}")
+    print(f"  - Image Size: {img_size}x{img_size}")
+    print(f"  - Epochs: {epochs}")
+    print(f"  - Batch Size: {batch_size}")
+    print(f"  - Initial Learning Rate: {lr}")
+
+    # Freezing Strategy
     if not fine_tune:
         model.freeze_backbone()
+        freezing_strategy = "Backbone frozen"
+        if model_name == "efficientnet_b0":
+            freezing_strategy += " (Partial: blocks 4-7 & classifier are trainable)"
+        print(f"  - Freezing Strategy: {freezing_strategy}")
         optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-2)
     else:
+        print("  - Freezing Strategy: Fine-tuning all layers")
         backbone_params = [p for n, p in model.named_parameters() if 'classifier' not in n]
         classifier_params = [p for n, p in model.named_parameters() if 'classifier' in n]
         optimizer = optim.AdamW([
             {'params': backbone_params, 'lr': lr * 0.1},
             {'params': classifier_params, 'lr': lr}
         ], weight_decay=1e-2)
+        print(f"    - Differential LR: Backbone LR = {lr*0.1:.6f}, Classifier LR = {lr:.6f}")
     
+    # Loss Function
     if use_focal_loss:
-        print("Using Sigmoid Focal Loss.")
         criterion = "focal_loss"
+        print("  - Loss Function: Sigmoid Focal Loss (gamma=2.0, alpha=0.25)")
     else:
-        print("Using standard Cross Entropy Loss.")
         criterion = nn.CrossEntropyLoss()
+        print("  - Loss Function: Cross Entropy Loss")
 
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", factor=0.2, patience=2, min_lr=1e-6)
-
+    # Scheduler
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", factor=0.5, patience=3, min_lr=1e-6)
+    print(f"  - Scheduler: ReduceLROnPlateau (patience=3, factor=0.5)")
+    print("="*50 + "\n")
+    
+    # --- Checkpoint Loading ---
     best_acc = 0.0
     current_epoch = 0
-    
     project_root = Path(__file__).parent.parent.parent
     checkpoint_dir_relative = "checkpoints"
     model_save_dir_absolute = project_root / checkpoint_dir_relative / model_name
     os.makedirs(model_save_dir_absolute, exist_ok=True)
-    
     last_model_path_local = model_save_dir_absolute / "last_model.pth"
     best_model_path_local = model_save_dir_absolute / "best_model.pth"
 
@@ -128,8 +142,11 @@ def run_training(
     else:
         print(f"No checkpoint found locally for model '{model_name}'. Starting from scratch.")
 
-    print(summary(model, (1, 3, img_size, img_size)))
+    print("\n--- Model Summary ---")
+    print(summary(model, (1, 3, img_size, img_size), verbose=0))
+    print("--- End Model Summary ---\n")
 
+    # --- Training Loop ---
     for epoch in range(current_epoch, epochs):
         print(f"\n--- Epoch {epoch+1}/{epochs} ---")
         lrs = [group['lr'] for group in optimizer.param_groups]
@@ -151,7 +168,7 @@ def run_training(
         
         checkpoint = {"model": model.state_dict(), "optimizer": optimizer.state_dict(), "scheduler": scheduler.state_dict(), "epoch": epoch, "best_acc": best_acc}
         torch.save(checkpoint, last_model_path_local)
-        print(f"Saved last model checkpoint locally to: {last_model_path_local}")
+        # print(f"Saved last model checkpoint locally to: {last_model_path_local}") # Can be noisy
 
 if __name__ == '__main__':
     import argparse
@@ -160,10 +177,10 @@ if __name__ == '__main__':
     parser.add_argument("--dataset-name", type=str, default="kaggle", 
                         choices=["local", "kaggle", "mendeley"], 
                         help="Name of the dataset to use.")
-    parser.add_argument("--epochs", type=int, default=100, help="Number of training epochs.")
+    parser.add_argument("--epochs", type=int, default=30, help="Number of training epochs.")
     parser.add_argument("--batch-size", type=int, default=32, help="Batch size for training and validation.")
     parser.add_argument("--img-size", type=int, default=224, help="Image size for input images.")
-    parser.add_argument("--lr", type=float, default=1e-3, help="Learning rate.")
+    parser.add_argument("--lr", type=float, default=1e-4, help="Learning rate.")
     parser.add_argument("--fine-tune", action="store_true", help="Unfreeze and fine-tune the backbone with a lower learning rate.")
     parser.add_argument("--focal-loss", action="store_true", help="Use Sigmoid Focal Loss instead of CrossEntropyLoss.")
     args = parser.parse_args()
