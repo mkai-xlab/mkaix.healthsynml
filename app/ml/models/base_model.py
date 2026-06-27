@@ -5,6 +5,7 @@ import torch.nn.functional as F
 import tqdm
 from sklearn.metrics import classification_report
 from torchvision.ops import sigmoid_focal_loss
+import os
 
 from app.core.config import settings
 from app.utils.s3_utils import upload_to_s3, download_from_s3
@@ -44,14 +45,32 @@ class BaseModel(nn.Module):
             optimizer.zero_grad()
             output = self(images)
 
-            # --- Loss Calculation ---
-            if criterion == "focal_loss":
-                # Convert labels to one-hot format for focal loss
+            # --- Loss & Prediction Calculation ---
+            if criterion == "ordinal_threshold":
+                num_classes_minus_1 = output.shape[1]
+                targets = (labels.unsqueeze(1) > torch.arange(num_classes_minus_1, device=device)).float()
+                loss = F.binary_cross_entropy_with_logits(output, targets)
+                predicted = (torch.sigmoid(output) > 0.5).sum(dim=1)
+            elif criterion == "expected_value_cross_entropy" or criterion == "expected_value_focal_loss":
+                if criterion == "expected_value_focal_loss":
+                    targets = F.one_hot(labels, num_classes=output.shape[1]).float()
+                    base_loss = sigmoid_focal_loss(output, targets, alpha=0.25, gamma=2.0, reduction='mean')
+                else:
+                    base_loss = F.cross_entropy(output, labels)
+                
+                probs = F.softmax(output, dim=1)
+                class_indices = torch.arange(output.shape[1], dtype=torch.float32, device=device)
+                expected_y = torch.sum(probs * class_indices, dim=1)
+                ord_loss = F.smooth_l1_loss(expected_y, labels.float())
+                loss = base_loss + 2.0 * ord_loss
+                _, predicted = torch.max(output.data, 1)
+            elif criterion == "focal_loss":
                 targets = F.one_hot(labels, num_classes=output.shape[1]).float()
                 loss = sigmoid_focal_loss(output, targets, alpha=0.25, gamma=2.0, reduction='mean')
+                _, predicted = torch.max(output.data, 1)
             else:
-                # Standard loss function (e.g., CrossEntropyLoss)
                 loss = criterion(output, labels)
+                _, predicted = torch.max(output.data, 1)
 
             loss.backward()
             optimizer.step()
@@ -60,7 +79,6 @@ class BaseModel(nn.Module):
                 scheduler.step()
 
             running_loss += loss.item() * labels.size(0)
-            _, predicted = torch.max(output.data, 1)
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
             
@@ -85,14 +103,34 @@ class BaseModel(nn.Module):
                 images, labels = images.to(device), labels.to(device)
                 output = self(images)
 
-                if criterion == "focal_loss":
+                # --- Loss & Prediction Calculation ---
+                if criterion == "ordinal_threshold":
+                    num_classes_minus_1 = output.shape[1]
+                    targets = (labels.unsqueeze(1) > torch.arange(num_classes_minus_1, device=device)).float()
+                    loss = F.binary_cross_entropy_with_logits(output, targets)
+                    predicted = (torch.sigmoid(output) > 0.5).sum(dim=1)
+                elif criterion == "expected_value_cross_entropy" or criterion == "expected_value_focal_loss":
+                    if criterion == "expected_value_focal_loss":
+                        targets = F.one_hot(labels, num_classes=output.shape[1]).float()
+                        base_loss = sigmoid_focal_loss(output, targets, alpha=0.25, gamma=2.0, reduction='mean')
+                    else:
+                        base_loss = F.cross_entropy(output, labels)
+                    
+                    probs = F.softmax(output, dim=1)
+                    class_indices = torch.arange(output.shape[1], dtype=torch.float32, device=device)
+                    expected_y = torch.sum(probs * class_indices, dim=1)
+                    ord_loss = F.smooth_l1_loss(expected_y, labels.float())
+                    loss = base_loss + 2.0 * ord_loss
+                    _, predicted = torch.max(output.data, 1)
+                elif criterion == "focal_loss":
                     targets = F.one_hot(labels, num_classes=output.shape[1]).float()
                     loss = sigmoid_focal_loss(output, targets, alpha=0.25, gamma=2.0, reduction='mean')
+                    _, predicted = torch.max(output.data, 1)
                 else:
                     loss = criterion(output, labels)
+                    _, predicted = torch.max(output.data, 1)
 
                 running_loss += loss.item() * labels.size(0)
-                _, predicted = torch.max(output.data, 1)
                 total += labels.size(0)
                 correct += (predicted == labels).sum().item()
                 

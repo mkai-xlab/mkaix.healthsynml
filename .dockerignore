@@ -1,0 +1,36 @@
+# Git
+.git
+.gitignore
+
+# IDEs
+.idea
+.vscode
+
+# Python cache and environments
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.toast
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local data and logs
+data/
+dataset/
+logs/
+model_weights/
+
+# Other unnecessary folders for runtime Docker image
+infra/
+docs/
+notebooks/
+bruno/
+tests/

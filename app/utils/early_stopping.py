@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+import os
 
 class EarlyStopping:
     """
@@ -59,5 +60,8 @@ class EarlyStopping:
             "epoch": epoch,
             "val_loss": val_loss
         }
-        torch.save(checkpoint, self.path)
+        tmp_path = f"{self.path}.tmp"
+        torch.save(checkpoint, tmp_path)
+        if os.path.exists(tmp_path):
+            os.replace(tmp_path, self.path)
         self.val_loss_min = val_loss

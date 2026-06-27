@@ -30,12 +30,66 @@ def prepare_dataloaders(dataset_name, root_path, batch_size, img_size):
     
     DatasetClass = get_dataset_info(dataset_name)["class"]
 
+    # Load training dataset
     train_dataset = DatasetClass(root=str(root_path), split_dir="train", transform=train_transform)
+    train_hashes = set(train_dataset.image_hashes)
     
     val_dir_path = os.path.join(root_path, "val")
     val_split_dir = "val" if os.path.isdir(val_dir_path) else "test"
-    val_dataset = DatasetClass(root=str(root_path), split_dir=val_split_dir, transform=val_transform)
     
+    # Load validation dataset, excluding training hashes to prevent data leakage
+    val_dataset = DatasetClass(root=str(root_path), split_dir=val_split_dir, transform=val_transform, exclude_hashes=train_hashes)
+    
+    # If the validation dataset is empty after removing training duplicates,
+    # perform a dynamic random split on the unique training images.
+    if len(val_dataset) == 0:
+        print("\n[WARNING] Validation dataset is empty after removing training duplicates (leakage)!")
+        print("This indicates that the train and validation folders are identical or highly overlapping.")
+        print("Performing a dynamic 80/20 train/validation split on unique images to prevent leakage.")
+        
+        import random
+        all_paths = list(train_dataset.image_paths)
+        all_labels = list(train_dataset.labels)
+        
+        # Shuffle with a fixed seed for reproducibility
+        combined = list(zip(all_paths, all_labels))
+        random.seed(42)
+        random.shuffle(combined)
+        
+        split_idx = int(len(combined) * 0.8)
+        train_pairs = combined[:split_idx]
+        val_pairs = combined[split_idx:]
+        
+        # Update train_dataset in-place
+        train_dataset.image_paths = [p for p, _ in train_pairs]
+        train_dataset.labels = [l for _, l in train_pairs]
+        train_dataset.image_hashes = set()
+        
+        # Update val_dataset in-place
+        val_dataset.image_paths = [p for p, _ in val_pairs]
+        val_dataset.labels = [l for _, l in val_pairs]
+        val_dataset.image_hashes = set()
+        
+        # Print post-split statistics
+        from collections import Counter
+        print(f"\n--- Post-Split Dataset Statistics (Dynamic 80/20) ---")
+        print(f"  - Training images: {len(train_dataset)}")
+        print(f"  - Validation images: {len(val_dataset)}")
+        
+        train_counts = Counter(train_dataset.labels)
+        val_counts = Counter(val_dataset.labels)
+        
+        print("  - Training class distribution:")
+        for label_idx in sorted(train_counts.keys()):
+            class_name = train_dataset.categories[label_idx] if hasattr(train_dataset, 'categories') and label_idx < len(train_dataset.categories) else f"Class {label_idx}"
+            print(f"    * {class_name}: {train_counts[label_idx]} images")
+            
+        print("  - Validation class distribution:")
+        for label_idx in sorted(val_counts.keys()):
+            class_name = val_dataset.categories[label_idx] if hasattr(val_dataset, 'categories') and label_idx < len(val_dataset.categories) else f"Class {label_idx}"
+            print(f"    * {class_name}: {val_counts[label_idx]} images")
+        print("------------------------------------------------------\n")
+        
     print(f"Loaded datasets: {len(train_dataset)} for training, {len(val_dataset)} for validation.")
 
     num_workers = 4 if torch.cuda.is_available() else 0
@@ -55,7 +109,8 @@ def run_training(
     lr: float = 1e-4,
     fine_tune: bool = False,
     use_focal_loss: bool = False,
-    early_stopping_patience: int = 10
+    early_stopping_patience: int = 10,
+    ordinal_type: str = "none"
 ):
     """
     Main function to run the training and validation pipeline.
@@ -72,7 +127,8 @@ def run_training(
         img_size=img_size
     )
 
-    model = get_model(model_name, num_classes=5, pretrained=True)
+    num_classes = 4 if ordinal_type == "threshold" else 5
+    model = get_model(model_name, num_classes=num_classes, pretrained=True)
     
     # --- Configuration Summary ---
     print("\n" + "="*50)
@@ -84,6 +140,7 @@ def run_training(
     print(f"  - Max Epochs: {epochs}")
     print(f"  - Batch Size: {batch_size}")
     print(f"  - Initial Learning Rate: {lr}")
+    print(f"  - Ordinal Type: {ordinal_type}")
     if early_stopping_patience > 0:
         print(f"  - Early Stopping: Enabled (patience={early_stopping_patience})")
     else:
@@ -99,20 +156,61 @@ def run_training(
         optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-2)
     else:
         print("  - Freezing Strategy: Fine-tuning all layers")
-        backbone_params = [p for n, p in model.named_parameters() if 'classifier' not in n]
-        classifier_params = [p for n, p in model.named_parameters() if 'classifier' in n]
-        optimizer = optim.AdamW([
-            {'params': backbone_params, 'lr': lr * 0.1},
-            {'params': classifier_params, 'lr': lr}
-        ], weight_decay=1e-2)
-        print(f"    - Differential LR: Backbone LR = {lr*0.1:.6f}, Classifier LR = {lr:.6f}")
+        if model_name == "efficientnet_b0":
+            print("    - Applying Discriminative Fine-Tuning (3 groups) for EfficientNet-B0")
+            early_backbone_params = []
+            late_backbone_params = []
+            classifier_params = []
+            for n, p in model.named_parameters():
+                if 'classifier' in n:
+                    classifier_params.append(p)
+                elif 'features' in n:
+                    parts = n.split('.')
+                    try:
+                        features_idx = parts.index('features')
+                        block_idx = int(parts[features_idx + 1])
+                        # Blocks 0-3 are early, blocks 4-8 are late (similar to transfer learning division)
+                        if block_idx < 4:
+                            early_backbone_params.append(p)
+                        else:
+                            late_backbone_params.append(p)
+                    except (ValueError, IndexError):
+                        early_backbone_params.append(p)
+                else:
+                    early_backbone_params.append(p)
+            optimizer = optim.AdamW([
+                {'params': early_backbone_params, 'lr': lr * 0.01},
+                {'params': late_backbone_params, 'lr': lr * 0.1},
+                {'params': classifier_params, 'lr': lr}
+            ], weight_decay=1e-2)
+            print(f"      - Discriminative LR: Early Backbone LR = {lr*0.01:.7f}, Late Backbone LR = {lr*0.1:.6f}, Classifier LR = {lr:.6f}")
+        else:
+            # Fallback to standard 2-group split for other models
+            backbone_params = [p for n, p in model.named_parameters() if 'classifier' not in n]
+            classifier_params = [p for n, p in model.named_parameters() if 'classifier' in n]
+            optimizer = optim.AdamW([
+                {'params': backbone_params, 'lr': lr * 0.1},
+                {'params': classifier_params, 'lr': lr}
+            ], weight_decay=1e-2)
+            print(f"      - Differential LR: Backbone LR = {lr*0.1:.6f}, Classifier LR = {lr:.6f}")
     
-    if use_focal_loss:
-        criterion = "focal_loss"
-        print("  - Loss Function: Sigmoid Focal Loss (gamma=2.0, alpha=0.25)")
+    if ordinal_type == "threshold":
+        criterion = "ordinal_threshold"
+        print("  - Loss Function: Binary Cross Entropy with Logits Loss (Frank-Hall Threshold)")
+    elif ordinal_type == "expected_value":
+        if use_focal_loss:
+            criterion = "expected_value_focal_loss"
+            print("  - Loss Function: Sigmoid Focal Loss + Expected Value Regularization")
+        else:
+            criterion = "expected_value_cross_entropy"
+            print("  - Loss Function: Cross Entropy Loss + Expected Value Regularization")
     else:
-        criterion = nn.CrossEntropyLoss()
-        print("  - Loss Function: Cross Entropy Loss")
+        if use_focal_loss:
+            criterion = "focal_loss"
+            print("  - Loss Function: Sigmoid Focal Loss (gamma=2.0, alpha=0.25)")
+        else:
+            criterion = nn.CrossEntropyLoss()
+            print("  - Loss Function: Cross Entropy Loss")
 
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", factor=0.5, patience=3, min_lr=1e-6)
     print(f"  - Scheduler: ReduceLROnPlateau (patience=3, factor=0.5)")
@@ -134,19 +232,40 @@ def run_training(
 
     if os.path.exists(last_model_path_local):
         print(f"Loading local checkpoint for model '{model_name}' from: {last_model_path_local}")
-        checkpoint = torch.load(last_model_path_local, map_location=device)
-        model.load_state_dict(checkpoint["model"])
-        if "optimizer" in checkpoint and optimizer is not None: optimizer.load_state_dict(checkpoint["optimizer"])
-        if "scheduler" in checkpoint and scheduler is not None:
-            try: scheduler.load_state_dict(checkpoint["scheduler"])
-            except Exception: print("Warning: Could not load scheduler state dict.")
-        current_epoch = checkpoint.get("epoch", 0) + 1
-        if early_stopper and "val_loss" in checkpoint:
-            early_stopper.val_loss_min = checkpoint["val_loss"]
-            early_stopper.best_score = -checkpoint["val_loss"]
-        for state in optimizer.state.values():
-            for k, v in state.items():
-                if isinstance(v, torch.Tensor): state[k] = v.to(device)
+        try:
+            checkpoint = torch.load(last_model_path_local, map_location=device)
+            model.load_state_dict(checkpoint["model"])
+            if "optimizer" in checkpoint and optimizer is not None: 
+                optimizer.load_state_dict(checkpoint["optimizer"])
+            if "scheduler" in checkpoint and scheduler is not None:
+                try: 
+                    scheduler.load_state_dict(checkpoint["scheduler"])
+                except Exception: 
+                    print("Warning: Could not load scheduler state dict.")
+            current_epoch = checkpoint.get("epoch", 0) + 1
+            if early_stopper:
+                if "val_loss_min" in checkpoint:
+                    early_stopper.val_loss_min = checkpoint["val_loss_min"]
+                    early_stopper.best_score = -checkpoint["val_loss_min"]
+                elif "val_loss" in checkpoint:
+                    early_stopper.val_loss_min = checkpoint["val_loss"]
+                    early_stopper.best_score = -checkpoint["val_loss"]
+                if "early_stop_counter" in checkpoint:
+                    early_stopper.counter = checkpoint["early_stop_counter"]
+            if "rng_state" in checkpoint:
+                torch.set_rng_state(checkpoint["rng_state"].cpu())
+            if "cuda_rng_state" in checkpoint and checkpoint["cuda_rng_state"] is not None and torch.cuda.is_available():
+                try:
+                    torch.cuda.set_rng_state_all([s.cpu() for s in checkpoint["cuda_rng_state"]])
+                except Exception:
+                    pass
+            for state in optimizer.state.values():
+                for k, v in state.items():
+                    if isinstance(v, torch.Tensor): state[k] = v.to(device)
+            print(f"Successfully resumed training from epoch {current_epoch}.")
+        except Exception as e:
+            print(f"Warning: Could not load checkpoint due to corruption or mismatch ({e}). Training will start from scratch.")
+            current_epoch = 0
     else:
         print(f"No checkpoint found locally for model '{model_name}'. Starting from scratch.")
 
@@ -168,9 +287,22 @@ def run_training(
         
         if isinstance(scheduler, optim.lr_scheduler.ReduceLROnPlateau): scheduler.step(val_loss)
 
-        # Save last model checkpoint locally
-        checkpoint = {"model": model.state_dict(), "optimizer": optimizer.state_dict(), "scheduler": scheduler.state_dict(), "epoch": epoch, "val_loss": val_loss}
-        torch.save(checkpoint, last_model_path_local)
+        # Save last model checkpoint locally (using atomic write to prevent corruption)
+        checkpoint = {
+            "model": model.state_dict(), 
+            "optimizer": optimizer.state_dict(), 
+            "scheduler": scheduler.state_dict(), 
+            "epoch": epoch, 
+            "val_loss": val_loss,
+            "val_loss_min": early_stopper.val_loss_min if early_stopper else val_loss,
+            "early_stop_counter": early_stopper.counter if early_stopper else 0,
+            "rng_state": torch.get_rng_state(),
+            "cuda_rng_state": torch.cuda.get_rng_state_all() if torch.cuda.is_available() else None
+        }
+        tmp_path = f"{last_model_path_local}.tmp"
+        torch.save(checkpoint, tmp_path)
+        if os.path.exists(tmp_path):
+            os.replace(tmp_path, last_model_path_local)
 
         # Early stopping check (also saves the best model internally if loss improves)
         if early_stopper:
@@ -183,13 +315,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Run model training.")
     parser.add_argument("--model", type=str, default="mobilenet_v2", help="Name of the model to train.")
     parser.add_argument("--dataset-name", type=str, default="kaggle", choices=["local", "kaggle", "mendeley"], help="Name of the dataset to use.")
-    parser.add_argument("--epochs", type=int, default=30, help="Number of training epochs.")
-    parser.add_argument("--batch-size", type=int, default=32, help="Batch size for training and validation.")
-    parser.add_argument("--img-size", type=int, default=224, help="Image size for input images.")
+    parser.add_argument("--epochs", type=int, default=50, help="Number of training epochs.")
+    parser.add_argument("--batch-size", type=int, default=16, help="Batch size for training and validation.")
+    parser.add_argument("--img-size", type=int, default=380, help="Image size for input images.")
     parser.add_argument("--lr", type=float, default=1e-4, help="Learning rate.")
     parser.add_argument("--fine-tune", action="store_true", help="Unfreeze and fine-tune the backbone with a lower learning rate.")
     parser.add_argument("--focal-loss", action="store_true", help="Use Sigmoid Focal Loss instead of CrossEntropyLoss.")
     parser.add_argument("--early-stopping-patience", type=int, default=10, help="Patience for early stopping. Set to 0 to disable.")
+    parser.add_argument("--ordinal-type", type=str, default="none", choices=["none", "expected_value", "threshold"], help="Type of ordinal classification strategy.")
     args = parser.parse_args()
     
     run_training(
@@ -201,5 +334,6 @@ if __name__ == '__main__':
         lr=args.lr,
         fine_tune=args.fine_tune,
         use_focal_loss=args.focal_loss,
-        early_stopping_patience=args.early_stopping_patience
+        early_stopping_patience=args.early_stopping_patience,
+        ordinal_type=args.ordinal_type
     )

@@ -84,10 +84,75 @@ def get_transforms(img_size=224):
     ])
     return train_transform, val_transform
 
-# --- Dataset Classes (No changes below this line) ---
+def remove_duplicate_images(image_paths: List[str], labels: List[int], exclude_hashes: set = None, categories: List[str] = None):
+    """
+    Computes MD5 hashes of all image files, removes duplicates, and prints statistics.
+    
+    Args:
+        image_paths: List of absolute or relative image file paths.
+        labels: List of integer labels corresponding to the image paths.
+        exclude_hashes: A set of MD5 hashes to exclude (e.g. from the train split to prevent val leakage).
+        categories: Optional list of category names mapping label indices to names.
+        
+    Returns:
+        Tuple of (deduplicated_image_paths, deduplicated_labels, unique_hashes)
+    """
+    import hashlib
+    from collections import Counter
+    
+    total_found = len(image_paths)
+    unique_paths = []
+    unique_labels = []
+    unique_hashes = set()
+    
+    internal_dup_count = 0
+    leakage_count = 0
+    
+    for path, label in zip(image_paths, labels):
+        hash_md5 = hashlib.md5()
+        try:
+            with open(path, "rb") as f:
+                for chunk in iter(lambda: f.read(4096), b""):
+                    hash_md5.update(chunk)
+            h = hash_md5.hexdigest()
+        except Exception as e:
+            print(f"Warning: Could not read image {path} for duplicate checking: {e}")
+            continue
+            
+        if exclude_hashes and h in exclude_hashes:
+            leakage_count += 1
+            continue
+            
+        if h in unique_hashes:
+            internal_dup_count += 1
+            continue
+            
+        unique_hashes.add(h)
+        unique_paths.append(path)
+        unique_labels.append(label)
+        
+    class_counts = Counter(unique_labels)
+    
+    print(f"\n--- Dataset Statistics & Deduplication ---")
+    print(f"  - Total image files found: {total_found}")
+    print(f"  - Internal duplicates removed: {internal_dup_count}")
+    if exclude_hashes:
+        print(f"  - Cross-split leak duplicates removed: {leakage_count}")
+    print(f"  - Unique images kept: {len(unique_paths)}")
+    print(f"  - Class distribution:")
+    
+    for label_idx in sorted(class_counts.keys()):
+        count = class_counts[label_idx]
+        class_name = categories[label_idx] if categories and label_idx < len(categories) else f"Class {label_idx}"
+        print(f"    * {class_name}: {count} images")
+    print("-------------------------------------------\n")
+    
+    return unique_paths, unique_labels, unique_hashes
+
+# --- Dataset Classes ---
 # ... (The rest of the file remains the same)
 class KneeXRayDataset(Dataset):
-    def __init__(self, data_dirs: Union[str, List[str]] = None, transform=None, root: str = None, split_dir: str = None, data_dir: Union[str, List[str]] = None):
+    def __init__(self, data_dirs: Union[str, List[str]] = None, transform=None, root: str = None, split_dir: str = None, data_dir: Union[str, List[str]] = None, exclude_hashes: set = None):
         if data_dir is not None: data_dirs = data_dir
         if root is not None and split_dir is not None:
             sub_dir = "MedicalExpert-I" if split_dir == "train" else "MedicalExpert-II"
@@ -97,20 +162,26 @@ class KneeXRayDataset(Dataset):
         for d in self.data_dirs:
             if not os.path.isdir(d): raise FileNotFoundError(f"Path not found: '{d}'")
         self.transform = transform
+        self.exclude_hashes = exclude_hashes
         self.image_paths, self.labels = [], []
+        self.image_hashes = set()
         self.categories = sorted([d for d in os.listdir(self.data_dirs[0]) if os.path.isdir(os.path.join(self.data_dirs[0], d))])
         self.load_datas()
 
     def load_datas(self):
         print(f"Loading data from: {self.data_dirs}")
+        raw_paths = []
+        raw_labels = []
         for data_dir in self.data_dirs:
             for i, category in enumerate(self.categories):
                 category_path = os.path.join(data_dir, category)
                 if not os.path.isdir(category_path): continue
                 for file_name in os.listdir(category_path):
-                    self.image_paths.append(os.path.join(category_path, file_name))
-                    self.labels.append(i)
-        print(f"Found {len(self.image_paths)} images.")
+                    raw_paths.append(os.path.join(category_path, file_name))
+                    raw_labels.append(i)
+        self.image_paths, self.labels, self.image_hashes = remove_duplicate_images(
+            raw_paths, raw_labels, exclude_hashes=self.exclude_hashes, categories=self.categories
+        )
 
     def load_image_from_path(self, image_path):
         img_bgr = cv2.imread(image_path)
@@ -125,10 +196,11 @@ class KneeXRayDataset(Dataset):
         return image, label
 
 class KaggleKneeOsteoarthritisDataset(Dataset):
-    def __init__(self, root: str, split_dir: str, transform=None):
+    def __init__(self, root: str, split_dir: str, transform=None, exclude_hashes: set = None):
         self.root = root
         self.transform = transform
-        self.image_paths, self.labels = [], []
+        self.exclude_hashes = exclude_hashes
+        raw_paths, raw_labels = [], []
         split_path = os.path.join(root, split_dir)
         if not os.path.isdir(split_path): raise FileNotFoundError(f"Split directory not found: {split_path}")
         class_names = sorted([d for d in os.listdir(split_path) if os.path.isdir(os.path.join(split_path, d)) and d.isdigit()])
@@ -139,9 +211,11 @@ class KaggleKneeOsteoarthritisDataset(Dataset):
             valid_extensions = ('.png', '.jpg', '.jpeg')
             image_files = [f for f in os.listdir(class_dir) if f.lower().endswith(valid_extensions)]
             for file_name in image_files:
-                self.image_paths.append(os.path.join(class_dir, file_name))
-                self.labels.append(label)
-        print(f"Total images for '{split_dir}': {len(self.image_paths)}")
+                raw_paths.append(os.path.join(class_dir, file_name))
+                raw_labels.append(label)
+        self.image_paths, self.labels, self.image_hashes = remove_duplicate_images(
+            raw_paths, raw_labels, exclude_hashes=self.exclude_hashes, categories=class_names
+        )
 
     def load_image_from_path(self, image_path: str) -> np.ndarray:
         img_bgr = cv2.imread(image_path)
@@ -157,10 +231,11 @@ class KaggleKneeOsteoarthritisDataset(Dataset):
     def __len__(self) -> int: return len(self.image_paths)
 
 class MendeleyKneeXrayDataset(Dataset):
-    def __init__(self, root: str, split_dir: str, transform=None):
+    def __init__(self, root: str, split_dir: str, transform=None, exclude_hashes: set = None):
         self.root = root
         self.transform = transform
-        self.image_paths, self.labels = [], []
+        self.exclude_hashes = exclude_hashes
+        raw_paths, raw_labels = [], []
         split_path = os.path.join(root, split_dir)
         if not os.path.isdir(split_path): raise FileNotFoundError(f"Split directory not found: {split_path}")
         class_names = sorted([d for d in os.listdir(split_path) if os.path.isdir(os.path.join(split_path, d)) and d.isdigit()])
@@ -171,9 +246,11 @@ class MendeleyKneeXrayDataset(Dataset):
             valid_extensions = ('.png', '.jpg', '.jpeg')
             image_files = [f for f in os.listdir(class_dir) if f.lower().endswith(valid_extensions)]
             for file_name in image_files:
-                self.image_paths.append(os.path.join(class_dir, file_name))
-                self.labels.append(label)
-        print(f"Total images for '{split_dir}': {len(self.image_paths)}")
+                raw_paths.append(os.path.join(class_dir, file_name))
+                raw_labels.append(label)
+        self.image_paths, self.labels, self.image_hashes = remove_duplicate_images(
+            raw_paths, raw_labels, exclude_hashes=self.exclude_hashes, categories=class_names
+        )
 
     def load_image_from_path(self, image_path: str) -> np.ndarray:
         img_bgr = cv2.imread(image_path)
