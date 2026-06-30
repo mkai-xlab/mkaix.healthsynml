@@ -16,18 +16,21 @@ except ImportError:
     raise ImportError("The 'timm' library is required to run this API. Install it using: pip install timm")
 
 # --- Configuration & Paths ---
-# You can set the environment variable MODEL_PATH to point to your specific checkpoint.
 MODEL_PATH = os.environ.get("MODEL_PATH", "checkpoints/se_resnext50_checkpoints/best_model.pth")
 IMG_SIZE = 310
 
 MODEL = None
 DEVICE = None
 
-# --- Model Definition ---
+# --- Model Definition (Frank-Hall Binary Threshold Cấu hình) ---
 class SEResNeXtModel(nn.Module):
-    def __init__(self, num_classes: int = 5, pretrained: bool = False):
+    def __init__(self, num_classes: int = 5, pretrained: bool = False, ordinal_type: str = "threshold"):
         super(SEResNeXtModel, self).__init__()
-        self.model = timm.create_model('seresnext50_32x4d', pretrained=pretrained, num_classes=num_classes)
+        self.ordinal_type = ordinal_type
+        self.num_classes = num_classes
+        # Với phương pháp threshold, số ranh giới nhị phân đầu ra là (num_classes - 1) = 4
+        out_features = num_classes - 1 if ordinal_type == "threshold" else num_classes
+        self.model = timm.create_model('seresnext50_32x4d', pretrained=pretrained, num_classes=out_features)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.model(x)
@@ -92,8 +95,8 @@ async def lifespan(app: FastAPI):
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {DEVICE}")
 
-    # 1. Initialize model structure
-    MODEL = SEResNeXtModel(num_classes=5, pretrained=False)
+    # 1. Initialize model structure (configured for 4 threshold outputs)
+    MODEL = SEResNeXtModel(num_classes=5, pretrained=False, ordinal_type="threshold")
 
     # 2. Load trained checkpoints
     if os.path.exists(MODEL_PATH):
@@ -127,8 +130,8 @@ async def lifespan(app: FastAPI):
 
 # --- FastAPI App Initialization ---
 app = FastAPI(
-    title="SE-ResNeXt-50 Knee Osteoarthritis Classification API",
-    description="FastAPI service for predicting Kellgren-Lawrence (KL) grade (0-4) from knee X-ray images using SE-ResNeXt-50.",
+    title="SE-ResNeXt-50 Knee Osteoarthritis Ordinal Classification API",
+    description="FastAPI service for predicting Kellgren-Lawrence (KL) grade (0-4) using the Frank-Hall Binary Threshold Ordinal classification.",
     version="1.0.0",
     lifespan=lifespan
 )
@@ -148,7 +151,7 @@ def read_root():
     """Simple healthcheck endpoint."""
     return {
         "status": "online",
-        "model": "se_resnext50_32x4d",
+        "model": "seresnext50_32x4d_threshold",
         "device": str(DEVICE) if DEVICE else "unknown",
         "checkpoint_loaded": MODEL_PATH
     }
@@ -171,13 +174,32 @@ async def predict(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"Preprocessing error: {e}")
 
     with torch.no_grad():
-        logits = MODEL(input_tensor)
-        probabilities = F.softmax(logits, dim=1).cpu().numpy()[0]
+        logits = MODEL(input_tensor) # Shape [1, 4]
+        probs_gt = torch.sigmoid(logits).cpu().numpy()[0] # Shape [4]
         
-    predicted_class = int(np.argmax(probabilities))
+    # Ordinal class prediction: count how many binary thresholds (> 0.5) are met
+    predicted_class = int(np.sum(probs_gt > 0.5))
     
-    # Formulate confidence scores dict mapping class to confidence percentage
-    confidence_scores = {str(i): float(probabilities[i]) for i in range(5)}
+    # Convert binary cumulative probabilities into individual class probabilities:
+    # P(Class = 0) = 1 - P(Class > 0)
+    # P(Class = k) = P(Class > k-1) - P(Class > k)
+    # P(Class = 4) = P(Class > 3)
+    p = np.zeros(5)
+    p[0] = 1.0 - probs_gt[0]
+    p[1] = probs_gt[0] - probs_gt[1]
+    p[2] = probs_gt[1] - probs_gt[2]
+    p[3] = probs_gt[2] - probs_gt[3]
+    p[4] = probs_gt[3]
+    
+    # Clip negative differences (due to model noise) and normalize to ensure they sum to 1.0
+    p = np.clip(p, 0.0, 1.0)
+    p_sum = np.sum(p)
+    if p_sum > 0:
+        p = p / p_sum
+    else:
+        p = np.array([0.2, 0.2, 0.2, 0.2, 0.2]) # Fallback uniform distribution
+        
+    confidence_scores = {str(i): float(p[i]) for i in range(5)}
     
     return {
         "filename": file.filename,
@@ -185,19 +207,6 @@ async def predict(file: UploadFile = File(...)):
         "predicted_class_name": KL_GRADE_DESCRIPTIONS[predicted_class],
         "confidence_scores": confidence_scores
     }
-
-# --- Python Client Caller Example ---
-# If you want to call this API from another Python script, use the following snippet:
-#
-# ```python
-# import requests
-#
-# url = "http://127.0.0.1:8000/predict"
-# files = {"file": open("path_to_your_knee_xray.png", "rb")}
-#
-# response = requests.post(url, files=files)
-# print(response.json())
-# ```
 
 if __name__ == "__main__":
     uvicorn.run("api_inference:app", host="127.0.0.1", port=8000, reload=True)
