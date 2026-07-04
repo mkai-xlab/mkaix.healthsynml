@@ -12,5 +12,10 @@ class Settings:
         "AWS_S3_MODELS_BUCKET", 
         "healthsync-ml-models-dev-819109476069-ap-southeast-1-an"
     )
+    
+    DEFAULT_MODEL_NAME: str = os.getenv("DEFAULT_MODEL_NAME", "efficientnet_b4")
+    MODEL_CHECKPOINT_PATH: str = os.getenv("MODEL_CHECKPOINT_PATH", "checkpoints/efficientnet_b4/best_model.pth")
+    IMG_SIZE: int = int(os.getenv("IMG_SIZE", "380"))
+    ORDINAL_TYPE: str = os.getenv("ORDINAL_TYPE", "threshold")
 
 settings = Settings()

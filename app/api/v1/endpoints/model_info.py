@@ -10,5 +10,5 @@ def get_model_info():
             "densenet121": 0.4,
             "mobilenet_v2": 0.2
         },
-        "available_models": ["efficientnet_b0", "densenet121", "mobilenet_v2"]
+        "available_models": ["efficientnet_b0", "efficientnet_b4", "densenet121", "mobilenet_v2"]
     }

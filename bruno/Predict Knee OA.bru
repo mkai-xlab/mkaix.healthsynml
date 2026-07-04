@@ -1,17 +1,17 @@
 meta {
-  name: Predict Knee OA
+  name: Health Check (v1)
   type: http
-  seq: 1
+  seq: 2
 }
 
-post {
-  url: http://127.0.0.1:8000/predict
-  body: json
+get {
+  url: http://localhost:8005/api/v1/health
+  body: none
   auth: none
 }
 
-body:json {
-  {
-    "image_path": "/content/drive/MyDrive/Digital_Knee_X_ray_Images/MedicalExpert-II/4Severe/SevereG4 (206).png"
-  }
+docs {
+  # Health Check (v1)
+  
+  Checks if the Knee Osteoarthritis API service is running and online.
 }

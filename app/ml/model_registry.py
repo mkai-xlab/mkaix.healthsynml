@@ -1,6 +1,7 @@
 from typing import Type
 from app.ml.models.base_model import BaseModel
 from app.ml.models.efficientnet_b0_model import EfficientNetB0Model
+from app.ml.models.efficientnet_b4_model import EfficientNetB4Model
 from app.ml.models.densenet121_model import DenseNet121Model
 from app.ml.models.mobilenet_v2_model import MobileNetV2Model
 
@@ -8,6 +9,7 @@ from app.ml.models.mobilenet_v2_model import MobileNetV2Model
 # It maps a string identifier to the corresponding model class.
 MODEL_REGISTRY: dict[str, Type[BaseModel]] = {
     "efficientnet_b0": EfficientNetB0Model,
+    "efficientnet_b4": EfficientNetB4Model,
     "densenet121": DenseNet121Model,
     "mobilenet_v2": MobileNetV2Model,
 }
