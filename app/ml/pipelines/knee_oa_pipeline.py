@@ -103,30 +103,46 @@ class KneeOAPipeline:
 
     def postprocess(self, logits: torch.Tensor) -> dict:
         """Converts model logits into predicted classes and detailed probability confidence scores."""
-        # Apply sigmoid to get cumulative binary threshold probabilities
-        probs_gt = torch.sigmoid(logits).cpu().numpy()[0]
+        # Apply sigmoid to get raw probabilities
+        sigmoids = torch.sigmoid(logits).cpu().numpy()[0]
         
-        # Ordinal class prediction: count how many binary thresholds (> 0.5) are met
-        predicted_class = int(np.sum(probs_gt > 0.5))
-        
-        # Convert binary cumulative probabilities into individual class probabilities:
-        # P(Class = 0) = 1 - P(Class > 0)
-        # P(Class = k) = P(Class > k-1) - P(Class > k)
-        # P(Class = 4) = P(Class > 3)
         p = np.zeros(5)
-        p[0] = 1.0 - probs_gt[0]
-        p[1] = probs_gt[0] - probs_gt[1]
-        p[2] = probs_gt[1] - probs_gt[2]
-        p[3] = probs_gt[2] - probs_gt[3]
-        p[4] = probs_gt[3]
         
-        # Clip negative differences (due to model noise) and normalize to ensure they sum to 1.0
-        p = np.clip(p, 0.0, 1.0)
-        p_sum = np.sum(p)
-        if p_sum > 0:
-            p = p / p_sum
+        # Check ordinal type (supports CORN/Focal CORN and CORAL/threshold)
+        is_corn = self.ordinal_type in ["corn", "focal_corn"]
+        
+        if is_corn:
+            # CORN chain rule formula:
+            # P(y = 0) = 1 - p1
+            # P(y = k) = p1 * p2 * ... * pk-1 * (1 - pk)
+            # P(y = 4) = p1 * p2 * p3 * p4
+            p[0] = 1.0 - sigmoids[0]
+            cumprod = 1.0
+            for i in range(1, 4):
+                cumprod *= sigmoids[i - 1]
+                p[i] = cumprod * (1.0 - sigmoids[i])
+            p[4] = cumprod * sigmoids[3]
+            
+            # Predict class by Argmax over CORN probabilities
+            predicted_class = int(np.argmax(p))
         else:
-            p = np.array([0.2, 0.2, 0.2, 0.2, 0.2]) # Fallback
+            # CORAL (Rank Ordinal / Threshold) cumulative difference formula:
+            p[0] = 1.0 - sigmoids[0]
+            p[1] = sigmoids[0] - sigmoids[1]
+            p[2] = sigmoids[1] - sigmoids[2]
+            p[3] = sigmoids[2] - sigmoids[3]
+            p[4] = sigmoids[3]
+            
+            # Clip and normalize CORAL probabilities (since they can be negative due to model noise)
+            p = np.clip(p, 0.0, 1.0)
+            p_sum = np.sum(p)
+            if p_sum > 0:
+                p = p / p_sum
+            else:
+                p = np.array([0.2, 0.2, 0.2, 0.2, 0.2])
+                
+            # Predict class by counting thresholds > 0.5
+            predicted_class = int(np.sum(sigmoids > 0.5))
             
         descriptions = {
             0: "Grade 0: Normal knee joint with no signs of osteoarthritis.",
