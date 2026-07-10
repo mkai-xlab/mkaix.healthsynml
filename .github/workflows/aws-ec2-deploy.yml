@@ -1,0 +1,23 @@
+name: Remote EC2 Access via SSH
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run Remote Command via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_PUBLIC_IP }}
+          username: ubuntu
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd healthsync/mkaix.healthsynml/ && git pull
+            cd ../mkaix.healthsyncbe/ && docker compose up -d --build ai

@@ -122,6 +122,57 @@ class KneeOAPipeline:
             "details": confidence_details
         }
 
+    def generate_gradcam_base64(self, image_bytes: bytes, class_idx: int = None) -> str:
+        """
+        Generates a Grad-CAM heatmap overlayed on the preprocessed image and returns it as a Base64 string.
+        """
+        # Ensure gradient calculations are enabled for backward pass
+        with torch.enable_grad():
+            input_tensor = self.preprocess(image_bytes)
+            # Enable requires_grad on input tensor to track backprop
+            input_tensor.requires_grad = True
+            
+            # EfficientNet-B4 features layer 8 is the last convolutional block
+            target_layer = self.model.model.features[8]
+            
+            gradcam = GradCAM(self.model, target_layer)
+            try:
+                cam, _ = gradcam.generate(input_tensor, class_idx)
+            finally:
+                gradcam.remove_hooks()
+                
+        # Re-read image bytes for visual processing
+        nparr = np.frombuffer(image_bytes, np.uint8)
+        img_bgr = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        if img_bgr is None:
+            raise ValueError("Could not decode image for Grad-CAM overlay.")
+            
+        # Standard preprocessing on original image (SquarePad + CLAHE)
+        pad = SquarePadOpenCV()
+        clahe = OpenCVCLAHE()
+        img_processed = clahe(pad(cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)))
+        img_resized = cv2.resize(img_processed, (self.img_size, self.img_size))
+        
+        # Apply Jet colormap to Grad-CAM heatmap
+        heatmap = cv2.applyColorMap(np.uint8(255 * cam), cv2.COLORMAP_JET)
+        heatmap = cv2.cvtColor(heatmap, cv2.COLOR_BGR2RGB)
+        
+        # Overlay heatmap with alpha = 0.4
+        alpha = 0.4
+        overlay = cv2.addWeighted(img_resized, 1 - alpha, heatmap, alpha, 0)
+        
+        # Convert RGB back to BGR for OpenCV image encoding
+        overlay_bgr = cv2.cvtColor(overlay, cv2.COLOR_RGB2BGR)
+        
+        # Encode overlay to JPEG bytes
+        retval, buffer = cv2.imencode('.jpg', overlay_bgr)
+        if not retval:
+            raise ValueError("Could not encode overlay image to JPEG.")
+            
+        # Encode to Base64 string
+        base64_str = base64.b64encode(buffer).decode('utf-8')
+        return f"data:image/jpeg;base64,{base64_str}"
+
     def predict(self, image_bytes: bytes) -> dict:
         """Executes the complete modular preprocessing, inference, and Grad-CAM workflow."""
         # 1. Preprocessing (runs OpenCV CLAHE, SquarePad and turns to PIL/Tensor)
