@@ -3,42 +3,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-import cv2
-import torchvision.transforms as transforms
 from app.core.config import settings
 from app.ml.model_registry import get_model
-
-# --- Preprocessing classes ---
-
-class SquarePadOpenCV(object):
-    """Pads a rectangular X-ray image to a square, preserving the aspect ratio of the joint space."""
-    def __call__(self, image: np.ndarray) -> np.ndarray:
-        h, w = image.shape[:2]
-        max_wh = max(h, w)
-        pad_top = (max_wh - h) // 2
-        pad_bottom = max_wh - h - pad_top
-        pad_left = (max_wh - w) // 2
-        pad_right = max_wh - w - pad_left
-        
-        padded_image = cv2.copyMakeBorder(
-            image, pad_top, pad_bottom, pad_left, pad_right, 
-            borderType=cv2.BORDER_CONSTANT, value=[0, 0, 0]
-        )
-        return padded_image
-
-class OpenCVCLAHE(object):
-    """Applies Contrast Limited Adaptive Histogram Equalization (CLAHE) to enhance bone textures."""
-    def __init__(self, clip_limit=2.0, tile_grid_size=(8, 8)):
-        self.clip_limit = clip_limit
-        self.tile_grid_size = tile_grid_size
-
-    def __call__(self, img_rgb: np.ndarray) -> np.ndarray:
-        clahe = cv2.createCLAHE(clipLimit=self.clip_limit, tileGridSize=self.tile_grid_size)
-        img_lab = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2LAB)
-        l_channel, a_channel, b_channel = cv2.split(img_lab)
-        clahe_l_channel = clahe.apply(l_channel)
-        merged_lab_image = cv2.merge((clahe_l_channel, a_channel, b_channel))
-        return cv2.cvtColor(merged_lab_image, cv2.COLOR_LAB2RGB)
+from app.services.preprocessing_service import preprocessing_service
+from app.services.inference_service import inference_service
+from app.services.gradcam_service import gradcam_service
 
 class KneeOAPipeline:
     """
@@ -46,20 +15,9 @@ class KneeOAPipeline:
     """
     def __init__(self):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.img_size = settings.IMG_SIZE
         self.model_name = settings.DEFAULT_MODEL_NAME
         self.checkpoint_path = settings.MODEL_CHECKPOINT_PATH
         self.ordinal_type = settings.ORDINAL_TYPE
-        
-        # Define the validation transforms
-        self.transform = transforms.Compose([
-            SquarePadOpenCV(),
-            OpenCVCLAHE(),
-            transforms.ToPILImage(),
-            transforms.Resize((self.img_size, self.img_size)),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-        ])
         
         # Load and prepare model
         self.model = self._load_model()
@@ -73,7 +31,11 @@ class KneeOAPipeline:
         if os.path.exists(self.checkpoint_path):
             print(f"Loading model checkpoint from {self.checkpoint_path}...")
             try:
-                checkpoint = torch.load(self.checkpoint_path, map_location=self.device)
+                try:
+                    checkpoint = torch.load(self.checkpoint_path, map_location=self.device, weights_only=False)
+                except TypeError:
+                    checkpoint = torch.load(self.checkpoint_path, map_location=self.device)
+                
                 if isinstance(checkpoint, dict) and "model" in checkpoint:
                     model.load_state_dict(checkpoint["model"])
                 elif isinstance(checkpoint, dict) and "model_state_dict" in checkpoint:
@@ -89,17 +51,6 @@ class KneeOAPipeline:
         model.to(self.device)
         model.eval()
         return model
-
-    def preprocess(self, image_bytes: bytes) -> torch.Tensor:
-        """Converts raw image bytes to a preprocessed tensor ready for inference."""
-        nparr = np.frombuffer(image_bytes, np.uint8)
-        img_bgr = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        if img_bgr is None:
-            raise ValueError("Could not decode image from bytes. Ensure file is a valid image (PNG/JPEG).")
-            
-        img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
-        tensor = self.transform(img_rgb)
-        return tensor.unsqueeze(0).to(self.device)
 
     def postprocess(self, logits: torch.Tensor) -> dict:
         """Converts model logits into predicted classes and detailed probability confidence scores."""
@@ -172,8 +123,26 @@ class KneeOAPipeline:
         }
 
     def predict(self, image_bytes: bytes) -> dict:
-        """Executes the complete preprocessing and inference workflow."""
-        input_tensor = self.preprocess(image_bytes)
-        with torch.no_grad():
-            logits = self.model(input_tensor)
-        return self.postprocess(logits)
+        """Executes the complete modular preprocessing, inference, and Grad-CAM workflow."""
+        # 1. Preprocessing (runs OpenCV CLAHE, SquarePad and turns to PIL/Tensor)
+        input_tensor, img_rgb = preprocessing_service.preprocess_image(image_bytes)
+        input_tensor = input_tensor.to(self.device)
+        
+        # 2. Inference (runs model forward pass under no_grad)
+        logits = inference_service.run_inference(self.model, input_tensor)
+        
+        # 3. Postprocessing (calculates class probabilities based on CORN/CORAL)
+        result = self.postprocess(logits)
+        
+        # 4. Grad-CAM generation (creates overlay and encodes to base64)
+        predicted_class = result["predicted_class"]
+        gradcam_img = gradcam_service.generate_heatmap(
+            model=self.model,
+            input_tensor=input_tensor,
+            img_rgb=img_rgb,
+            predicted_class=predicted_class,
+            ordinal_type=self.ordinal_type
+        )
+        
+        result["gradcam_image"] = gradcam_img
+        return result
