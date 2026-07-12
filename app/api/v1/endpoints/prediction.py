@@ -1,5 +1,6 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException, status
 from app.services.prediction_service import prediction_service
+from app.services.roi_service import roi_service
 
 router = APIRouter()
 
@@ -57,7 +58,6 @@ async def detect_knee_roi(file: UploadFile = File(..., description="Knee X-ray P
         )
         
     try:
-        from app.services.roi_service import roi_service
         image_bytes = await file.read()
         if not image_bytes:
             raise HTTPException(
@@ -75,4 +75,5 @@ async def detect_knee_roi(file: UploadFile = File(..., description="Knee X-ray P
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
             detail=f"ROI detection error: {str(e)}"
         )
+
 
