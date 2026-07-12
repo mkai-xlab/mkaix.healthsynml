@@ -15,6 +15,7 @@ class Settings:
     
     DEFAULT_MODEL_NAME: str = os.getenv("DEFAULT_MODEL_NAME", "densenet201")
     MODEL_CHECKPOINT_PATH: str = os.getenv("MODEL_CHECKPOINT_PATH", "checkpoints/densenet201/best_model.pth")
+    YOLO_CHECKPOINT_PATH: str = os.getenv("YOLO_CHECKPOINT_PATH", "checkpoints/yolov8/best.pt")
     IMG_SIZE: int = int(os.getenv("IMG_SIZE", "224"))
     ORDINAL_TYPE: str = os.getenv("ORDINAL_TYPE", "focal_corn")
 

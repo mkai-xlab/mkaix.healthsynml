@@ -1,3 +1,5 @@
+import sys
+sys.path.append('.')
 import torch
 import numpy as np
 from app.services.preprocessing_service import preprocessing_service
@@ -29,3 +31,17 @@ result = pipeline.postprocess(dummy_logits)
 print(f"Postprocess output: {result}")
 
 print("All verifications passed successfully!")
+
+# Test ROIService
+print("Testing ROIService...")
+from app.services.roi_service import roi_service
+try:
+    result_img_url = roi_service.detect_and_draw_boxes(image_bytes)
+    print("ROIService detect_and_draw_boxes returned successfully.")
+    print(f"Data URL prefix: {result_img_url[:30]}...")
+    
+    crops = roi_service.crop_knees(image_bytes)
+    print(f"ROIService crop_knees returned successfully. Number of crops: {len(crops)}")
+except Exception as e:
+    print(f"ROIService test failed: {e}")
+
