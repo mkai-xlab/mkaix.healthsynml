@@ -43,7 +43,7 @@ class ROIService:
             cv2.putText(img, "YOLOv8 Not Loaded - Dummy Box", (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
         else:
             # Run prediction
-            results = self.model.predict(source=img, conf=0.25, save=False, verbose=False)
+            results = self.model.predict(source=img, conf=0.45, save=False, verbose=False)
             boxes = results[0].boxes
             
             # Draw each box
@@ -74,7 +74,7 @@ class ROIService:
             # Fallback: return full image if model not available
             return [image_bytes]
             
-        results = self.model.predict(source=img, conf=0.25, save=False, verbose=False)
+        results = self.model.predict(source=img, conf=0.45, save=False, verbose=False)
         boxes = results[0].boxes
         
         # Sort boxes by left-to-right coordinate so we keep a consistent ordering (e.g. left knee first)
