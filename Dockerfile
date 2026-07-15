@@ -13,7 +13,10 @@ COPY requirements.txt .
 
 # Install Python dependencies using exec form (without /bin/sh shell)
 RUN ["python", "-m", "pip", "install", "--upgrade", "pip"]
+RUN ["python", "-m", "pip", "install", "torch", "torchvision", "--index-url", "https://download.pytorch.org/whl/cpu"]
 RUN ["python", "-m", "pip", "install", "--no-cache-dir", "-r", "requirements.txt"]
+RUN ["python", "-m", "pip", "uninstall", "-y", "opencv-python", "opencv-python-headless"]
+RUN ["python", "-m", "pip", "install", "--no-cache-dir", "opencv-python-headless"]
 
 # Copy the rest of the application code to the container
 COPY . .

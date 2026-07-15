@@ -65,10 +65,11 @@ async def detect_knee_roi(file: UploadFile = File(..., description="Knee X-ray P
                 detail="Uploaded file is empty."
             )
             
-        detected_image_url = roi_service.detect_and_draw_boxes(image_bytes)
+        detected_image_url, detections = roi_service.detect_and_draw_boxes(image_bytes)
         return {
             "filename": file.filename,
-            "detected_image": detected_image_url
+            "detected_image": detected_image_url,
+            "detections": detections
         }
     except Exception as e:
         raise HTTPException(

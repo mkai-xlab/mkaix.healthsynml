@@ -29,18 +29,29 @@ class ROIService:
         except Exception as e:
             print(f"Failed to load YOLOv8 model: {e}")
 
-    def detect_and_draw_boxes(self, image_bytes: bytes) -> str:
-        """Runs knee joint detection and returns base64 data URL of the image with drawn bounding boxes."""
+    def detect_and_draw_boxes(self, image_bytes: bytes) -> tuple[str, list[dict]]:
+        """Runs knee joint detection and returns base64 data URL of the image with drawn bounding boxes, and list of detections."""
         nparr = np.frombuffer(image_bytes, np.uint8)
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
         if img is None:
             raise ValueError("Could not decode image from bytes.")
             
+        detections = []
         if self.model is None:
             # Fallback: Draw a dummy box in the center if model is not loaded for testing
             h, w = img.shape[:2]
-            cv2.rectangle(img, (int(w*0.1), int(h*0.1)), (int(w*0.9), int(h*0.9)), (0, 0, 255), 3)
+            x1, y1, x2, y2 = int(w*0.1), int(h*0.1), int(w*0.9), int(h*0.9)
+            cv2.rectangle(img, (x1, y1), (x2, y2), (0, 0, 255), 3)
             cv2.putText(img, "YOLOv8 Not Loaded - Dummy Box", (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
+            detections.append({
+                "box": [x1, y1, x2, y2],
+                "x": x1,
+                "y": y1,
+                "w": x2 - x1,
+                "h": y2 - y1,
+                "class_name": "Knee Joint (Dummy)",
+                "confidence": 1.0
+            })
         else:
             # Run prediction
             results = self.model.predict(source=img, conf=0.45, save=False, verbose=False)
@@ -50,18 +61,30 @@ class ROIService:
             for box in boxes:
                 x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())
                 conf = float(box.conf[0])
+                class_id = int(box.cls[0])
+                class_name = self.model.names.get(class_id, "knee")
                 
                 # Draw box
                 cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 3)
                 
                 # Draw label
-                label = f"Knee Joint: {conf:.2f}"
+                label = f"{class_name}: {conf:.2f}"
                 cv2.putText(img, label, (x1, max(15, y1 - 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+                
+                detections.append({
+                    "box": [x1, y1, x2, y2],
+                    "x": x1,
+                    "y": y1,
+                    "w": x2 - x1,
+                    "h": y2 - y1,
+                    "class_name": class_name,
+                    "confidence": conf
+                })
                 
         # Encode to base64
         _, buffer = cv2.imencode(".jpg", img)
         img_base64 = base64.b64encode(buffer).decode("utf-8")
-        return f"data:image/jpeg;base64,{img_base64}"
+        return f"data:image/jpeg;base64,{img_base64}", detections
 
     def crop_knees(self, image_bytes: bytes) -> list[bytes]:
         """Runs knee joint detection and returns list of cropped image bytes for downstream classification."""
@@ -96,6 +119,40 @@ class ROIService:
             return [image_bytes]
             
         return crops
+
+    def detect_knees_with_coords(self, image_bytes: bytes) -> list[dict]:
+        """Runs knee joint detection and returns list of dicts with box coords and crop bytes."""
+        nparr = np.frombuffer(image_bytes, np.uint8)
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        if img is None:
+            raise ValueError("Could not decode image from bytes.")
+            
+        if self.model is None:
+            return []
+            
+        results = self.model.predict(source=img, conf=0.45, save=False, verbose=False)
+        boxes = results[0].boxes
+        
+        sorted_boxes = sorted(boxes, key=lambda b: float(b.xyxy[0][0]))
+        
+        knees = []
+        for box in sorted_boxes:
+            x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())
+            conf = float(box.conf[0])
+            
+            # Crop image
+            crop = img[y1:y2, x1:x2]
+            
+            # Encode back to bytes
+            _, buffer = cv2.imencode(".png", crop)
+            
+            knees.append({
+                "box": [x1, y1, x2, y2],
+                "crop_bytes": buffer.tobytes(),
+                "yolo_conf": conf
+            })
+            
+        return knees
 
 # Global instance of ROI Service
 roi_service = ROIService()

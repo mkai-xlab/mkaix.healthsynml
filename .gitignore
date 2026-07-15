@@ -42,6 +42,7 @@ model_weights/**/*.weights
 # IDEs
 .idea/
 .vscode/
+.agents/
 
 # Testing
 .pytest_cache/
