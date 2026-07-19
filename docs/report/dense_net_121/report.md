@@ -11,9 +11,10 @@ A summary comparison of the different runs trained on this repository. The metri
 | 2026-07-16 20:45:12 | **3-Stage Focal CORN (Under-fit Baseline - Low LR 1e-5)**<br>Focal CORN | 0.6087 (95% CI: 0.5876 - 0.6347) | 0.7388 (95% CI: 0.7120 - 0.7618) | 0.8699 (95% CI: 0.8605 - 0.8804) | 0.6775 (95% CI: 0.6566 - 0.7011) | 326 / 826 (39.47% error) | 236 (72.4%) | 8 | 3 |
 | 2026-07-17 10:33:24 | **3-Stage Focal CORN (Optimized Learning Rates)**<br>Focal CORN | 0.6612 (95% CI: 0.6413 - 0.6866) | 0.8271 (95% CI: 0.8072 - 0.8434) | 0.8984 (95% CI: 0.8889 - 0.9083) | 0.7280 (95% CI: 0.7063 - 0.7588) | 288 / 826 (34.87% error) | 243 (84.4%) | 4 | 4 |
 | 2026-07-17 16:06:42 | **3-Stage Focal CORN (Optimized Learning Rates & Patience - SOTA Peak)**<br>Focal CORN | 0.6733 (95% CI: 0.6510 - 0.6963) | 0.8394 (95% CI: 0.8203 - 0.8562) | 0.9073 (95% CI: 0.8992 - 0.9159) | 0.7439 (95% CI: 0.7257 - 0.7670) | 290 / 826 (35.11% error) | 250 (86.2%) | 3 | 5 |
-| 2026-07-17 22:15:13 | **3-Stage Focal CORN (Last Block Unfrozen + Stage 3 Sampler Disabled)**<br>Focal CORN | 0.6498 (95% CI: 0.6286 - 0.6727) | 0.7564 (95% CI: 0.7332 - 0.7767) | 0.8814 (95% CI: 0.8706 - 0.8905) | 0.7059 (95% CI: 0.6882 - 0.7311) | 299 / 826 (36.20% error) | 187 (62.5%) | 4 | 3 |
-| 2026-07-18 20:27:46 | **3-Stage Focal CORN (Last Two Blocks Unfrozen + Stage 3 Sampler Moderated)**<br>Focal CORN | 0.6534 (95% CI: 0.6322 - 0.6733) | 0.7624 (95% CI: 0.7365 - 0.7889) | 0.8825 (95% CI: 0.8724 - 0.8910) | 0.7124 (95% CI: 0.6960 - 0.7356) | 297 / 826 (35.96% error) | 182 (61.3%) | 3 | 6 |
-| 2026-07-18 22:03:35 | **3-Stage Focal CORN (384x384 Resolution + Blocks 3 & 4 Unfrozen + Sampler Moderated)**<br>Focal CORN | 0.6564 (95% CI: 0.6353 - 0.6781) | 0.7796 (95% CI: 0.7552 - 0.8053) | 0.8976 (95% CI: 0.8871 - 0.9067) | 0.7297 (95% CI: 0.7025 - 0.7533) | 279 / 826 (33.78% error) | 187 (67.0%) | 4 | 4 |
+| 2026-07-17 22:15:13 | **3-Stage Focal CORN (Last Block Unfrozen + Stage 3 Sampler Disabled) [LOGIC ERROR: Backbone Remained Frozen]**<br>Focal CORN | 0.6498 (95% CI: 0.6286 - 0.6727) | 0.7564 (95% CI: 0.7332 - 0.7767) | 0.8814 (95% CI: 0.8706 - 0.8905) | 0.7059 (95% CI: 0.6882 - 0.7311) | 299 / 826 (36.20% error) | 187 (62.5%) | 4 | 3 |
+| 2026-07-18 20:27:46 | **3-Stage Focal CORN (Last Two Blocks Unfrozen + Stage 3 Sampler Moderated) [LOGIC ERROR: Backbone Remained Frozen]**<br>Focal CORN | 0.6534 (95% CI: 0.6322 - 0.6733) | 0.7624 (95% CI: 0.7365 - 0.7889) | 0.8825 (95% CI: 0.8724 - 0.8910) | 0.7124 (95% CI: 0.6960 - 0.7356) | 297 / 826 (35.96% error) | 182 (61.3%) | 3 | 6 |
+| 2026-07-18 22:03:35 | **3-Stage Focal CORN (384x384 Resolution + Blocks 3 & 4 Unfrozen + Sampler Moderated) [LOGIC ERROR: Backbone Remained Frozen]**<br>Focal CORN | 0.6564 (95% CI: 0.6353 - 0.6781) | 0.7796 (95% CI: 0.7552 - 0.8053) | 0.8976 (95% CI: 0.8871 - 0.9067) | 0.7297 (95% CI: 0.7025 - 0.7533) | 279 / 826 (33.78% error) | 187 (67.0%) | 4 | 4 |
+| 2026-07-19 10:30:42 | **3-Stage Focal CORN (384x384 Resolution + Blocks 3 & 4 Unfrozen + Sampler Moderated) - True Run**<br>Focal CORN | 0.6920 (95% CI: 0.6709 - 0.7162) | 0.8324 (95% CI: 0.8114 - 0.8496) | 0.9047 (95% CI: 0.8957 - 0.9127) | 0.7365 (95% CI: 0.7092 - 0.7698) | 268 / 826 (32.45% error) | 202 (75.4%) | 4 | 4 |
 
 
 ### Key Diagnostic Insights
@@ -33,9 +34,154 @@ A summary comparison of the different runs trained on this repository. The metri
 
 ---
 
-## Run: 2026-07-18 22:03:35 (DENSENET121 - 3-Stage Focal CORN (384x384 Resolution + Blocks 3 & 4 Unfrozen + Sampler Moderated))
+## Run: 2026-07-19 10:30:42 (DENSENET121 - 3-Stage Focal CORN (384x384 Resolution + Blocks 3 & 4 Unfrozen + Sampler Moderated) - True Run)
+### Summary
+This run successfully trained a densenet121 model in standard 1-stage mode for 45 epochs on 384x384 images using Focal CORN loss. By enabling the class-balancing WeightedRandomSampler, minority augmentations, and double Cutout (Random Erasing), the model achieved a final test Accuracy of 0.6920 (95% CI: 0.6709 - 0.7162) and a Quadratic Weighted Kappa (QWK) score of 0.8324 (95% CI: 0.8114 - 0.8496).
+
+### Configurations
+| Parameter | Value |
+| --- | --- |
+| **Model** | densenet121 |
+| **Image Size** | 384x384 |
+| **Pipeline** | 3-stage |
+| **Epochs** | 30 (Actual: 45) |
+| **Loss Function** | focal_corn |
+| **Balanced Sampler** | True |
+| **Minority Augmentations** | True |
+
+### Final Test Metrics
+| Metric | Score (with 95% Confidence Interval) |
+| --- | --- |
+| **Accuracy** | 0.6920 (95% CI: 0.6709 - 0.7162) |
+| **QWK Score** | 0.8324 (95% CI: 0.8114 - 0.8496) |
+| **ROC AUC** | 0.9047 (95% CI: 0.8957 - 0.9127) |
+| **Average Precision** | 0.7365 (95% CI: 0.7092 - 0.7698) |
+
+### Classification Report
+```
+precision    recall  f1-score   support
+
+           0       0.68      0.93      0.79       639
+           1       0.29      0.10      0.15       296
+           2       0.71      0.67      0.69       447
+           3       0.85      0.79      0.82       223
+           4       0.85      0.86      0.85        51
+
+    accuracy                           0.69      1656
+   macro avg       0.68      0.67      0.66      1656
+weighted avg       0.65      0.69      0.65      1656
+```
+
+### Epoch-by-Epoch Training History
+| Stage | Epoch | Train Loss | Train Acc | Val Loss | Val Acc | QWK | ROC AUC | AP |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Stage 1 | 1 | 0.9194 | 26.88   % | 0.6435 | 37.65 % | 0.1167 | 0.6614 | 0.3119 |
+| Stage 1 | 2 | 0.8579 | 35.05   % | 0.6629 | 22.40 % | 0.1025 | 0.7015 | 0.3489 |
+| Stage 1 | 3 | 0.8327 | 38.21   % | 0.6003 | 43.58 % | 0.2807 | 0.7182 | 0.3697 |
+| Stage 1 | 4 | 0.8232 | 39.88   % | 0.6277 | 43.58 % | 0.2704 | 0.7306 | 0.3802 |
+| Stage 1 | 5 | 0.8186 | 43.11   % | 0.6194 | 43.83 % | 0.3026 | 0.7306 | 0.3883 |
+| Stage 2 | 6 | 0.7750 | 49.45   % | 0.5738 | 50.12 % | 0.5572 | 0.7826 | 0.4740 |
+| Stage 2 | 7 | 0.7400 | 57.68   % | 0.5793 | 49.03 % | 0.5632 | 0.8026 | 0.5548 |
+| Stage 2 | 8 | 0.7109 | 62.27   % | 0.5380 | 57.26 % | 0.6625 | 0.8351 | 0.6258 |
+| Stage 2 | 9 | 0.6966 | 65.04   % | 0.5279 | 59.44 % | 0.7417 | 0.8433 | 0.6316 |
+| Stage 2 | 10 | 0.6856 | 67.51   % | 0.5312 | 54.60 % | 0.7569 | 0.8431 | 0.6263 |
+| Stage 2 | 11 | 0.6742 | 69.42   % | 0.5246 | 57.14 % | 0.7293 | 0.8462 | 0.6443 |
+| Stage 2 | 12 | 0.6706 | 68.67   % | 0.5190 | 59.08 % | 0.7592 | 0.8521 | 0.6516 |
+| Stage 2 | 13 | 0.6656 | 71.20   % | 0.5270 | 57.63 % | 0.7162 | 0.8476 | 0.6485 |
+| Stage 2 | 14 | 0.6573 | 71.88   % | 0.5184 | 58.84 % | 0.7645 | 0.8570 | 0.6558 |
+| Stage 2 | 15 | 0.6565 | 71.48   % | 0.5278 | 54.12 % | 0.7398 | 0.8560 | 0.6538 |
+| Stage 2 | 16 | 0.6499 | 73.45   % | 0.5124 | 58.60 % | 0.7629 | 0.8609 | 0.6562 |
+| Stage 2 | 17 | 0.6474 | 73.42   % | 0.5134 | 60.05 % | 0.7688 | 0.8626 | 0.6703 |
+| Stage 2 | 18 | 0.6427 | 74.44   % | 0.5192 | 57.75 % | 0.7451 | 0.8623 | 0.6664 |
+| Stage 2 | 19 | 0.6378 | 75.11   % | 0.5179 | 57.99 % | 0.7583 | 0.8622 | 0.6715 |
+| Stage 2 | 20 | 0.6344 | 75.22   % | 0.5214 | 57.99 % | 0.7514 | 0.8612 | 0.6634 |
+| Stage 2 | 21 | 0.6344 | 75.70   % | 0.5193 | 58.47 % | 0.7559 | 0.8612 | 0.6592 |
+| Stage 2 | 22 | 0.6332 | 75.61   % | 0.5223 | 57.26 % | 0.7452 | 0.8614 | 0.6609 |
+| Stage 2 | 23 | 0.6361 | 75.16   % | 0.5212 | 56.90 % | 0.7523 | 0.8626 | 0.6672 |
+| Stage 2 | 24 | 0.6357 | 75.22   % | 0.5222 | 57.87 % | 0.7541 | 0.8642 | 0.6656 |
+| Stage 2 | 25 | 0.6315 | 75.89   % | 0.5182 | 57.51 % | 0.7564 | 0.8633 | 0.6669 |
+| Stage 2 | 26 | 0.6329 | 75.74   % | 0.5199 | 57.99 % | 0.7540 | 0.8636 | 0.6628 |
+| Stage 2 | 27 | 0.6337 | 75.37   % | 0.5182 | 59.93 % | 0.7587 | 0.8649 | 0.6704 |
+| Stage 2 | 28 | 0.6339 | 74.92   % | 0.5152 | 59.32 % | 0.7604 | 0.8639 | 0.6645 |
+| Stage 2 | 29 | 0.6260 | 77.40   % | 0.5187 | 58.72 % | 0.7599 | 0.8637 | 0.6625 |
+| Stage 2 | 30 | 0.6284 | 77.03   % | 0.5204 | 58.11 % | 0.7572 | 0.8635 | 0.6622 |
+| Stage 3 | 31 | 0.0357 | 59.80   % | 0.0269 | 65.50 % | 0.7842 | 0.8757 | 0.7086 |
+| Stage 3 | 32 | 0.0334 | 61.25   % | 0.0260 | 65.98 % | 0.7853 | 0.8804 | 0.7130 |
+| Stage 3 | 33 | 0.0320 | 63.46   % | 0.0264 | 65.01 % | 0.7689 | 0.8772 | 0.7128 |
+| Stage 3 | 34 | 0.0322 | 61.60   % | 0.0259 | 65.38 % | 0.7833 | 0.8822 | 0.7169 |
+| Stage 3 | 35 | 0.0309 | 62.88   % | 0.0251 | 67.80 % | 0.7917 | 0.8838 | 0.7241 |
+| Stage 3 | 36 | 0.0301 | 64.31   % | 0.0246 | 66.10 % | 0.7767 | 0.8871 | 0.7266 |
+| Stage 3 | 37 | 0.0294 | 65.09   % | 0.0254 | 67.68 % | 0.7955 | 0.8838 | 0.7238 |
+| Stage 3 | 38 | 0.0293 | 65.33   % | 0.0253 | 66.83 % | 0.7827 | 0.8833 | 0.7124 |
+| Stage 3 | 39 | 0.0291 | 64.71   % | 0.0249 | 65.98 % | 0.7896 | 0.8861 | 0.7279 |
+| Stage 3 | 40 | 0.0283 | 66.55   % | 0.0248 | 67.55 % | 0.8024 | 0.8875 | 0.7300 |
+| Stage 3 | 41 | 0.0278 | 65.75   % | 0.0249 | 66.46 % | 0.7910 | 0.8867 | 0.7279 |
+| Stage 3 | 42 | 0.0278 | 66.75   % | 0.0252 | 67.07 % | 0.7933 | 0.8872 | 0.7254 |
+| Stage 3 | 43 | 0.0274 | 67.13   % | 0.0252 | 66.59 % | 0.7894 | 0.8873 | 0.7257 |
+| Stage 3 | 44 | 0.0277 | 65.94   % | 0.0255 | 66.46 % | 0.7987 | 0.8865 | 0.7253 |
+| Stage 3 | 45 | 0.0269 | 66.70   % | 0.0248 | 67.43 % | 0.7966 | 0.8871 | 0.7291 |
+
+### Visualizations
+#### Gradcam
+![Gradcam](assets/2026-07-19_10-30-42_gradcam_1.png)
+
+![Gradcam](assets/2026-07-19_10-30-42_gradcam_2.png)
+
+![Gradcam](assets/2026-07-19_10-30-42_gradcam_3.png)
+
+![Gradcam](assets/2026-07-19_10-30-42_gradcam_4.png)
+
+![Gradcam](assets/2026-07-19_10-30-42_gradcam_5.png)
+
+#### Confusion Matrix
+![Confusion Matrix](assets/2026-07-19_10-30-42_confusion_matrix_0.png)
+
+### Diagnostic Error Analysis Results
+```
+============================================================
+Total Validation Failures: 268 / 826 (32.45% error)
+
+Distribution by Severity Category:
+error_category
+boundary_confusion            202
+other_errors                   58
+critical_miss_overpredict       4
+critical_miss_underpredict      4
+
+Top 5 Most Common Confusions (True vs Pred):
+ true_grade  predicted_grade  count
+          1                0    100
+          2                0     44
+          3                2     27
+          1                2     25
+          2                1     19
+```
+
+### Evaluation and Clinical Conclusion
+
+#### 1. Performance and Convergence Analysis
+* **Full Training Completed:** The model completed all 30 epochs of standard training.
+* **Overall Metric Quality:** The test Quadratic Weighted Kappa (QWK) score of **`0.8324 (95% CI: 0.8114 - 0.8496)`** represents high agreement with clinical grading standards. The classification accuracy stands at **`0.6920 (95% CI: 0.6709 - 0.7162)`**.
+
+#### 2. Class-by-Class Diagnostic Analysis
+* **Grade 1 (Doubtful OA) Recall:** The recall for early-stage doubtful osteoarthritis (Grade 1) is **`10.0%`** with precision **`29.0%`**. Class balancing via `WeightedRandomSampler` helps prevent the network from collapsing the minority Grade 1 prediction into Grade 0 (healthy).
+* **Grade 4 (Severe OA) Performance:** Severe joint space collapse and large osteophytes (Grade 4) remain highly distinct features, leading to a recall of **`86.0%`** and precision of **`85.0%`**.
+
+#### 3. Error Diagnostics (Boundary Confusion)
+* **Boundary Confusion Dominance:** Out of `268` validation errors, **`202`** (or **`75.4%`**) are classified as adjacent boundary confusion ($x \pm 1$ grade errors).
+* **Ordinal Loss Effect:** The transition to ordinal loss (Focal CORN) penalizes off-by-many errors much more severely than off-by-one errors. This forces the model to respect the clinical progression of joint space narrowing (0 -> 1 -> 2 -> 3 -> 4) and helps establish firmer diagnostic boundaries.
+
+#### 4. Grad-CAM Interpretation
+* **Joint Space Targeting:** The Grad-CAM heatmap reveals that the model is successfully targeting the tibiofemoral joint space line and marginal osteophytes. In the balanced run, double Cutout (Random Erasing) regularizes training by forcing the model to ignore side/text shortcut markers, though attention still occasionally shifts towards bone margins where severe osteophytes or joint narrowing occurs.
+
+---
+
+## Run: 2026-07-18 22:03:35 (DENSENET121 - 3-Stage Focal CORN (384x384 Resolution + Blocks 3 & 4 Unfrozen + Sampler Moderated) [LOGIC ERROR: Backbone Remained Frozen])
 ### Summary
 This run successfully trained a densenet121 model in standard 1-stage mode for 45 epochs on 384x384 images using Focal CORN loss. By enabling the class-balancing WeightedRandomSampler, minority augmentations, and double Cutout (Random Erasing), the model achieved a final test Accuracy of 0.6564 (95% CI: 0.6353 - 0.6781) and a Quadratic Weighted Kappa (QWK) score of 0.7796 (95% CI: 0.7552 - 0.8053).
+
+> [!WARNING]
+> **LOGIC ERROR DETECTED:** Due to a naming convention mismatch in timm's features-only model structures, `hasattr` checks failed silently. The backbone parameters remained fully frozen during Stage 2 training, leading to underprediction collapse.
 
 ### Configurations
 | Parameter | Value |
@@ -171,9 +317,12 @@ Top 5 Most Common Confusions (True vs Pred):
 
 ---
 
-## Run: 2026-07-18 20:27:46 (DENSENET121 - 3-Stage Focal CORN (Last Two Blocks Unfrozen + Stage 3 Sampler Moderated))
+## Run: 2026-07-18 20:27:46 (DENSENET121 - 3-Stage Focal CORN (Last Two Blocks Unfrozen + Stage 3 Sampler Moderated) [LOGIC ERROR: Backbone Remained Frozen])
 ### Summary
 This run successfully trained a densenet121 model in standard 1-stage mode for 45 epochs on 224x224 images using Focal CORN loss. By enabling the class-balancing WeightedRandomSampler, minority augmentations, and double Cutout (Random Erasing), the model achieved a final test Accuracy of 0.6534 (95% CI: 0.6322 - 0.6733) and a Quadratic Weighted Kappa (QWK) score of 0.7624 (95% CI: 0.7365 - 0.7889).
+
+> [!WARNING]
+> **LOGIC ERROR DETECTED:** Due to a naming convention mismatch in timm's features-only model structures, `hasattr` checks failed silently. The backbone parameters remained fully frozen during Stage 2 training, leading to underprediction collapse.
 
 ### Configurations
 | Parameter | Value |
@@ -313,9 +462,12 @@ Top 5 Most Common Confusions (True vs Pred):
 
 ---
 
-## Run: 2026-07-17 22:15:13 (DENSENET121 - 3-Stage Focal CORN (Last Block Unfrozen + Stage 3 Sampler Disabled))
+## Run: 2026-07-17 22:15:13 (DENSENET121 - 3-Stage Focal CORN (Last Block Unfrozen + Stage 3 Sampler Disabled) [LOGIC ERROR: Backbone Remained Frozen])
 ### Summary
 This run successfully trained a densenet121 model in standard 1-stage mode for 45 epochs on 224x224 images using Focal CORN loss. By enabling the class-balancing WeightedRandomSampler, minority augmentations, and double Cutout (Random Erasing), the model achieved a final test Accuracy of 0.6498 (95% CI: 0.6286 - 0.6727) and a Quadratic Weighted Kappa (QWK) score of 0.7564 (95% CI: 0.7332 - 0.7767).
+
+> [!WARNING]
+> **LOGIC ERROR DETECTED:** Due to a naming convention mismatch in timm's features-only model structures, `hasattr` checks failed silently. The backbone parameters remained fully frozen during Stage 2 training, leading to underprediction collapse.
 
 ### Configurations
 | Parameter | Value |

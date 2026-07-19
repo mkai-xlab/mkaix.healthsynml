@@ -182,12 +182,14 @@ def parse_notebook(notebook_path, timestamp_str, human_time_str):
         run_desc = "3-Stage Focal CORN (Optimized Learning Rates & Patience - SOTA Peak)"
     elif "focal_corn_optimized_lr" in fname:
         run_desc = "3-Stage Focal CORN (Optimized Learning Rates)"
+    elif "focal_corn_384_resolution_frozen" in fname:
+        run_desc = "3-Stage Focal CORN (384x384 Resolution + Blocks 3 & 4 Unfrozen + Sampler Moderated) [LOGIC ERROR: Backbone Remained Frozen]"
     elif "focal_corn_384_resolution" in fname:
-        run_desc = "3-Stage Focal CORN (384x384 Resolution + Blocks 3 & 4 Unfrozen + Sampler Moderated)"
+        run_desc = "3-Stage Focal CORN (384x384 Resolution + Blocks 3 & 4 Unfrozen + Sampler Moderated) - True Run"
     elif "focal_corn_moderated_sampler" in fname:
-        run_desc = "3-Stage Focal CORN (Last Two Blocks Unfrozen + Stage 3 Sampler Moderated)"
+        run_desc = "3-Stage Focal CORN (Last Two Blocks Unfrozen + Stage 3 Sampler Moderated) [LOGIC ERROR: Backbone Remained Frozen]"
     elif "focal_corn_gradual_unfreeze" in fname:
-        run_desc = "3-Stage Focal CORN (Last Block Unfrozen + Stage 3 Sampler Disabled)"
+        run_desc = "3-Stage Focal CORN (Last Block Unfrozen + Stage 3 Sampler Disabled) [LOGIC ERROR: Backbone Remained Frozen]"
     else:
         # Fallback to standard config parsing
         run_desc = "Focal CORN Loss" if loss == "focal_corn" else ("Balanced Sampler + Minority Augmentations + Double Cutout" if (loss == "ce" and sampler == "True") else "Baseline CE (No Regularization)")
@@ -203,6 +205,10 @@ def parse_notebook(notebook_path, timestamp_str, human_time_str):
     else:
         markdown += "Final metrics were not computed during this run."
     markdown += "\n\n"
+    
+    if "[LOGIC ERROR" in run_desc:
+        markdown += "> [!WARNING]\n"
+        markdown += "> **LOGIC ERROR DETECTED:** Due to a naming convention mismatch in timm's features-only model structures, `hasattr` checks failed silently. The backbone parameters remained fully frozen during Stage 2 training, leading to underprediction collapse.\n\n"
 
     markdown += "### Configurations\n"
     markdown += "| Parameter | Value |\n"
