@@ -8,6 +8,7 @@ report_dir = '/home/viet/Capstone/ml/docs/report/dense_net_121'
 assets_dir = os.path.join(report_dir, 'assets')
 
 def parse_notebook(notebook_path, timestamp_str, human_time_str):
+    fname = os.path.basename(notebook_path)
     with open(notebook_path, 'r', encoding='utf-8') as f:
         nb = json.load(f)
 
@@ -157,19 +158,39 @@ def parse_notebook(notebook_path, timestamp_str, human_time_str):
     pattern = os.path.join(assets_dir, f"{timestamp_str}_*.png")
     matching_files = glob.glob(pattern)
     for fpath in sorted(matching_files):
-        fname = os.path.basename(fpath)
-        rel_path = f"assets/{fname}"
-        if "_gradcam_" in fname:
+        img_fname = os.path.basename(fpath)
+        rel_path = f"assets/{img_fname}"
+        if "_gradcam_" in img_fname:
             image_groups["Gradcam"].append(rel_path)
-        elif "_confusion_matrix_" in fname:
+        elif "_confusion_matrix_" in img_fname:
             image_groups["Confusion Matrix"].append(rel_path)
-        elif "_training_curves_" in fname:
+        elif "_training_curves_" in img_fname:
             image_groups["Training Curves"].append(rel_path)
         else:
             image_groups["Other Visualizations"].append(rel_path)
 
     loss_name = "Focal CORN" if loss == "focal_corn" else ("Conditional Ordinal (CORN)" if loss == "corn" else ("Cross-Entropy (CE)" if loss == "ce" else loss.upper()))
-    run_desc = "Focal CORN Loss" if loss == "focal_corn" else ("Balanced Sampler + Minority Augmentations + Double Cutout" if (loss == "ce" and sampler == "True") else "Baseline CE (No Regularization)")
+    
+    # Determine descriptive name based on filename suffix (Request 6)
+    if "ce_baseline" in fname:
+        run_desc = "Baseline CE (No Regularization)"
+    elif "ce_regularized" in fname:
+        run_desc = "Balanced Sampler + Minority Augmentations + Double Cutout"
+    elif "focal_corn_underfit" in fname:
+        run_desc = "3-Stage Focal CORN (Under-fit Baseline - Low LR 1e-5)"
+    elif "focal_corn_optimized_lr_patience" in fname:
+        run_desc = "3-Stage Focal CORN (Optimized Learning Rates & Patience - SOTA Peak)"
+    elif "focal_corn_optimized_lr" in fname:
+        run_desc = "3-Stage Focal CORN (Optimized Learning Rates)"
+    elif "focal_corn_384_resolution" in fname:
+        run_desc = "3-Stage Focal CORN (384x384 Resolution + Blocks 3 & 4 Unfrozen + Sampler Moderated)"
+    elif "focal_corn_moderated_sampler" in fname:
+        run_desc = "3-Stage Focal CORN (Last Two Blocks Unfrozen + Stage 3 Sampler Moderated)"
+    elif "focal_corn_gradual_unfreeze" in fname:
+        run_desc = "3-Stage Focal CORN (Last Block Unfrozen + Stage 3 Sampler Disabled)"
+    else:
+        # Fallback to standard config parsing
+        run_desc = "Focal CORN Loss" if loss == "focal_corn" else ("Balanced Sampler + Minority Augmentations + Double Cutout" if (loss == "ce" and sampler == "True") else "Baseline CE (No Regularization)")
 
     # Construct markdown
     markdown = f"## Run: {human_time_str} ({model_name.upper()} - {run_desc})\n"
@@ -323,7 +344,7 @@ report_content += "| Run Timestamp | Model Configuration / Loss | Accuracy | QWK
 report_content += "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
 
 for run in runs_data:
-    report_content += f"| {run['timestamp']} | **{run['loss']}**<br>({run['desc']}) | {run['accuracy']} | {run['qwk']} | {run['auc']} | {run['ap']} | {run['failures']} | {run['boundary_confusion']} | {run['critical_under']} | {run['critical_over']} |\n"
+    report_content += f"| {run['timestamp']} | **{run['desc']}**<br>{run['loss']} | {run['accuracy']} | {run['qwk']} | {run['auc']} | {run['ap']} | {run['failures']} | {run['boundary_confusion']} | {run['critical_under']} | {run['critical_over']} |\n"
 
 report_content += "\n\n"
 

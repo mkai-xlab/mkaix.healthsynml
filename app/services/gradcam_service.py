@@ -97,11 +97,22 @@ class GradCAMService:
         
         # Find norm5 layer for DenseNet or conv_head for EfficientNet/MobileNet
         if "DenseNet" in model_class_name:
-            target_layer = getattr(model.model.features, "norm5", None)
+            if hasattr(model, "model") and hasattr(model.model, "features"):
+                target_layer = getattr(model.model.features, "norm5", None)
+            elif hasattr(model, "backbone"):
+                # Find norm5 inside timm features or fallback to last BatchNorm2d in the backbone
+                target_layer = getattr(model.backbone, "norm5", None)
+                if target_layer is None:
+                    for module in reversed(list(model.backbone.modules())):
+                        if isinstance(module, nn.BatchNorm2d):
+                            target_layer = module
+                            break
         elif "EfficientNet" in model_class_name:
-            target_layer = getattr(model.model, "conv_head", None)
+            if hasattr(model, "model"):
+                target_layer = getattr(model.model, "conv_head", None)
         elif "MobileNet" in model_class_name:
-            target_layer = getattr(model.model, "conv_head", None)
+            if hasattr(model, "model"):
+                target_layer = getattr(model.model, "conv_head", None)
             
         # Fallback: search for last convolution or batchnorm module
         if target_layer is None:

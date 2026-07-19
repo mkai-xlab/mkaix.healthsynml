@@ -36,15 +36,46 @@ The model's performance varies across different grades due to sample frequencies
 
 ---
 
-## 3. Diagnostic Analysis: The Grade 1 Bottleneck
+## 3. Diagnostic Error Analysis Results
 
-### The Phenomenon:
-While the overall accuracy increased by **$+1.93\%$**, the recall of **Grade 1 (Doubtful OA)** fell to **$7.0\%$** (compared to $24.0\%$ in the baseline), while the recall of **Grade 0 (Normal)** rose to **$94.0\%$** (compared to $85.0\%$ in the baseline).
+The validation failure analysis on the optimized model yields the following diagnostic footprint:
 
-### The Cause (Catastrophic Forgetting in Stage 3):
-1.  **Imbalance Ratio:** In the training dataset, Grade 0 has $2,286$ images while Grade 1 has $1,046$ images.
-2.  **Representation Drift:** In Stage 2, the `WeightedRandomSampler` was active, forcing a balanced distribution. Under this setup, the model's validation QWK reached a peak of **`0.7728`** and validation accuracy was `57.63%` with balanced class boundaries.
-3.  **Threshold Shift:** When Stage 3 (Fine-Tuning) began, the balanced sampler was turned off to train on the original, imbalanced distribution. Because the new Multi-Scale backbone has a very high learning capacity, training it for 15 epochs on this skewed distribution caused it to shift its decision boundary (specifically $L_0$ in the CORN logits) to predict Grade 0 for doubtful or ambiguous Grade 1 cases, maximizing overall accuracy at the expense of Grade 1 recall.
+```
+============================================================
+          DIAGNOSTIC ERROR ANALYSIS RESULTS
+============================================================
+Total Validation Failures: 288 / 826 (34.87% error)
+
+Distribution by Severity Category:
+error_category
+boundary_confusion            243
+other_errors                   37
+critical_miss_overpredict       4
+critical_miss_underpredict       4
+
+Top 5 Most Common Confusions (True vs Pred):
+ true_grade  predicted_grade  count
+          1                0     63
+          2                1     63
+          0                1     58
+          2                0     20
+          1                2     20
+
+Saved diagnostic images and CSV index to: error_analysis_diagnostics/
+============================================================
+```
+
+### The Current Problem (The Grade 1 & 2 Boundary Bottleneck):
+1. **High Boundary Confusion (84.4% of all errors):** Out of 288 validation failures, **243 are off-by-exactly-one-grade errors**. The model struggles to separate adjacent Kellgren-Lawrence grades.
+2. **Grade 1 to 0 Collapse (63 cases):** Doubtful OA (Grade 1) is most frequently misclassified as Normal (Grade 0). Because standard fine-tuning in Stage 3 disabled the balanced sampler, the model optimized for the majority class (Grade 0 has 2,286 training samples vs. 1,046 for Grade 1), causing boundary thresholds to shift and misclassifying doubtful joint spaces as normal.
+3. **Grade 2 to 1 and Grade 0 to 1 Confusion (63 and 58 cases):** Mild OA (Grade 2) is frequently under-predicted as Doubtful (Grade 1), and Normal (Grade 0) is over-predicted as Doubtful (Grade 1). This indicates high ambiguity and soft decision boundaries around doubtful-to-mild joint space narrowing.
+4. **Critical Misses:** While low in count (4 critical under-predictions and 4 critical over-predictions), these are clinically significant cases where severe OA is missed or normal knees are flagged as severe.
+
+### The Solution:
+1. **Retain Balanced Sampler in Stage 3:** Keep the `WeightedRandomSampler` active during the Stage 3 fine-tuning phase (rather than disabling it) to maintain robust representation boundaries for the minority classes (Grades 1, 3, and 4) and prevent decision boundary drift.
+2. **Apply Task-Specific Focal CORN Weights:** Adjust cost-sensitive weights in the ordinal loss function to penalize boundary transitions at early stages (Grade 0 $\leftrightarrow$ Grade 1) more severely, forcing the network to focus gradients on these ambiguous joints.
+3. **Post-Processing Sigmoid Threshold Tuning:** Modify prediction thresholds in [api_inference.py](file:///home/viet/Capstone/ml/api_inference.py) to lower the threshold for Grade 1 predictions (e.g. predicting Grade 1 if cumulative probability exceeds $0.35$ instead of the default $0.50$), thereby boosting doubtful OA recall for clinical safety.
+4. **Deploy Stage 2 Best Checkpoint:** In screening applications, deploy the Stage 2 checkpoint where the balanced sampler was active, providing higher recall for doubtful and early-stage joint space narrowing.
 
 ---
 

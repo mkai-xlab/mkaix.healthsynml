@@ -324,10 +324,40 @@ else:
 with open(report_file, 'w', encoding='utf-8') as rf:
     rf.write(new_content)
 
-# Determine descriptive suffix dynamically for file copy
+# Determine gradual unfreeze and moderated sampler from notebook content
+has_gradual_unfreeze = False
+has_moderated_sampler = False
+for cell in nb.get('cells', []):
+    if cell.get('cell_type') == 'code':
+        source = "".join(cell.get('source', []))
+        if 'unfreeze_last_block' in source:
+            has_gradual_unfreeze = True
+        if 'train_loader_moderated' in source:
+            has_moderated_sampler = True
+
+# Determine descriptive suffix dynamically for file copy (Request 6)
 desc_parts = []
 if loss == "focal_corn":
-    desc_parts.append("focal_corn")
+    if img_size == '384':
+        desc_parts.append("focal_corn_384_resolution")
+    elif has_moderated_sampler:
+        desc_parts.append("focal_corn_moderated_sampler")
+    elif has_gradual_unfreeze:
+        desc_parts.append("focal_corn_gradual_unfreeze")
+    else:
+        # Determine if it was the early under-fit or optimized run based on learning rates
+        lr_backbone = config.get('lr_coarse_backbone', '1e-5')
+        if lr_backbone == '1e-5':
+            desc_parts.append("focal_corn_underfit")
+        else:
+            try:
+                patience = int(config.get('early_stopping_patience_stage2', '12'))
+            except Exception:
+                patience = 12
+            if patience == 12:
+                desc_parts.append("focal_corn_optimized_lr")
+            else:
+                desc_parts.append("focal_corn_optimized_lr_patience")
 elif loss == "ce":
     if sampler == "True":
         desc_parts.append("ce_regularized")
