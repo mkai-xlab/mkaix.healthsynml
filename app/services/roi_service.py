@@ -43,6 +43,12 @@ class ROIService:
             x1, y1, x2, y2 = int(w*0.1), int(h*0.1), int(w*0.9), int(h*0.9)
             cv2.rectangle(img, (x1, y1), (x2, y2), (0, 0, 255), 3)
             cv2.putText(img, "YOLOv8 Not Loaded - Dummy Box", (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
+            
+            # Crop dummy ROI
+            crop = img[y1:y2, x1:x2]
+            _, crop_buffer = cv2.imencode(".png", crop)
+            crop_base64 = base64.b64encode(crop_buffer).decode("utf-8")
+            
             detections.append({
                 "box": [x1, y1, x2, y2],
                 "x": x1,
@@ -50,26 +56,42 @@ class ROIService:
                 "w": x2 - x1,
                 "h": y2 - y1,
                 "class_name": "Knee Joint (Dummy)",
-                "confidence": 1.0
+                "confidence": 1.0,
+                "knee_side": "unknown",
+                "roi_image": f"data:image/png;base64,{crop_base64}"
             })
         else:
             # Run prediction
             results = self.model.predict(source=img, conf=0.45, save=False, verbose=False)
             boxes = results[0].boxes
             
+            # Sort boxes by left-to-right (x1 coordinate)
+            sorted_boxes = sorted(boxes, key=lambda b: float(b.xyxy[0][0]))
+            
+            if len(sorted_boxes) == 2:
+                sides = ["right", "left"]
+            else:
+                sides = ["unknown"] * len(sorted_boxes)
+            
             # Draw each box
-            for box in boxes:
+            for idx, box in enumerate(sorted_boxes):
                 x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())
                 conf = float(box.conf[0])
                 class_id = int(box.cls[0])
                 class_name = self.model.names.get(class_id, "knee")
+                side = sides[idx]
                 
                 # Draw box
                 cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 3)
                 
                 # Draw label
-                label = f"{class_name}: {conf:.2f}"
+                label = f"{class_name} ({side}): {conf:.2f}" if side != "unknown" else f"{class_name}: {conf:.2f}"
                 cv2.putText(img, label, (x1, max(15, y1 - 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+                
+                # Crop image
+                crop = img[y1:y2, x1:x2]
+                _, crop_buffer = cv2.imencode(".png", crop)
+                crop_base64 = base64.b64encode(crop_buffer).decode("utf-8")
                 
                 detections.append({
                     "box": [x1, y1, x2, y2],
@@ -78,7 +100,9 @@ class ROIService:
                     "w": x2 - x1,
                     "h": y2 - y1,
                     "class_name": class_name,
-                    "confidence": conf
+                    "confidence": conf,
+                    "knee_side": side,
+                    "roi_image": f"data:image/png;base64,{crop_base64}"
                 })
                 
         # Encode to base64

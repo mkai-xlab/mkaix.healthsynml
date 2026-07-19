@@ -139,18 +139,17 @@ class GradCAMService:
         clahe = OpenCVCLAHE()
         img_processed = clahe(pad(img_rgb))
         
-        # Resize image to match tensor size
-        h_t, w_t = input_tensor.shape[2], input_tensor.shape[3]
-        img_resized = cv2.resize(img_processed, (w_t, h_t))
+        # Get processed high-resolution dimensions
+        h_p, w_p = img_processed.shape[:2]
         
-        # Resize Grad-CAM mask and map to jet colormap
-        cam_resized = cv2.resize(cam, (w_t, h_t))
+        # Resize Grad-CAM mask to high resolution (matching original/padded image size)
+        cam_resized = cv2.resize(cam, (w_p, h_p))
         heatmap = cv2.applyColorMap(np.uint8(255 * cam_resized), cv2.COLORMAP_JET)
         heatmap = cv2.cvtColor(heatmap, cv2.COLOR_BGR2RGB)
         
-        # Blend original image and heatmap
+        # Blend original high-resolution processed image and heatmap
         alpha = 0.4
-        overlay = cv2.addWeighted(img_resized, 1.0 - alpha, heatmap, alpha, 0)
+        overlay = cv2.addWeighted(img_processed, 1.0 - alpha, heatmap, alpha, 0)
         
         # Encode overlay to base64
         overlay_bgr = cv2.cvtColor(overlay, cv2.COLOR_RGB2BGR)
