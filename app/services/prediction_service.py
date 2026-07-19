@@ -33,23 +33,43 @@ class PredictionService:
             # Fallback if no knees detected (or YOLO disabled)
             res = self.pipeline.predict(image_bytes)
             res["box"] = None
+            res["yolo_confidence"] = 0.0
+            res["knee_side"] = "unknown"
+            res["roi_image"] = None
             ai_results.append(res)
         else:
-            for knee in knees:
-                # Run DenseNet-201 on the cropped knee image
+            # Determine knee side (anatomical right/left) if exactly 2 ROIs are detected
+            if len(knees) == 2:
+                # Sort left-to-right by x coordinate (box[0])
+                knees = sorted(knees, key=lambda k: k["box"][0])
+                sides = ["right", "left"]
+            else:
+                sides = ["unknown"] * len(knees)
+                
+            for idx, knee in enumerate(knees):
+                # Run prediction on the cropped knee image
                 res = self.pipeline.predict(knee["crop_bytes"])
                 res["box"] = knee["box"]
                 res["yolo_confidence"] = knee["yolo_conf"]
+                side = sides[idx]
+                res["knee_side"] = side
+                
+                # Base64 encode the cropped ROI image
+                roi_base64 = base64.b64encode(knee["crop_bytes"]).decode("utf-8")
+                res["roi_image"] = f"data:image/png;base64,{roi_base64}"
+                
                 ai_results.append(res)
                 
-                # Draw bounding box and KL grade + confidence on original image
+                # Draw bounding box and KL grade + side + confidence on original image
                 x1, y1, x2, y2 = knee["box"]
                 kl_grade = res.get("predicted_grade", "Unknown")
                 conf = res.get("confidence", 0.0)
                 
                 # Bounding box color (Green)
                 cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 3)
-                label = f"Grade {kl_grade} ({conf*100:.1f}%)"
+                
+                side_str = f" {side.upper()}" if side != "unknown" else ""
+                label = f"{side_str} Grade {kl_grade} ({conf*100:.1f}%)".strip()
                 
                 # Draw text background for readability
                 (w, h), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)
