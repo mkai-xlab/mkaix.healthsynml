@@ -1,10 +1,11 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException, status
 from app.services.prediction_service import prediction_service
 from app.services.roi_service import roi_service
+from app.schemas.prediction import KneeOAPredictionResponse, KneeDetectionResponse
 
 router = APIRouter()
 
-@router.post("", response_model=dict, status_code=status.HTTP_200_OK)
+@router.post("", response_model=KneeOAPredictionResponse, status_code=status.HTTP_200_OK)
 async def predict_knee_oa(file: UploadFile = File(..., description="Knee X-ray PNG/JPEG or DICOM file")):
     """
     Accepts an uploaded knee X-ray image file and processes it through the 
@@ -30,7 +31,7 @@ async def predict_knee_oa(file: UploadFile = File(..., description="Knee X-ray P
             
         # Run prediction through prediction service
         result = prediction_service.predict_image(file.filename, image_bytes)
-        return result
+        return KneeOAPredictionResponse(**result)
         
     except ValueError as e:
         # Catch specific preprocessing or value errors (e.g., failed to decode image)
@@ -45,7 +46,7 @@ async def predict_knee_oa(file: UploadFile = File(..., description="Knee X-ray P
             detail=f"Inference pipeline error: {str(e)}"
         )
 
-@router.post("/detect-roi", response_model=dict, status_code=status.HTTP_200_OK)
+@router.post("/detect-roi", response_model=KneeDetectionResponse, status_code=status.HTTP_200_OK)
 async def detect_knee_roi(file: UploadFile = File(..., description="Knee X-ray PNG/JPEG/DICOM file")):
     """
     Accepts an uploaded knee X-ray image and runs YOLOv8 knee joint detection.
@@ -65,12 +66,11 @@ async def detect_knee_roi(file: UploadFile = File(..., description="Knee X-ray P
                 detail="Uploaded file is empty."
             )
             
-        detected_image_url, detections = roi_service.detect_and_draw_boxes(image_bytes)
-        return {
-            "filename": file.filename,
-            "detected_image": detected_image_url,
-            "detections": detections
-        }
+        return KneeDetectionResponse(
+            filename=file.filename,
+            detected_image=detected_image_url,
+            detections=detections
+        )
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
