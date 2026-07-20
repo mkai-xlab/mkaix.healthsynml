@@ -182,12 +182,16 @@ def parse_notebook(notebook_path, timestamp_str, human_time_str):
         run_desc = "3-Stage Focal CORN (Optimized Learning Rates & Patience - SOTA Peak)"
     elif "focal_corn_optimized_lr" in fname:
         run_desc = "3-Stage Focal CORN (Optimized Learning Rates)"
+    elif "focal_corn_384_resolution_frozen" in fname:
+        run_desc = "3-Stage Focal CORN (384x384 Resolution + Blocks 3 & 4 Unfrozen + Sampler Moderated) [LOGIC ERROR: Backbone Remained Frozen]"
     elif "focal_corn_384_resolution" in fname:
-        run_desc = "3-Stage Focal CORN (384x384 Resolution + Blocks 3 & 4 Unfrozen + Sampler Moderated)"
+        run_desc = "3-Stage Focal CORN (384x384 Resolution + Blocks 3 & 4 Unfrozen + Sampler Moderated) - True Run"
     elif "focal_corn_moderated_sampler" in fname:
-        run_desc = "3-Stage Focal CORN (Last Two Blocks Unfrozen + Stage 3 Sampler Moderated)"
+        run_desc = "3-Stage Focal CORN (Last Two Blocks Unfrozen + Stage 3 Sampler Moderated) [LOGIC ERROR: Backbone Remained Frozen]"
     elif "focal_corn_gradual_unfreeze" in fname:
-        run_desc = "3-Stage Focal CORN (Last Block Unfrozen + Stage 3 Sampler Disabled)"
+        run_desc = "3-Stage Focal CORN (Last Block Unfrozen + Stage 3 Sampler Disabled) [LOGIC ERROR: Backbone Remained Frozen]"
+    elif "densenet121_corn" in fname:
+        run_desc = "3-Stage CORN (400x400 Padding + 384x384 Random Crop + 5-Crop TTA + Grad-CAM++)"
     else:
         # Fallback to standard config parsing
         run_desc = "Focal CORN Loss" if loss == "focal_corn" else ("Balanced Sampler + Minority Augmentations + Double Cutout" if (loss == "ce" and sampler == "True") else "Baseline CE (No Regularization)")
