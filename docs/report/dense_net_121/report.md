@@ -15,6 +15,7 @@ A summary comparison of the different runs trained on this repository. The metri
 | 2026-07-18 20:27:46 | **3-Stage Focal CORN (Last Two Blocks Unfrozen + Stage 3 Sampler Moderated) [LOGIC ERROR: Backbone Remained Frozen]**<br>Focal CORN | 0.6534 (95% CI: 0.6322 - 0.6733) | 0.7624 (95% CI: 0.7365 - 0.7889) | 0.8825 (95% CI: 0.8724 - 0.8910) | 0.7124 (95% CI: 0.6960 - 0.7356) | 297 / 826 (35.96% error) | 182 (61.3%) | 3 | 6 |
 | 2026-07-18 22:03:35 | **3-Stage Focal CORN (384x384 Resolution + Blocks 3 & 4 Unfrozen + Sampler Moderated) [LOGIC ERROR: Backbone Remained Frozen]**<br>Focal CORN | 0.6564 (95% CI: 0.6353 - 0.6781) | 0.7796 (95% CI: 0.7552 - 0.8053) | 0.8976 (95% CI: 0.8871 - 0.9067) | 0.7297 (95% CI: 0.7025 - 0.7533) | 279 / 826 (33.78% error) | 187 (67.0%) | 4 | 4 |
 | 2026-07-20 12:36:36 | **3-Stage CORN (400 Resize + 384 Crop, No TTA, Mild Erasing)**<br>Conditional Ordinal (CORN) | 0.6715 (95% CI: 0.6479 - 0.6914) | 0.8246 (corrected 95% CI: 0.8046 - 0.8435) | 0.8963 (95% CI: 0.8864 - 0.9058) | 0.7337 (95% CI: 0.7106 - 0.7595) | 279 / 826 (33.78% error) | 230 (82.4%) | 4 | 7 |
+| 2026-07-20 17:09:20 ICT | **Saved `best_model.pth` + Final-Layer Grad-CAM**<br>Checkpoint provenance must be pinned | 0.6685 (95% CI: 0.6486 - 0.6932) | 0.8223 (95% CI: 0.8017 - 0.8397) | 0.8977 (95% CI: 0.8897 - 0.9089) | 0.7345 (95% CI: 0.7138 - 0.7610) | 287 / 826 (34.75% error) | 243 (84.7%) | 4 | 5 |
 
 
 ### Historical Diagnostic Insights (2026-07-16 Focal-CORN Run)
@@ -31,6 +32,87 @@ A summary comparison of the different runs trained on this repository. The metri
 3. **Error Analysis and Severity Categories:**
    * **Boundary Confusion:** Out of 326 validation errors under Focal CORN, **236 (72.4%)** were boundary confusions (off by exactly 1 grade). This is a lower proportion of boundary errors compared to Balanced CE (87.5%), showing that ordinal loss does help enforce rigid grading boundaries, but the overall error rate is higher due to under-convergence.
    * **Critical Misses:** The Focal CORN run had **8 critical under-predictions** (predicting Grade 0/1 for severe Grade 3/4) and **3 critical over-predictions** (predicting Grade 3/4 for healthy Grade 0/1). Minimizing these critical misses is vital for clinical deployment.
+
+---
+
+## Re-evaluation: 2026-07-20 17:09:20 ICT (Final Semantic Grad-CAM)
+
+### Provenance Warning
+
+The notebook saved at `2026-07-20 17:09:20 ICT` loaded `/content/drive/MyDrive/Models/densenet121_checkpoints/best_model.pth` and produced metrics that differ from the stored `2026-07-20 12:36:36` training run. The training output reports Accuracy `0.6715`, QWK `0.8246`, and `279` validation failures; the `2026-07-20 17:09:20 ICT` evaluation reports Accuracy `0.6685`, QWK `0.8223`, and `287` validation failures. This indicates that the checkpoint file changed after the training output was saved, or that notebook outputs came from different runtime states. Until each experiment uses a unique checkpoint directory plus a saved config and checkpoint hash, the `2026-07-20 17:09:20 ICT` evaluation must not be presented as the exact model represented by the stored epoch history.
+
+Timestamp source: the notebook filesystem modification time is `2026-07-20 17:09:20.505996618 +07:00`. Jupyter did not store per-cell execution timestamps, so this is the exact notebook save time, not a claimed execution time for an individual cell.
+
+### Test Metrics
+
+| Metric | Saved Output (2026-07-20 17:09:20 ICT) |
+| --- | --- |
+| Accuracy | 0.6685 (95% CI: 0.6486 - 0.6932) |
+| QWK | 0.8223 (95% CI: 0.8017 - 0.8397) |
+| ROC AUC (macro OVR) | 0.8977 (95% CI: 0.8897 - 0.9089) |
+| Average Precision (macro) | 0.7345 (95% CI: 0.7138 - 0.7610) |
+
+```text
+              precision    recall  f1-score   support
+Grade 0           0.77      0.79      0.78       639
+Grade 1           0.35      0.39      0.37       296
+Grade 2           0.67      0.61      0.64       447
+Grade 3           0.82      0.78      0.80       223
+Grade 4           0.89      0.80      0.85        51
+
+accuracy                               0.67      1656
+macro avg          0.70      0.67      0.69      1656
+weighted avg       0.68      0.67      0.67      1656
+```
+
+Per-class ranking metrics confirm the same weakness: Grade 1 has AUC `0.7469` and AP `0.3320`, compared with AUC/AP of `0.9057/0.8285` for Grade 0, `0.8657/0.7374` for Grade 2, `0.9752/0.8639` for Grade 3, and `0.9952/0.9040` for Grade 4.
+
+The test confusion matrix saved at `2026-07-20 17:09:20 ICT` was:
+
+```text
+             Pred 0  Pred 1  Pred 2  Pred 3  Pred 4
+True Grade 0    504     105      30       0       0
+True Grade 1    106     116      74       0       0
+True Grade 2     48      98     273      28       0
+True Grade 3      0      12      33     173       5
+True Grade 4      0       0       0      10      41
+```
+
+![Confusion matrix, ROC, and precision-recall curves saved at 2026-07-20 17:09:20 ICT](assets/2026-07-20_17-09-20_reevaluated_metrics.png)
+
+### Validation Error Analysis
+
+The diagnostic run saved at `2026-07-20 17:09:20 ICT` found `287 / 826` validation errors (`34.75%`). Of these, `243` (`84.7%`) were adjacent-grade errors, `35` were other errors, `5` were critical over-predictions, and `4` were critical under-predictions. The most common errors remained Grade 1 -> 0 (`67`), Grade 0 -> 1 (`64`), Grade 2 -> 1 (`46`), Grade 1 -> 2 (`28`), and Grade 3 -> 2 (`22`). Grade 1 therefore remains the central classification bottleneck even though its test recall increased from `31%` in the archived evaluation to `39%` in this re-evaluation.
+
+### Final-Layer Grad-CAM Review
+
+The regenerated visualization uses one target scale: the final semantic DenseNet feature map. It is materially cleaner than the archived three-scale average: diffuse speckling and the Grade 3 lower-left hotspot are removed. It is still not a perfect or causal localization method.
+
+![Final-layer Grad-CAM, true Grade 0, saved at 2026-07-20 17:09:20 ICT](assets/2026-07-20_17-09-20_final_layer_gradcam_1.png)
+
+![Final-layer Grad-CAM, true Grade 1, saved at 2026-07-20 17:09:20 ICT](assets/2026-07-20_17-09-20_final_layer_gradcam_2.png)
+
+![Final-layer Grad-CAM, true Grade 2, saved at 2026-07-20 17:09:20 ICT](assets/2026-07-20_17-09-20_final_layer_gradcam_3.png)
+
+![Final-layer Grad-CAM, true Grade 3, saved at 2026-07-20 17:09:20 ICT](assets/2026-07-20_17-09-20_final_layer_gradcam_4.png)
+
+![Final-layer Grad-CAM, true Grade 4, saved at 2026-07-20 17:09:20 ICT](assets/2026-07-20_17-09-20_final_layer_gradcam_5.png)
+
+* **Grade 0 -> 0:** Attention is mostly on the joint line, but is strongly asymmetric toward the right image margin. This is plausible but not sufficient evidence that the model assesses both compartments.
+* **Grade 1 -> 0:** Attention covers the tibial spine and right joint margin, but the prediction remains incorrect. The map does not demonstrate that the model learned the subtle Grade 0/1 distinction.
+* **Grade 2 -> 3:** Attention is concentrated on the lateral joint/fibular margin. It is anatomically plausible for marginal osteophyte evidence, but its off-center concentration and overgrading require review.
+* **Grade 3 -> 4:** Attention is tightly centered on the narrowed medial joint margin. The anatomical location is appropriate, but the model overestimates severity.
+* **Grade 4 -> 4:** Attention is centered on the collapsed medial joint space and adjacent tibial spine. This is the strongest and most clinically coherent example.
+
+Tiulpin et al. explicitly caution that Grad-CAM has no theoretical guarantee of identifying causal image features and requires systematic analysis rather than interpretation of a few attractive examples ([Scientific Reports 2019](https://doi.org/10.1038/s41598-019-56527-3)). Their observations that models may attend to joint-space width and tibial spines are consistent with parts of the current maps, but they also note that such associations do not hold for every case. The DenseNet-121 study summarized in `docs/paper/fmed-12-1707588.md` likewise identifies Grade 0/1 overlap and imbalance as primary limitations ([Frontiers in Medicine 2025](https://doi.org/10.3389/fmed.2025.1707588)).
+
+### Current Assessment
+
+The final-layer Grad-CAM correction is successful as a visualization cleanup, but not as proof of clinical reasoning. The model remains a useful KL-grading baseline with strong Grade 3/4 discrimination and weak Grade 1 separation.
+
+The comparison table contains many experiments evaluated on the same test split. That repeated use makes the test set part of the development loop and introduces model-selection bias. Consistent with the independent-test principle emphasized by Tiulpin et al., future tuning should use validation or patient-grouped cross-validation only, followed by one evaluation on a newly locked patient-level holdout or external dataset. Confidence intervals should also resample patient IDs rather than individual knees because left and right knees from one patient are correlated.
+
+The first priority is reproducible checkpoint provenance; the second is a controlled experiment focused on the Grade 0/1/2 boundaries; the third is quantitative localization validation over many cases rather than further visual tuning of five examples.
 
 ---
 
