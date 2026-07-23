@@ -139,6 +139,8 @@ The maps are not anatomically perfect. Visual review of the saved worst cases sh
 ### Same-Protocol SE-ResNeXt Comparison
 The SE-ResNeXt-50 run completed at the exact timestamp `2026-07-23 01:25:36.772175 UTC` under the same canonical native-CAM protocol.
 
+The complete standalone execution log is available in [the SE-ResNeXt-50 report](../se_resnext50_32x4d/report.md).
+
 | Model | Accuracy | QWK | Macro F1 | Grade 1 Recall | AP | AUC | Joint Energy | Border Energy | Lower-Tibia Energy |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | **DenseNet-121** | **0.6612** | 0.8178 | **0.6811** | **0.4493** | **0.7334** | **0.8987** | 0.7996 | 0.1323 | 0.1006 |
