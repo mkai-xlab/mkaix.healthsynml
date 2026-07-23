@@ -1,7 +1,18 @@
 from fastapi import APIRouter
 
+from app.services.prediction_service import prediction_service
+
+
 router = APIRouter()
+
 
 @router.get("")
 def check_health():
-    return {"status": "healthy", "message": "Knee OA API is online"}
+    pipeline = prediction_service.pipeline
+    return {
+        "status": "healthy",
+        "message": "Knee OA API is online",
+        "model": pipeline.model_name,
+        "device": str(pipeline.device),
+        "checkpoint": pipeline.checkpoint_metadata,
+    }

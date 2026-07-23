@@ -1,80 +1,62 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException, status
+from fastapi import APIRouter, File, HTTPException, UploadFile, status
+
+from app.schemas.prediction import KneeDetectionResponse, KneeOAPredictionResponse
 from app.services.prediction_service import prediction_service
 from app.services.roi_service import roi_service
-from app.schemas.prediction import KneeOAPredictionResponse, KneeDetectionResponse
+
 
 router = APIRouter()
 
-@router.post("", response_model=KneeOAPredictionResponse, status_code=status.HTTP_200_OK)
-async def predict_knee_oa(file: UploadFile = File(..., description="Knee X-ray PNG/JPEG or DICOM file")):
-    """
-    Accepts an uploaded knee X-ray image file and processes it through the 
-    service layer, preprocessing pipeline, and model registry for diagnosis.
-    
-    Returns:
-        dict: A dictionary containing the filename, predicted KL grade, 
-              grade description, confidence score, and class-wise probabilities.
-    """
+
+@router.post(
+    "", response_model=KneeOAPredictionResponse, status_code=status.HTTP_200_OK
+)
+async def predict_knee_oa(
+    file: UploadFile = File(..., description="Knee X-ray PNG or JPEG file"),
+):
     if not file:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, 
-            detail="No file was uploaded."
-        )
-        
+        raise HTTPException(status_code=400, detail="No file was uploaded.")
     try:
         image_bytes = await file.read()
         if not image_bytes:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, 
-                detail="Uploaded file is empty."
-            )
-            
-        # Run prediction through prediction service
+            raise HTTPException(status_code=400, detail="Uploaded file is empty.")
         result = prediction_service.predict_image(file.filename, image_bytes)
         return KneeOAPredictionResponse(**result)
-        
-    except ValueError as e:
-        # Catch specific preprocessing or value errors (e.g., failed to decode image)
+    except HTTPException:
+        raise
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    except Exception as error:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, 
-            detail=str(e)
-        )
-    except Exception as e:
-        # Catch general runtime errors during inference
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
-            detail=f"Inference pipeline error: {str(e)}"
-        )
+            status_code=500, detail=f"Inference pipeline error: {error}"
+        ) from error
 
-@router.post("/detect-roi", response_model=KneeDetectionResponse, status_code=status.HTTP_200_OK)
-async def detect_knee_roi(file: UploadFile = File(..., description="Knee X-ray PNG/JPEG/DICOM file")):
-    """
-    Accepts an uploaded knee X-ray image and runs YOLOv8 knee joint detection.
-    Returns the base64-encoded image with bounding boxes drawn for validation.
-    """
+
+@router.post(
+    "/detect-roi",
+    response_model=KneeDetectionResponse,
+    status_code=status.HTTP_200_OK,
+)
+async def detect_knee_roi(
+    file: UploadFile = File(..., description="Knee X-ray PNG or JPEG file"),
+):
     if not file:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, 
-            detail="No file was uploaded."
-        )
-        
+        raise HTTPException(status_code=400, detail="No file was uploaded.")
     try:
         image_bytes = await file.read()
         if not image_bytes:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, 
-                detail="Uploaded file is empty."
-            )
-            
+            raise HTTPException(status_code=400, detail="Uploaded file is empty.")
+        detected_image_url, detections = roi_service.detect_and_draw_boxes(image_bytes)
         return KneeDetectionResponse(
             filename=file.filename,
             detected_image=detected_image_url,
-            detections=detections
+            detections=detections,
         )
-    except Exception as e:
+    except HTTPException:
+        raise
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    except Exception as error:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
-            detail=f"ROI detection error: {str(e)}"
-        )
-
-
+            status_code=500, detail=f"ROI detection error: {error}"
+        ) from error

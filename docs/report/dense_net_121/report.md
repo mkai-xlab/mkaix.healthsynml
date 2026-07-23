@@ -16,7 +16,304 @@ A summary comparison of the different runs trained on this repository. The metri
 | 2026-07-18 22:03:35 | **3-Stage Focal CORN (384x384 Resolution + Blocks 3 & 4 Unfrozen + Sampler Moderated) [LOGIC ERROR: Backbone Remained Frozen]**<br>Focal CORN | 0.6564 (95% CI: 0.6353 - 0.6781) | 0.7796 (95% CI: 0.7552 - 0.8053) | 0.8976 (95% CI: 0.8871 - 0.9067) | 0.7297 (95% CI: 0.7025 - 0.7533) | 279 / 826 (33.78% error) | 187 (67.0%) | 4 | 4 |
 | 2026-07-20 12:36:36 | **3-Stage CORN (400 Resize + 384 Crop, No TTA, Mild Erasing)**<br>Conditional Ordinal (CORN) | 0.6715 (95% CI: 0.6479 - 0.6914) | 0.8246 (corrected 95% CI: 0.8046 - 0.8435) | 0.8963 (95% CI: 0.8864 - 0.9058) | 0.7337 (95% CI: 0.7106 - 0.7595) | 279 / 826 (33.78% error) | 230 (82.4%) | 4 | 7 |
 | 2026-07-20 17:09:20 ICT | **Saved `best_model.pth` + Final-Layer Grad-CAM**<br>Checkpoint provenance must be pinned | 0.6685 (95% CI: 0.6486 - 0.6932) | 0.8223 (95% CI: 0.8017 - 0.8397) | 0.8977 (95% CI: 0.8897 - 0.9089) | 0.7345 (95% CI: 0.7138 - 0.7610) | 287 / 826 (34.75% error) | 243 (84.7%) | 4 | 5 |
+| 2026-07-21 15:07:17.633270 UTC | **Canonical Final Linear CAM (Laterality Canonicalized, Native CAM)**<br>Cross-Entropy (CE) | 0.6534 (95% CI: 0.6291 - 0.6776) | 0.8238 (95% CI: 0.8055 - 0.8419) | 0.8978 (95% CI: 0.8890 - 0.9077) | 0.7311 (95% CI: 0.7065 - 0.7586) | 287 / 826 (34.75% error) | 237 (82.6%) | 5 | 11 |
+| 2026-07-23 01:31:37.184239 UTC | **[PRODUCTION] Canonical Final Linear CAM (Laterality Canonicalized, Native CAM)**<br>Cross-Entropy (CE) | 0.6612 (95% bootstrap CI: 0.6383 - 0.6848) | 0.8178 (95% bootstrap CI: 0.7971 - 0.8366) | 0.8987 | 0.7334 | 274 / 826 (33.17% error) | Not exported | Not exported | Not exported |
 
+
+## Run: 2026-07-23 01:31:37.184239 UTC [PRODUCTION] (DENSENET121 - Canonical Final Linear CAM (CE + Laterality Canonicalization + Native CAM))
+### Summary
+This run completed 27 of the 30 configured epochs and selected epoch 27 using the validation composite score (`0.7276`). The exact saved checkpoint was copied to `checkpoints/densenet121/best_model.pth`. On the test set it achieved Accuracy `0.6612`, QWK `0.8178`, macro F1 `0.6811`, macro Average Precision `0.7334`, and macro ROC AUC `0.8987`. Compared with the 2026-07-21 native-CAM run, Accuracy, AP, and AUC increased slightly, while QWK and Grade 1 recall decreased. The overlapping bootstrap intervals do not establish a statistically significant superiority claim.
+
+### Configurations
+| Parameter | Value |
+| --- | --- |
+| **Model** | densenet121 |
+| **Architecture** | canonical_final_linear_cam |
+| **Model Input** | 384x384 (resize to 400x400, then crop) |
+| **Pipeline** | 3-stage |
+| **Configured Epochs** | 30 (5 warm-up + 15 coarse + 10 fine-tune) |
+| **Completed / Selected Epoch** | 27 / 27; validation selection score 0.7276 |
+| **Loss Function** | Cross-Entropy (CE) |
+| **Balanced Sampler** | True; full inverse-frequency (`sampler_power=1.0`) |
+| **Laterality Canonicalization** | True; right knees mirrored before transforms |
+| **Random Horizontal Flip** | Disabled |
+| **Minority Augmentations / TTA** | False / False |
+| **Random Erasing** | p=0.10; second erase disabled |
+| **Batch Size** | 48 |
+| **Checkpoint Directory** | `2026-07-23_01-31-37_184239_UTC_canonical_final_linear_cam` |
+| **Checkpoint SHA-256** | `cce1602b382411ada19883b180be501f333a5301de2c69aa00d61b031905efd1` |
+
+### Validation Metrics at Selected Epoch
+| Metric | Score |
+| --- | --- |
+| **Accuracy** | 0.6683 |
+| **QWK Score** | 0.8139 |
+| **Macro Precision / Recall / F1** | 0.6901 / 0.7018 / 0.6952 |
+| **Grade 1 Recall** | 0.4052 |
+| **Average Precision / ROC AUC** | 0.7198 / 0.8877 |
+| **Composite Selection Score** | 0.7276 |
+
+### Final Test Metrics
+| Metric | Score |
+| --- | --- |
+| **Accuracy** | 0.6612 (95% bootstrap CI: 0.6383 - 0.6848) |
+| **QWK Score** | 0.8178 (95% bootstrap CI: 0.7971 - 0.8366) |
+| **Macro Precision / Recall / F1** | 0.6873 / 0.6783 / 0.6811 |
+| **Grade 1 Recall** | 0.4493 |
+| **Average Precision** | 0.7334 |
+| **ROC AUC** | 0.8987 |
+
+The confidence intervals above were reconstructed by multinomial bootstrap from the saved test confusion matrix (`5,000` resamples). They therefore quantify image-level Accuracy and QWK uncertainty only. Patient-level identifiers and saved per-image probabilities were not exported, so patient-clustered intervals and AP/AUC intervals cannot be reconstructed from this artifact.
+
+### Classification Report
+```text
+              precision    recall  f1-score   support
+
+           0       0.77      0.74      0.75       639
+           1       0.37      0.45      0.40       296
+           2       0.69      0.60      0.64       447
+           3       0.77      0.79      0.78       223
+           4       0.85      0.80      0.83        51
+
+    accuracy                           0.66      1656
+   macro avg       0.69      0.68      0.68      1656
+weighted avg       0.68      0.66      0.67      1656
+```
+
+The test confusion matrix was:
+
+```text
+             Pred 0  Pred 1  Pred 2  Pred 3  Pred 4
+True Grade 0    476     131      31       1       0
+True Grade 1    100     133      57       6       0
+True Grade 2     46      94     268      39       0
+True Grade 3      0       6      33     177       7
+True Grade 4      0       0       2       8      41
+```
+
+Of the `561` test errors, `469` (`83.6%`) were adjacent-grade errors. There were `54` under-predictions and `38` over-predictions by two or more grades.
+
+### Epoch-by-Epoch Training History
+| Stage | Epoch | Train Loss | Val Loss | Val Acc | QWK | Macro F1 | Grade 1 Recall | AP | AUC | Selection |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Warm-up | 1 | 1.5724 | 1.5161 | 0.3317 | 0.2761 | 0.2922 | 0.1438 | 0.3298 | 0.6414 | 0.2995 |
+| Warm-up | 2 | 1.4821 | 1.4302 | 0.3898 | 0.3602 | 0.2824 | 0.0654 | 0.3611 | 0.6708 | 0.3297 |
+| Warm-up | 3 | 1.4303 | 1.4359 | 0.3232 | 0.3917 | 0.2883 | 0.4575 | 0.3825 | 0.6959 | 0.3908 |
+| Warm-up | 4 | 1.3927 | 1.3620 | 0.4153 | 0.4311 | 0.3483 | 0.2941 | 0.3893 | 0.7053 | 0.4053 |
+| Warm-up | 5 | 1.3577 | 1.3421 | 0.4116 | 0.4305 | 0.3317 | 0.2680 | 0.3987 | 0.7169 | 0.4011 |
+| Coarse | 6 | 1.1995 | 1.1136 | 0.5278 | 0.6372 | 0.4445 | 0.0523 | 0.5355 | 0.8129 | 0.5202 |
+| Coarse | 7 | 0.9328 | 0.9717 | 0.5835 | 0.7150 | 0.5557 | 0.1046 | 0.6352 | 0.8486 | 0.6058 |
+| Coarse | 8 | 0.7952 | 0.8898 | 0.6247 | 0.7749 | 0.6390 | 0.2810 | 0.6803 | 0.8633 | 0.6766 |
+| Coarse | 9 | 0.7458 | 0.8952 | 0.6041 | 0.7722 | 0.6383 | 0.3791 | 0.6775 | 0.8643 | 0.6838 |
+| Coarse | 10 | 0.6902 | 0.9304 | 0.6005 | 0.7495 | 0.6364 | 0.3987 | 0.6815 | 0.8669 | 0.6793 |
+| Coarse | 11 | 0.6494 | 0.8897 | 0.6017 | 0.7633 | 0.6497 | 0.3660 | 0.6921 | 0.8726 | 0.6851 |
+| Coarse | 12 | 0.6254 | 0.8523 | 0.6211 | 0.7804 | 0.6689 | 0.3856 | 0.6940 | 0.8741 | 0.6984 |
+| Coarse | 13 | 0.6154 | 0.8919 | 0.6126 | 0.7545 | 0.6452 | 0.3203 | 0.6950 | 0.8737 | 0.6774 |
+| Coarse | 14 | 0.6094 | 0.8770 | 0.6017 | 0.7742 | 0.6469 | 0.4118 | 0.7037 | 0.8777 | 0.6959 |
+| Coarse | 15 | 0.5859 | 0.8404 | 0.6320 | 0.7944 | 0.6641 | 0.3529 | 0.7064 | 0.8786 | 0.7031 |
+| Coarse | 16 | 0.5847 | 0.8406 | 0.6259 | 0.7962 | 0.6595 | 0.3529 | 0.7122 | 0.8794 | 0.7027 |
+| Coarse | 17 | 0.5699 | 0.8511 | 0.6356 | 0.7904 | 0.6755 | 0.3922 | 0.7130 | 0.8798 | 0.7095 |
+| Coarse | 18 | 0.5585 | 0.8383 | 0.6465 | 0.8069 | 0.6775 | 0.3725 | 0.7118 | 0.8810 | 0.7145 |
+| Coarse | 19 | 0.5692 | 0.8382 | 0.6404 | 0.8010 | 0.6760 | 0.3791 | 0.7126 | 0.8805 | 0.7124 |
+| Coarse | 20 | 0.5595 | 0.8295 | 0.6404 | 0.8012 | 0.6709 | 0.3464 | 0.7128 | 0.8809 | 0.7073 |
+| Fine-tune | 21 | 0.5571 | 0.8308 | 0.6416 | 0.8048 | 0.6749 | 0.3725 | 0.7184 | 0.8829 | 0.7138 |
+| Fine-tune | 22 | 0.5313 | 0.8332 | 0.6525 | 0.8015 | 0.6834 | 0.3922 | 0.7188 | 0.8841 | 0.7178 |
+| Fine-tune | 23 | 0.5415 | 0.8316 | 0.6453 | 0.8043 | 0.6784 | 0.3464 | 0.7100 | 0.8837 | 0.7112 |
+| Fine-tune | 24 | 0.5401 | 0.8410 | 0.6392 | 0.8012 | 0.6702 | 0.3856 | 0.7085 | 0.8825 | 0.7107 |
+| Fine-tune | 25 | 0.5202 | 0.8288 | 0.6550 | 0.8087 | 0.6841 | 0.3725 | 0.7141 | 0.8858 | 0.7181 |
+| Fine-tune | 26 | 0.5234 | 0.8255 | 0.6598 | 0.8109 | 0.6917 | 0.4118 | 0.7179 | 0.8883 | 0.7257 |
+| Fine-tune | 27 | 0.5005 | 0.8196 | 0.6683 | 0.8139 | 0.6952 | 0.4052 | 0.7198 | 0.8877 | 0.7276 |
+
+### Visualizations
+#### DenseNet Test Metrics
+![DenseNet test confusion matrix, ROC, and precision-recall curves, run 2026-07-23 01:31:37.184239 UTC](assets/2026-07-23_01-31-37_test_metrics.png)
+
+#### DenseNet Native-CAM Audit
+![DenseNet native-CAM quantitative audit and worst cases, run 2026-07-23 01:31:37.184239 UTC](assets/2026-07-23_01-31-37_native_cam_audit.png)
+
+### Native-CAM Evaluation
+The stratified audit contained `227` cases. Mean joint-ROI energy was `0.7996`, border energy was `0.1323`, lower-tibia energy was `0.1006`, and every CAM peak was inside the broad joint ROI. These values confirm that the maps are aligned with the model input and concentrate mainly at joint level.
+
+The maps are not anatomically perfect. Visual review of the saved worst cases shows repeated activation at lateral image/joint margins, and the final DenseNet feature map is only `12x12` before interpolation. The broad ROI metric can score a lateral marginal hotspot as correct even when it is not centered on the tibiofemoral joint space. Native CAM is faithful to the grade logit because the spatial map is globally averaged to produce that logit; it does not prove that the highlighted pixels correspond exactly to radiographic joint-space narrowing or osteophytes.
+
+### Same-Protocol SE-ResNeXt Comparison
+The SE-ResNeXt-50 run completed at the exact timestamp `2026-07-23 01:25:36.772175 UTC` under the same canonical native-CAM protocol.
+
+| Model | Accuracy | QWK | Macro F1 | Grade 1 Recall | AP | AUC | Joint Energy | Border Energy | Lower-Tibia Energy |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| **DenseNet-121** | **0.6612** | 0.8178 | **0.6811** | **0.4493** | **0.7334** | **0.8987** | 0.7996 | 0.1323 | 0.1006 |
+| SE-ResNeXt-50 | 0.6389 | **0.8194** | 0.6671 | 0.4155 | 0.7248 | 0.8948 | **0.8707** | **0.0749** | **0.0880** |
+
+SE-ResNeXt has marginally higher QWK (`+0.0016`) and tighter broad-ROI localization, but DenseNet is better on every other reported predictive metric, including Accuracy (`+0.0223`), macro F1 (`+0.0140`), Grade 1 recall (`+0.0338`), AP, and AUC. The QWK bootstrap intervals overlap substantially: DenseNet `0.7971 - 0.8366`, SE-ResNeXt `0.7999 - 0.8384`. DenseNet therefore remains the better overall checkpoint for this application; neither model establishes exact subregional anatomical localization without landmark or compartment annotations.
+
+![SE-ResNeXt test metrics, run 2026-07-23 01:25:36.772175 UTC](assets/2026-07-23_01-25-36_seresnext_test_metrics.png)
+
+![SE-ResNeXt native-CAM audit, run 2026-07-23 01:25:36.772175 UTC](assets/2026-07-23_01-25-36_seresnext_cam_audit.png)
+
+### Evaluation and Next Experiment
+* **Current decision:** Keep the epoch-27 DenseNet checkpoint marked above. It gives the strongest overall predictive balance and uses an intrinsically faithful native-CAM head, although its heatmaps remain spatially coarse.
+* **Next predictive experiment:** Evaluate an exponential moving average (EMA) of model weights at every validation epoch while leaving the architecture, loss, split, sampler, transforms, and checkpoint selection score unchanged. This directly tests whether smoothing the late-stage weight trajectory improves generalization without changing the native-CAM semantics. It must be compared with this run on validation first; the test set should not drive checkpoint selection.
+* **Localization limit:** Do not add another unvalidated CAM penalty. Previous weak joint guidance did not demonstrate a reliable predictive/localization improvement, and a broad rectangular ROI can reward incorrect edge activation. Exact localization requires expert joint-space/compartment landmarks or masks and a held-out annotation audit.
+
+---
+
+## Run: 2026-07-21 15:07:17.633270 UTC (DENSENET121 - Canonical Final Linear CAM (CE + Laterality Canonicalization + Native CAM))
+### Summary
+This run trained the `canonical_final_linear_cam` DenseNet-121 architecture for all 30 configured epochs. Right knees were mirrored into the same anatomical orientation as left knees, random horizontal flipping was removed, and a 1x1 convolution produced five spatial grade maps whose global means were the five CE logits. The validation composite selected epoch 23 (`0.7241`) rather than the maximum-QWK epoch 26. The selected checkpoint achieved test Accuracy `0.6534` (95% CI: `0.6291 - 0.6776`) and QWK `0.8238` (95% CI: `0.8055 - 0.8419`).
+
+### Configurations
+| Parameter | Value |
+| --- | --- |
+| **Model** | densenet121 |
+| **Architecture** | canonical_final_linear_cam |
+| **Model Input** | 384x384 (resize to 400x400, then crop) |
+| **Pipeline** | 3-stage |
+| **Epochs** | 30 (5 warm-up + 15 coarse + 10 fine-tune) |
+| **Selected Checkpoint** | Epoch 23; validation selection score 0.7241 |
+| **Loss Function** | Cross-Entropy (CE) |
+| **Balanced Sampler** | True; full inverse-frequency (`sampler_power=1.0`) |
+| **Laterality Canonicalization** | True; right knees mirrored before transforms |
+| **Random Horizontal Flip** | Disabled |
+| **Minority Augmentations** | False |
+| **Test-Time Augmentation** | False |
+| **Random Erasing** | p=0.10; second erase disabled |
+| **Batch Size / AMP / GPU** | 48 / enabled / Tesla T4 |
+| **Checkpoint Directory** | `2026-07-21_15-07-17_633270_UTC_canonical_final_linear_cam` |
+
+### Final Test Metrics
+| Metric | Score (with 95% Confidence Interval) |
+| --- | --- |
+| **Accuracy** | 0.6534 (95% CI: 0.6291 - 0.6776) |
+| **QWK Score** | 0.8238 (95% CI: 0.8055 - 0.8419) |
+| **ROC AUC** | 0.8978 (95% CI: 0.8890 - 0.9077) |
+| **Average Precision** | 0.7311 (95% CI: 0.7065 - 0.7586) |
+
+### Classification Report
+```
+              precision    recall  f1-score   support
+
+           0       0.78      0.73      0.75       639
+           1       0.35      0.49      0.41       296
+           2       0.72      0.55      0.63       447
+           3       0.74      0.82      0.78       223
+           4       0.81      0.82      0.82        51
+
+    accuracy                           0.65      1656
+   macro avg       0.68      0.68      0.68      1656
+weighted avg       0.68      0.65      0.66      1656
+```
+
+Per-class test AUC was `0.9045 / 0.7507 / 0.8700 / 0.9708 / 0.9928` for Grades 0-4. The plotted trapezoidal precision-recall areas were `0.8313 / 0.3268 / 0.7254 / 0.8544 / 0.9133`; these curve areas should not be confused with the separately computed macro average-precision score of `0.7311`.
+
+The test confusion matrix was:
+
+```text
+             Pred 0  Pred 1  Pred 2  Pred 3  Pred 4
+True Grade 0    464     152      22       1       0
+True Grade 1     91     146      51       8       0
+True Grade 2     39     115     247      46       0
+True Grade 3      0       8      22     183      10
+True Grade 4      0       0       1       8      42
+```
+
+### Epoch-by-Epoch Training History
+| Stage | Epoch | Train Loss | Train Acc | Val Loss | Val Acc | QWK | ROC AUC | AP |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Stage 1 | 1 | 1.5703 | 28.11 % | 1.5610 | 25.54 % | 0.2568 | 0.6344 | 0.3322 |
+| Stage 1 | 2 | 1.4812 | 34.89 % | 1.4181 | 36.68 % | 0.3260 | 0.6696 | 0.3544 |
+| Stage 1 | 3 | 1.4376 | 36.92 % | 1.4144 | 35.59 % | 0.3472 | 0.6845 | 0.3660 |
+| Stage 1 | 4 | 1.3941 | 39.94 % | 1.3726 | 42.62 % | 0.4132 | 0.6960 | 0.3732 |
+| Stage 1 | 5 | 1.3693 | 41.47 % | 1.3606 | 41.40 % | 0.4348 | 0.7075 | 0.3935 |
+| Stage 2 | 6 | 1.2090 | 48.17 % | 1.1042 | 54.24 % | 0.6582 | 0.8113 | 0.5289 |
+| Stage 2 | 7 | 0.9396 | 59.45 % | 0.9642 | 59.44 % | 0.7366 | 0.8480 | 0.6398 |
+| Stage 2 | 8 | 0.7954 | 65.07 % | 0.9631 | 54.72 % | 0.7479 | 0.8541 | 0.6537 |
+| Stage 2 | 9 | 0.7270 | 67.88 % | 0.9430 | 58.72 % | 0.7406 | 0.8601 | 0.6698 |
+| Stage 2 | 10 | 0.6862 | 69.97 % | 0.9013 | 59.69 % | 0.7664 | 0.8666 | 0.6766 |
+| Stage 2 | 11 | 0.6546 | 71.91 % | 0.8398 | 63.20 % | 0.7793 | 0.8728 | 0.6960 |
+| Stage 2 | 12 | 0.6402 | 72.33 % | 0.8331 | 64.65 % | 0.7802 | 0.8777 | 0.6997 |
+| Stage 2 | 13 | 0.6132 | 73.87 % | 0.8512 | 62.23 % | 0.7695 | 0.8775 | 0.6977 |
+| Stage 2 | 14 | 0.5980 | 74.14 % | 0.8693 | 61.50 % | 0.7806 | 0.8790 | 0.7022 |
+| Stage 2 | 15 | 0.5755 | 75.18 % | 0.8254 | 64.16 % | 0.7929 | 0.8815 | 0.7076 |
+| Stage 2 | 16 | 0.5846 | 74.71 % | 0.8380 | 63.56 % | 0.7908 | 0.8817 | 0.7096 |
+| Stage 2 | 17 | 0.5734 | 75.16 % | 0.8403 | 63.68 % | 0.7914 | 0.8819 | 0.7082 |
+| Stage 2 | 18 | 0.5637 | 75.30 % | 0.8318 | 63.80 % | 0.7902 | 0.8832 | 0.7129 |
+| Stage 2 | 19 | 0.5712 | 75.72 % | 0.8242 | 64.53 % | 0.8010 | 0.8837 | 0.7136 |
+| Stage 2 | 20 | 0.5734 | 75.74 % | 0.8423 | 63.68 % | 0.7929 | 0.8821 | 0.7089 |
+| Stage 3 | 21 | 0.5573 | 76.74 % | 0.8356 | 62.83 % | 0.7956 | 0.8842 | 0.7093 |
+| Stage 3 | 22 | 0.5489 | 76.83 % | 0.8337 | 62.11 % | 0.7905 | 0.8836 | 0.7115 |
+| Stage 3 | 23 | 0.5351 | 77.21 % | 0.8470 | 64.41 % | 0.8001 | 0.8860 | 0.7157 |
+| Stage 3 | 24 | 0.5359 | 77.21 % | 0.8348 | 65.13 % | 0.7988 | 0.8867 | 0.7108 |
+| Stage 3 | 25 | 0.5170 | 77.85 % | 0.8520 | 63.92 % | 0.7992 | 0.8850 | 0.7117 |
+| Stage 3 | 26 | 0.5198 | 78.07 % | 0.8179 | 65.13 % | 0.8061 | 0.8869 | 0.7144 |
+| Stage 3 | 27 | 0.5146 | 77.73 % | 0.8252 | 65.25 % | 0.8030 | 0.8883 | 0.7152 |
+| Stage 3 | 28 | 0.5044 | 78.97 % | 0.8273 | 64.77 % | 0.8006 | 0.8869 | 0.7141 |
+| Stage 3 | 29 | 0.5048 | 78.73 % | 0.8269 | 65.50 % | 0.8036 | 0.8870 | 0.7136 |
+| Stage 3 | 30 | 0.5028 | 78.92 % | 0.8355 | 64.77 % | 0.7935 | 0.8854 | 0.7115 |
+
+### Visualizations
+#### Native CAM
+![Native CAM, true Grade 0, run 2026-07-21 15:07:17.633270 UTC](assets/2026-07-21_15-07-17_native_cam_grade_0.png)
+
+![Native CAM, true Grade 1, run 2026-07-21 15:07:17.633270 UTC](assets/2026-07-21_15-07-17_native_cam_grade_1.png)
+
+![Native CAM, true Grade 2, run 2026-07-21 15:07:17.633270 UTC](assets/2026-07-21_15-07-17_native_cam_grade_2.png)
+
+![Native CAM, true Grade 3, run 2026-07-21 15:07:17.633270 UTC](assets/2026-07-21_15-07-17_native_cam_grade_3.png)
+
+![Native CAM, true Grade 4, run 2026-07-21 15:07:17.633270 UTC](assets/2026-07-21_15-07-17_native_cam_grade_4.png)
+
+#### Confusion Matrix, ROC, and Precision-Recall Curves
+![Confusion matrix, ROC, and precision-recall curves, run 2026-07-21 15:07:17.633270 UTC](assets/2026-07-21_15-07-17_metrics.png)
+
+### Diagnostic Error Analysis Results
+```
+============================================================
+Total Validation Failures: 287 / 826 (34.75% error)
+
+Distribution by Severity Category:
+boundary_confusion            237
+other_errors                   34
+critical_miss_overpredict      11
+critical_miss_underpredict      5
+
+Top 5 Most Common Confusions (True vs Pred):
+ true_grade  predicted_grade  count
+          0                1     80
+          1                0     51
+          2                1     49
+          1                2     24
+          2                0     18
+```
+
+### Evaluation and Clinical Conclusion
+
+#### 1. Performance and Checkpoint Selection
+* **Strong ordinal agreement, lower exact accuracy:** Test QWK remained strong at `0.8238`, but Accuracy fell to `0.6534`. Relative to the `2026-07-20 17:09:20 ICT` checkpoint re-evaluation, QWK was effectively unchanged (`0.8223 -> 0.8238`) while Accuracy decreased (`0.6685 -> 0.6534`). The confidence intervals overlap, so this run is not a statistically demonstrated predictive improvement.
+* **Composite selection behaved as designed:** Epoch 26 had the highest validation QWK (`0.8061`), but epoch 23 was selected because it combined QWK `0.8001`, macro F1 `0.6837`, macro recall `0.6922`, Grade 1 recall `0.4641`, AP `0.7157`, and AUC `0.8860`. This choice prioritizes the weak Grade 1 boundary rather than QWK alone.
+* **Convergence was stable:** Validation QWK stayed near `0.80` throughout Stage 3 while train accuracy rose to `78.92%`. The modest train-validation gap does not indicate severe overfitting, but Stage 3 did not produce a large predictive gain over the best Stage 2 checkpoint.
+
+#### 2. Class-by-Class Diagnostic Analysis
+* **Grade 1 recall improved but precision remained weak:** Grade 1 recall reached `49%`, compared with `39%` in the `2026-07-20 17:09:20 ICT` re-evaluation, but precision remained `35%`. The model predicted Grade 1 for `152` true Grade 0 knees and `115` true Grade 2 knees. Full inverse-frequency sampling therefore improved Grade 1 sensitivity by shifting errors into Grade 1 rather than cleanly separating the class.
+* **Grade 0 and Grade 2 paid for the Grade 1 gain:** Grade 0 recall fell to `73%`, and Grade 2 recall fell to `55%`. Grade 1 remains the weakest ranking class with AUC `0.7507` and precision-recall area `0.3268`.
+* **Severe grades remained reliable:** Grade 3 recall was `82%` and Grade 4 recall was `82%`, with only one Grade 4 knee predicted below Grade 3.
+
+#### 3. Validation Error Diagnostics
+* **Adjacent errors still dominate:** `237 / 287` validation failures (`82.6%`) were one-grade boundary errors. The dominant confusions were Grade 0 -> 1 (`80`), Grade 1 -> 0 (`51`), and Grade 2 -> 1 (`49`).
+* **Critical over-prediction increased:** The run produced `11` critical over-predictions and `5` critical under-predictions. The increased critical-over count is another sign that full balancing is aggressive.
+
+#### 4. Native CAM Interpretation
+* **The positional alignment is correct:** The overlay is produced from the same laterality-canonicalized, padded, CLAHE-processed, resized, and center-cropped image used by inference. There is no transform mismatch or target-layer lookup error.
+* **Most maps focus on relevant anatomy:** Across the five grade examples, predicted-map joint enrichment ranged from `1.877` to `2.089` and border enrichment from `0.382` to `0.572`. Grade 4 is the clearest case, with activation along the collapsed medial joint space. Grade 0 and Grade 2 focus on joint margins but remain asymmetric.
+* **The maps are not perfect:** The true Grade 1 example was predicted as Grade 0, and the predicted and true maps localize almost the same joint region; localization alone does not separate the subtle grades. The true Grade 3 example was predicted as Grade 1, and its true-class map includes activation above the joint and near the image edge. The additional five error pairs are all true Grade 0 because the notebook selected the first five validation errors in class-sorted order, so they are not a stratified localization audit.
+* **Native CAM is faithful to this head, not proof of causality:** Each map is directly averaged into its grade logit, which is stronger architectural faithfulness than post-hoc Grad-CAM. However, the 12x12 final map is spatially coarse, and the printed central-band energy statistic is only a broad proxy for anatomical correctness.
+
+#### 5. Recommendation
+* **Keep this checkpoint as the localization-first DenseNet candidate, not as a final clinical model.** It solves the previous Grad-CAM alignment and faithfulness problem and improves Grade 1 recall, but it does not improve the overall predictive metrics enough to justify stopping all experimentation.
+* **Do not tune further on the repeatedly used test set.** The next comparison should keep this architecture fixed, use validation folds, and compare full balancing (`power=1.0`) with square-root balancing (`power=0.5`). The current Grade 0/2 -> 1 pattern is direct evidence that full balancing may be too aggressive.
+* **Complete the quantitative CAM audit on this exact checkpoint.** Use stratified cases from every grade, predicted- and true-class maps, joint/border enrichment, and occlusion sensitivity. Grade 4 has only 27 validation images, so report all 27 rather than duplicating cases or using the test split.
+* **Use the SE-ResNeXt comparison as the next model experiment.** Promote it only if it passes the localization gates and gives a meaningful validation improvement over this checkpoint. Otherwise, this native-CAM DenseNet is the more defensible model for the report.
+
+---
 
 ### Historical Diagnostic Insights (2026-07-16 Focal-CORN Run)
 

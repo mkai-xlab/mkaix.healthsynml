@@ -1,148 +1,135 @@
 import os
+
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import numpy as np
+
 from app.core.config import settings
 from app.ml.model_registry import get_model
-from app.services.preprocessing_service import preprocessing_service
+from app.services.gradcam_service import native_cam_service
 from app.services.inference_service import inference_service
-from app.services.gradcam_service import gradcam_service
+from app.services.preprocessing_service import preprocessing_service
+
 
 class KneeOAPipeline:
-    """
-    Image preprocessing and inference pipeline for Knee Osteoarthritis Kellgren-Lawrence Grade prediction.
-    """
+    """Inference-only KL-grading pipeline for the native-CAM DenseNet checkpoint."""
+
+    descriptions = {
+        0: "Grade 0: Normal knee joint with no signs of osteoarthritis.",
+        1: "Grade 1: Doubtful joint space narrowing and possible osteophytic lipping.",
+        2: "Grade 2: Definite osteophytes and possible joint space narrowing.",
+        3: "Grade 3: Multiple osteophytes, definite joint space narrowing, and some sclerosis.",
+        4: "Grade 4: Large osteophytes, marked joint space narrowing, severe sclerosis, and deformity.",
+    }
+    grade_labels = {
+        0: "0Normal",
+        1: "1Doubtful",
+        2: "2Mild",
+        3: "3Moderate",
+        4: "4Severe",
+    }
+
     def __init__(self):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model_name = settings.DEFAULT_MODEL_NAME
         self.checkpoint_path = settings.MODEL_CHECKPOINT_PATH
         self.ordinal_type = settings.ORDINAL_TYPE
-        
-        # Load and prepare model
+        self.checkpoint_metadata: dict = {}
         self.model = self._load_model()
 
     def _load_model(self) -> nn.Module:
-        """Initializes model from registry and loads weights from checkpoint."""
-        # Get model from registry
-        model = get_model(self.model_name, num_classes=5, pretrained=False, ordinal_type=self.ordinal_type)
-        
-        # Load checkpoint
-        if os.path.exists(self.checkpoint_path):
-            print(f"Loading model checkpoint from {self.checkpoint_path}...")
-            try:
-                try:
-                    checkpoint = torch.load(self.checkpoint_path, map_location=self.device, weights_only=False)
-                except TypeError:
-                    checkpoint = torch.load(self.checkpoint_path, map_location=self.device)
-                
-                if isinstance(checkpoint, dict) and "model" in checkpoint:
-                    model.load_state_dict(checkpoint["model"])
-                elif isinstance(checkpoint, dict) and "model_state_dict" in checkpoint:
-                    model.load_state_dict(checkpoint["model_state_dict"])
-                else:
-                    model.load_state_dict(checkpoint)
-                print("Model weights loaded successfully.")
-            except Exception as e:
-                print(f"Error loading model weights from checkpoint: {e}. Using uninitialized weights.")
-        else:
-            print(f"Warning: Checkpoint not found at '{self.checkpoint_path}'. Inference will run with random weights.")
-            
+        if self.model_name != "densenet121":
+            raise RuntimeError(
+                "This production pipeline requires DEFAULT_MODEL_NAME=densenet121"
+            )
+        if self.ordinal_type != "ce":
+            raise RuntimeError("This checkpoint requires ORDINAL_TYPE=ce")
+
+        checkpoint_path = os.path.abspath(self.checkpoint_path)
+        if not os.path.isfile(checkpoint_path):
+            raise FileNotFoundError(
+                f"Required model checkpoint was not mounted at {checkpoint_path}"
+            )
+
+        model = get_model(
+            self.model_name,
+            num_classes=5,
+            pretrained=False,
+            ordinal_type="ce",
+        )
+        print(f"Loading model checkpoint from {checkpoint_path}...")
+        try:
+            checkpoint = torch.load(
+                checkpoint_path, map_location=self.device, weights_only=False
+            )
+        except TypeError:
+            checkpoint = torch.load(checkpoint_path, map_location=self.device)
+
+        if not isinstance(checkpoint, dict):
+            raise RuntimeError("Checkpoint must contain architecture metadata and weights")
+        architecture = checkpoint.get("architecture")
+        if architecture != settings.EXPECTED_MODEL_ARCHITECTURE:
+            raise RuntimeError(
+                f"Checkpoint architecture {architecture!r} does not match "
+                f"{settings.EXPECTED_MODEL_ARCHITECTURE!r}"
+            )
+        state_dict = checkpoint.get("model_state_dict")
+        if not isinstance(state_dict, dict):
+            raise RuntimeError("Checkpoint does not contain model_state_dict")
+        model.load_state_dict(state_dict, strict=True)
+
+        self.checkpoint_metadata = {
+            "architecture": architecture,
+            "epoch": checkpoint.get("epoch"),
+            "loss_type": checkpoint.get("loss_type"),
+            "validation_metrics": {
+                key: value
+                for key, value in checkpoint.get("validation_metrics", {}).items()
+                if key not in {"probas", "report"}
+            },
+        }
         model.to(self.device)
         model.eval()
+        print(
+            "Model weights loaded successfully: "
+            f"architecture={architecture}, epoch={checkpoint.get('epoch')}, "
+            f"device={self.device}."
+        )
         return model
 
     def postprocess(self, logits: torch.Tensor) -> dict:
-        """Converts model logits into predicted classes and detailed probability confidence scores."""
-        # Apply sigmoid to get raw probabilities
-        sigmoids = torch.sigmoid(logits).cpu().numpy()[0]
-        
-        p = np.zeros(5)
-        
-        # Check ordinal type (supports CORN/Focal CORN and CORAL/threshold)
-        is_corn = self.ordinal_type in ["corn", "focal_corn"]
-        
-        if is_corn:
-            # CORN chain rule formula:
-            # P(y = 0) = 1 - p1
-            # P(y = k) = p1 * p2 * ... * pk-1 * (1 - pk)
-            # P(y = 4) = p1 * p2 * p3 * p4
-            p[0] = 1.0 - sigmoids[0]
-            cumprod = 1.0
-            for i in range(1, 4):
-                cumprod *= sigmoids[i - 1]
-                p[i] = cumprod * (1.0 - sigmoids[i])
-            p[4] = cumprod * sigmoids[3]
-            
-            # Predict class by Argmax over CORN probabilities
-            predicted_class = int(np.argmax(p))
-        else:
-            # CORAL (Rank Ordinal / Threshold) cumulative difference formula:
-            p[0] = 1.0 - sigmoids[0]
-            p[1] = sigmoids[0] - sigmoids[1]
-            p[2] = sigmoids[1] - sigmoids[2]
-            p[3] = sigmoids[2] - sigmoids[3]
-            p[4] = sigmoids[3]
-            
-            # Clip and normalize CORAL probabilities (since they can be negative due to model noise)
-            p = np.clip(p, 0.0, 1.0)
-            p_sum = np.sum(p)
-            if p_sum > 0:
-                p = p / p_sum
-            else:
-                p = np.array([0.2, 0.2, 0.2, 0.2, 0.2])
-                
-            # Predict class by counting thresholds > 0.5
-            predicted_class = int(np.sum(sigmoids > 0.5))
-            
-        descriptions = {
-            0: "Grade 0: Normal knee joint with no signs of osteoarthritis.",
-            1: "Grade 1: Doubtful joint space narrowing and possible osteophytic lipping.",
-            2: "Grade 2: Minimal/Definite osteophytes and possible joint space narrowing.",
-            3: "Grade 3: Moderate multiple osteophytes, definite joint space narrowing, and some sclerosis.",
-            4: "Grade 4: Severe large osteophytes, marked joint space narrowing, severe sclerosis, and definite deformity."
+        probabilities = F.softmax(logits.float(), dim=1)[0].cpu().numpy()
+        predicted_class = int(np.argmax(probabilities))
+        confidence_details = {
+            self.grade_labels[index]: float(probabilities[index])
+            for index in range(5)
         }
-        
-        grade_labels = {
-            0: "0Normal",
-            1: "1Doubtful",
-            2: "2Mild",
-            3: "3Moderate",
-            4: "4Severe"
-        }
-        
-        confidence_details = {grade_labels[i]: float(p[i]) for i in range(5)}
-        predicted_grade_label = grade_labels[predicted_class]
-        
         return {
             "predicted_class": predicted_class,
-            "predicted_grade": predicted_grade_label,
-            "confidence": float(p[predicted_class]),
-            "description": descriptions[predicted_class],
-            "details": confidence_details
+            "predicted_grade": self.grade_labels[predicted_class],
+            "confidence": float(probabilities[predicted_class]),
+            "description": self.descriptions[predicted_class],
+            "details": confidence_details,
         }
 
-    def predict(self, image_bytes: bytes) -> dict:
-        """Executes the complete modular preprocessing, inference, and Grad-CAM workflow."""
-        # 1. Preprocessing (runs OpenCV CLAHE, SquarePad and turns to PIL/Tensor)
-        input_tensor, img_rgb = preprocessing_service.preprocess_image(image_bytes)
-        input_tensor = input_tensor.to(self.device)
-        
-        # 2. Inference (runs model forward pass under no_grad)
-        logits = inference_service.run_inference(self.model, input_tensor)
-        
-        # 3. Postprocessing (calculates class probabilities based on CORN/CORAL)
-        result = self.postprocess(logits)
-        
-        # 4. Grad-CAM generation (creates overlay and encodes to base64)
-        predicted_class = result["predicted_class"]
-        gradcam_img = gradcam_service.generate_heatmap(
-            model=self.model,
-            input_tensor=input_tensor,
-            img_rgb=img_rgb,
-            predicted_class=predicted_class,
-            ordinal_type=self.ordinal_type
+    def predict(self, image_bytes: bytes, knee_side: str = "unknown") -> dict:
+        input_tensor, processed_image, was_mirrored = (
+            preprocessing_service.preprocess_image(image_bytes, knee_side=knee_side)
         )
-        
-        result["gradcam_image"] = gradcam_img
+        input_tensor = input_tensor.to(self.device)
+        logits, class_maps = inference_service.run_inference_with_class_maps(
+            self.model, input_tensor
+        )
+        result = self.postprocess(logits)
+        native_cam_image, _ = native_cam_service.generate_heatmap(
+            model=self.model,
+            class_maps=class_maps,
+            processed_image=processed_image,
+            predicted_class=result["predicted_class"],
+        )
+
+        # Preserve the established API contract while changing only the
+        # implementation behind its historical heatmap field.
+        result["gradcam_image"] = native_cam_image
         return result

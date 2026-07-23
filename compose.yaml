@@ -1,0 +1,19 @@
+services:
+  knee-oa-api:
+    build:
+      context: .
+    image: knee-oa-native-cam:latest
+    ports:
+      - "8005:8005"
+    volumes:
+      - ./checkpoints:/app/checkpoints:ro
+    environment:
+      DEFAULT_MODEL_NAME: densenet121
+      MODEL_CHECKPOINT_PATH: /app/checkpoints/densenet121/best_model.pth
+      EXPECTED_MODEL_ARCHITECTURE: canonical_final_linear_cam
+      YOLO_CHECKPOINT_PATH: /app/checkpoints/yolov8/best.pt
+      IMG_SIZE: "400"
+      CROP_SIZE: "384"
+      ORDINAL_TYPE: ce
+      YOLO_CONFIG_DIR: /tmp
+    restart: unless-stopped
