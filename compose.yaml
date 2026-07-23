@@ -8,9 +8,11 @@ services:
     volumes:
       - ./checkpoints:/app/checkpoints:ro
     environment:
-      DEFAULT_MODEL_NAME: densenet121
+      DEFAULT_MODEL_NAME: densenet121+seresnext50_32x4d
       MODEL_CHECKPOINT_PATH: /app/checkpoints/densenet121/best_model.pth
       EXPECTED_MODEL_ARCHITECTURE: canonical_final_linear_cam
+      SE_RESNEXT_CHECKPOINT_PATH: /app/checkpoints/se_resnext50_32x4d/best_model (1).pth
+      EXPECTED_SE_RESNEXT_ARCHITECTURE: final_native_cam_ce
       YOLO_CHECKPOINT_PATH: /app/checkpoints/yolov8/best.pt
       IMG_SIZE: "400"
       CROP_SIZE: "384"

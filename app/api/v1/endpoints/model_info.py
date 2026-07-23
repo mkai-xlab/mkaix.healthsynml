@@ -9,9 +9,12 @@ router = APIRouter()
 @router.get("")
 def get_model_info():
     return {
-        "model": settings.DEFAULT_MODEL_NAME,
-        "architecture": settings.EXPECTED_MODEL_ARCHITECTURE,
-        "checkpoint": settings.MODEL_CHECKPOINT_PATH,
+        "model": "densenet121+seresnext50_32x4d",
+        "architecture": "equal_soft_voting_native_cam_ensemble",
+        "checkpoint": {
+            "densenet121": settings.MODEL_CHECKPOINT_PATH,
+            "seresnext50_32x4d": settings.SE_RESNEXT_CHECKPOINT_PATH,
+        },
         "loss": "cross_entropy",
         "input": {
             "resize": [settings.IMG_SIZE, settings.IMG_SIZE],
@@ -20,7 +23,7 @@ def get_model_info():
         },
         "heatmap": {
             "method": "native_class_activation_map",
-            "source": "five 1x1-convolution grade maps",
+            "source": "SE-ResNeXt five-map head for the ensemble-selected grade",
             "gradient_free": True,
         },
     }

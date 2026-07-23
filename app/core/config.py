@@ -23,6 +23,14 @@ class Settings:
         "EXPECTED_MODEL_ARCHITECTURE",
         "canonical_final_linear_cam",
     )
+    SE_RESNEXT_CHECKPOINT_PATH: str = os.getenv(
+        "SE_RESNEXT_CHECKPOINT_PATH",
+        "checkpoints/se_resnext50_32x4d/best_model (1).pth",
+    )
+    EXPECTED_SE_RESNEXT_ARCHITECTURE: str = os.getenv(
+        "EXPECTED_SE_RESNEXT_ARCHITECTURE",
+        "final_native_cam_ce",
+    )
     YOLO_CHECKPOINT_PATH: str = os.getenv(
         "YOLO_CHECKPOINT_PATH", "checkpoints/yolov8/best.pt"
     )

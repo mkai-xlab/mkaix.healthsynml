@@ -36,6 +36,7 @@ bruno/
 tests/
 checkpoints/
 test_data/
+test_images/
 scratch/
 *.zip
 *_ablations*/
