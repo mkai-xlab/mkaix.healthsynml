@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from app.core.config import settings
+from app.services.prediction_service import prediction_service
 
 
 router = APIRouter()
@@ -8,10 +9,11 @@ router = APIRouter()
 
 @router.get("")
 def get_model_info():
+    pipeline = prediction_service.pipeline
     return {
-        "model": settings.DEFAULT_MODEL_NAME,
-        "architecture": settings.EXPECTED_MODEL_ARCHITECTURE,
-        "checkpoint": settings.MODEL_CHECKPOINT_PATH,
+        "model": pipeline.model_name,
+        "architecture": pipeline.checkpoint_metadata["architecture"],
+        "checkpoint": pipeline.checkpoint_paths,
         "loss": "cross_entropy",
         "input": {
             "resize": [settings.IMG_SIZE, settings.IMG_SIZE],
@@ -20,7 +22,9 @@ def get_model_info():
         },
         "heatmap": {
             "method": "native_class_activation_map",
-            "source": "five 1x1-convolution grade maps",
+            "source": (
+                f"{pipeline.heatmap_model_name} five-map head for the selected grade"
+            ),
             "gradient_free": True,
         },
     }

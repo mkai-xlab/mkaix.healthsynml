@@ -19,6 +19,30 @@ A summary comparison of the different runs trained on this repository. The metri
 | 2026-07-21 15:07:17.633270 UTC | **Canonical Final Linear CAM (Laterality Canonicalized, Native CAM)**<br>Cross-Entropy (CE) | 0.6534 (95% CI: 0.6291 - 0.6776) | 0.8238 (95% CI: 0.8055 - 0.8419) | 0.8978 (95% CI: 0.8890 - 0.9077) | 0.7311 (95% CI: 0.7065 - 0.7586) | 287 / 826 (34.75% error) | 237 (82.6%) | 5 | 11 |
 | 2026-07-23 01:31:37.184239 UTC | **[PRODUCTION] Canonical Final Linear CAM (Laterality Canonicalized, Native CAM)**<br>Cross-Entropy (CE) | 0.6612 (95% bootstrap CI: 0.6383 - 0.6848) | 0.8178 (95% bootstrap CI: 0.7971 - 0.8366) | 0.8987 | 0.7334 | 274 / 826 (33.17% error) | Not exported | Not exported | Not exported |
 
+## Experiment Addendum: Joint Guidance and CAM Method
+
+### Run: 2026-07-22 11:52:13.081467 UTC (JOINT-GUIDED NATIVE-CAM ABLATION)
+
+This validation-only experiment resumed the 2026-07-21 canonical DenseNet checkpoint and compared CE control fine-tuning with weak rectangular joint guidance. The selected `0.05` guidance arm improved only the same broad localization proxy used in its loss.
+
+| Arm | QWK | Macro F1 | Grade 1 Recall | Peak Inside Joint | Lower-Tibia Energy | Localization Score |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| CE control | 0.8054 | **0.6927** | **0.3987** | 0.9648 | 0.1689 | 0.8595 |
+| Joint guidance 0.02 | 0.8047 | 0.6919 | 0.3922 | 0.9648 | 0.1671 | 0.8605 |
+| Joint guidance 0.05 | **0.8082** | 0.6832 | 0.3856 | **0.9780** | **0.1647** | **0.8682** |
+
+The `0.05` arm gained only `0.0028` QWK over the CE control while losing `0.0096` macro F1 and `0.0131` Grade 1 recall. Because the guidance target is a broad hand-defined band rather than JSN or osteophyte annotation, this result can reward lateral marginal activation without proving better pathology localization. Do not promote this checkpoint. Retain the 2026-07-23 production checkpoint.
+
+### Run: 2026-07-24 01:12:36.714882 UTC (GRAD-CAM VS NATIVE CAM)
+
+The controlled audit found no demonstrated superiority for either method. DenseNet map correlation was `1.0000`, mean absolute pixel difference was `0.00014`, and maximum difference was `0.001359`. Native CAM had a tiny anatomy-score advantage (`+0.00097`) while Grad-CAM had a tiny occlusion-correlation advantage (`+0.00007`). The result is operational equivalence, not evidence that native CAM localizes disease better.
+
+The comparison accidentally resolved `stage2_best_model.pth` because its filename filter used substring matching. Exact final-checkpoint values require a corrected rerun, but the analytical equivalence of final-layer Grad-CAM and bias-free CAM for this linear head remains valid. See [the complete CAM comparison report](../cam_comparison/report.md).
+
+**Production decision:** keep native CAM because it avoids a backward pass and is exactly tied to the class-map head. Do not switch to Grad-CAM to address poor hotspot position; improve supervision, ROI standardization, or external annotation instead.
+
+Archived experiment notebook: [2026-07-22 joint-guided ablation](2026-07-22_11-52-13_densenet121_joint_guided_cam_ablation.ipynb).
+
 
 ## Run: 2026-07-23 01:31:37.184239 UTC [PRODUCTION] (DENSENET121 - Canonical Final Linear CAM (CE + Laterality Canonicalization + Native CAM))
 ### Summary

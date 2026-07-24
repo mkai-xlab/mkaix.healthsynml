@@ -8,9 +8,16 @@ services:
     volumes:
       - ./checkpoints:/app/checkpoints:ro
     environment:
-      DEFAULT_MODEL_NAME: densenet121
+      MODEL_MODE: ${MODEL_MODE:-ensemble}
       MODEL_CHECKPOINT_PATH: /app/checkpoints/densenet121/best_model.pth
       EXPECTED_MODEL_ARCHITECTURE: canonical_final_linear_cam
+      SE_RESNEXT_CHECKPOINT_PATH: /app/checkpoints/se_resnext50_32x4d/best_model (1).pth
+      EXPECTED_SE_RESNEXT_ARCHITECTURE: final_native_cam_ce
+      EFFICIENTNET_B0_CHECKPOINT_PATH: /app/checkpoints/efficientnet_b0/best_model.pth
+      EXPECTED_EFFICIENTNET_B0_ARCHITECTURE: efficientnet_b0_final_native_cam_ce
+      ENSEMBLE_DENSENET_WEIGHT: ${ENSEMBLE_DENSENET_WEIGHT:-0.55}
+      ENSEMBLE_SE_RESNEXT_WEIGHT: ${ENSEMBLE_SE_RESNEXT_WEIGHT:-0.45}
+      ENSEMBLE_EFFICIENTNET_B0_WEIGHT: ${ENSEMBLE_EFFICIENTNET_B0_WEIGHT:-0.00}
       YOLO_CHECKPOINT_PATH: /app/checkpoints/yolov8/best.pt
       IMG_SIZE: "400"
       CROP_SIZE: "384"

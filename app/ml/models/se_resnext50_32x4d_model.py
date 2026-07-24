@@ -1,15 +1,15 @@
+import timm
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torchvision.models as models
 
 from app.ml.models.base_model import BaseModel
 
 
-class EfficientNetB0Model(BaseModel):
-    """Inference-only EfficientNet-B0 with the trained five-map CAM head."""
+class SEResNeXt50NativeCAMModel(BaseModel):
+    """Inference-only SE-ResNeXt-50 with a five-map native-CAM head."""
 
-    architecture = "efficientnet_b0_final_native_cam_ce"
+    architecture = "final_native_cam_ce"
 
     def __init__(
         self,
@@ -21,19 +21,22 @@ class EfficientNetB0Model(BaseModel):
         super().__init__()
         if ordinal_type != "ce":
             raise ValueError(
-                "efficientnet_b0_final_native_cam_ce requires CE logits; "
+                "final_native_cam_ce requires CE logits; "
                 f"received ordinal_type={ordinal_type!r}"
             )
 
-        weights = models.EfficientNet_B0_Weights.DEFAULT if pretrained else None
-        network = models.efficientnet_b0(weights=weights)
-        self.features = network.features
-        self.class_conv = nn.Conv2d(
-            network.classifier[1].in_features, num_classes, kernel_size=1
+        self.num_classes = num_classes
+        self.backbone = timm.create_model(
+            "seresnext50_32x4d",
+            pretrained=pretrained,
+            features_only=True,
+            out_indices=(4,),
         )
+        final_channels = self.backbone.feature_info.channels()[0]
+        self.class_conv = nn.Conv2d(final_channels, num_classes, kernel_size=1)
 
     def class_maps(self, images: torch.Tensor) -> torch.Tensor:
-        return self.class_conv(self.features(images))
+        return self.class_conv(self.backbone(images)[0])
 
     @staticmethod
     def logits_from_class_maps(class_maps: torch.Tensor) -> torch.Tensor:
@@ -56,7 +59,7 @@ class EfficientNetB0Model(BaseModel):
         output_size: tuple[int, int],
     ) -> torch.Tensor:
         if class_maps.ndim != 4 or class_maps.size(0) != 1:
-            raise ValueError("Native CAM currently expects one BxCxHxW sample")
+            raise ValueError("Native CAM currently expects one BxCxHxW inference sample")
         if not 0 <= class_index < class_maps.size(1):
             raise ValueError(f"Class index is out of range: {class_index}")
 
