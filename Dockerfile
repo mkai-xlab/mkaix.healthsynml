@@ -4,11 +4,16 @@ FROM dhi.io/python:3@sha256:6b0b46d3451ae138084c8aea720b0cd458309540e656db664060
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PATH="/home/nonroot/.local/bin:${PATH}"
-ENV DEFAULT_MODEL_NAME="densenet121+seresnext50_32x4d"
+ENV MODEL_MODE="ensemble"
 ENV MODEL_CHECKPOINT_PATH="/app/checkpoints/densenet121/best_model.pth"
 ENV EXPECTED_MODEL_ARCHITECTURE="canonical_final_linear_cam"
 ENV SE_RESNEXT_CHECKPOINT_PATH="/app/checkpoints/se_resnext50_32x4d/best_model (1).pth"
 ENV EXPECTED_SE_RESNEXT_ARCHITECTURE="final_native_cam_ce"
+ENV EFFICIENTNET_B0_CHECKPOINT_PATH="/app/checkpoints/efficientnet_b0/best_model.pth"
+ENV EXPECTED_EFFICIENTNET_B0_ARCHITECTURE="efficientnet_b0_final_native_cam_ce"
+ENV ENSEMBLE_DENSENET_WEIGHT="0.55"
+ENV ENSEMBLE_SE_RESNEXT_WEIGHT="0.45"
+ENV ENSEMBLE_EFFICIENTNET_B0_WEIGHT="0.00"
 ENV YOLO_CHECKPOINT_PATH="/app/checkpoints/yolov8/best.pt"
 ENV IMG_SIZE="400"
 ENV CROP_SIZE="384"

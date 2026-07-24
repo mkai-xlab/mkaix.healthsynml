@@ -1,63 +1,70 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from app.ml.models.base_model import BaseModel
 import torchvision.models as models
 
 class EfficientNetB4Model(BaseModel):
-    """
-    EfficientNet-B4 model wrapper subclass for Knee Osteoarthritis Kellgren-Lawrence Grade classification.
-    Implements a custom freeze_backbone method for partial fine-tuning.
-    """
-    def __init__(self, num_classes: int = 5, pretrained: bool = True, dropout_rate: float = 0.5, ordinal_type: str = "threshold"):
-        super(EfficientNetB4Model, self).__init__()
+    """Inference-only EfficientNet-B4 with a five-map native-CAM head."""
+
+    architecture = "efficientnet_b4_final_native_cam_ce"
+
+    def __init__(
+        self,
+        num_classes: int = 5,
+        pretrained: bool = False,
+        ordinal_type: str = "ce",
+        **_: object,
+    ):
+        super().__init__()
+        if ordinal_type != "ce":
+            raise ValueError(
+                "efficientnet_b4_final_native_cam_ce requires CE logits; "
+                f"received ordinal_type={ordinal_type!r}"
+            )
+
         self.num_classes = num_classes
-        self.ordinal_type = ordinal_type
-        
-        # In threshold ordinal classification, the output classifier has (num_classes - 1) outputs
-        out_features = num_classes - 1 if ordinal_type == "threshold" else num_classes
-        
         weights = models.EfficientNet_B4_Weights.DEFAULT if pretrained else None
-        self.model = models.efficientnet_b4(weights=weights)
-
-        num_ftrs = self.model.classifier[1].in_features
-        # Increase dropout rate for better regularization
-        self.model.classifier = nn.Sequential(
-            nn.Dropout(p=dropout_rate, inplace=True),
-            nn.Linear(num_ftrs, out_features),
+        network = models.efficientnet_b4(weights=weights)
+        final_channels = network.classifier[1].in_features
+        self.features = network.features
+        self.class_conv = nn.Conv2d(
+            final_channels, num_classes, kernel_size=1
         )
-        
-        self.use_timm = False
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        Runs forward pass.
-        """
-        return self.model(x)
+    def class_maps(self, images: torch.Tensor) -> torch.Tensor:
+        return self.class_conv(self.features(images))
 
-    def freeze_backbone(self):
-        """
-        Custom freezing strategy for EfficientNet-B4.
-        Freezes the early blocks (0-3) and leaves the deeper blocks (4-7)
-        and the classifier head trainable for fine-tuning.
-        """
-        print("Applying custom freezing strategy for EfficientNet-B4.")
-        
-        for param in self.model.parameters():
-            param.requires_grad = False
-            
-        for i in range(4, 8):
-            print(f"  - Unfreezing feature block {i}...")
-            for param in self.model.features[i].parameters():
-                param.requires_grad = True
+    @staticmethod
+    def logits_from_class_maps(class_maps: torch.Tensor) -> torch.Tensor:
+        return class_maps.mean(dim=(2, 3))
 
-        print("  - Unfreezing classifier head...")
-        for param in self.model.classifier.parameters():
-            param.requires_grad = True
+    def forward_with_class_maps(
+        self, images: torch.Tensor
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        class_maps = self.class_maps(images)
+        return self.logits_from_class_maps(class_maps), class_maps
 
-    def unfreeze_backbone(self):
-        """
-        Unfreezes all parameters in the model for full fine-tuning.
-        """
-        print("Unfreezing all layers for full fine-tuning.")
-        for param in self.model.parameters():
-            param.requires_grad = True
+    def forward(self, images: torch.Tensor) -> torch.Tensor:
+        logits, _ = self.forward_with_class_maps(images)
+        return logits
+
+    @staticmethod
+    def native_cam_from_class_maps(
+        class_maps: torch.Tensor,
+        class_index: int,
+        output_size: tuple[int, int],
+    ) -> torch.Tensor:
+        if class_maps.ndim != 4 or class_maps.size(0) != 1:
+            raise ValueError("Native CAM currently expects one BxCxHxW sample")
+        if not 0 <= class_index < class_maps.size(1):
+            raise ValueError(f"Class index is out of range: {class_index}")
+
+        cam = F.relu(class_maps[:, class_index : class_index + 1])
+        cam = F.interpolate(
+            cam,
+            size=output_size,
+            mode="bilinear",
+            align_corners=False,
+        )[0, 0]
+        return cam / cam.max().clamp_min(1e-8)
