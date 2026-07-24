@@ -21,7 +21,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Knee Osteoarthritis KL-Grade Classification API",
     description="API for predicting Kellgren-Lawrence (KL) grade from knee X-ray images.",
-    version="1.0.0",
+    version="2.0.0",
     lifespan=lifespan
 )
 

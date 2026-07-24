@@ -1,0 +1,1342 @@
+{
+  "type": "excalidraw",
+  "version": 2,
+  "source": "codex",
+  "elements": [
+    {
+      "id": "xray",
+      "type": "rectangle",
+      "x": 60,
+      "y": 170,
+      "width": 230,
+      "height": 90,
+      "angle": 0,
+      "strokeColor": "#166534",
+      "backgroundColor": "#dcfce7",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "roundness": {
+        "type": 3
+      },
+      "seed": 100001,
+      "boundElements": [
+        {
+          "id": "label_xray",
+          "type": "text"
+        },
+        {
+          "id": "a_xray_yolo",
+          "type": "arrow"
+        }
+      ],
+      "updated": 1
+    },
+    {
+      "id": "label_xray",
+      "type": "text",
+      "x": 76,
+      "y": 192.0,
+      "width": 198,
+      "height": 46,
+      "angle": 0,
+      "strokeColor": "#334155",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "roughness": 0,
+      "opacity": 100,
+      "seed": 100002,
+      "boundElements": null,
+      "fontSize": 17,
+      "fontFamily": 2,
+      "text": "Bilateral knee\nX-ray",
+      "textAlign": "center",
+      "verticalAlign": "middle",
+      "containerId": "xray",
+      "updated": 1
+    },
+    {
+      "id": "yolo",
+      "type": "rectangle",
+      "x": 380,
+      "y": 160,
+      "width": 280,
+      "height": 110,
+      "angle": 0,
+      "strokeColor": "#c2410c",
+      "backgroundColor": "#fed7aa",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "roundness": {
+        "type": 3
+      },
+      "seed": 100003,
+      "boundElements": [
+        {
+          "id": "label_yolo",
+          "type": "text"
+        },
+        {
+          "id": "a_xray_yolo",
+          "type": "arrow"
+        },
+        {
+          "id": "a_yolo_pre",
+          "type": "arrow"
+        }
+      ],
+      "updated": 1
+    },
+    {
+      "id": "label_yolo",
+      "type": "text",
+      "x": 396,
+      "y": 192.0,
+      "width": 248,
+      "height": 46,
+      "angle": 0,
+      "strokeColor": "#334155",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "roughness": 0,
+      "opacity": 100,
+      "seed": 100004,
+      "boundElements": null,
+      "fontSize": 17,
+      "fontFamily": 2,
+      "text": "YOLOv8 knee detector\nLeft/right ROI boxes",
+      "textAlign": "center",
+      "verticalAlign": "middle",
+      "containerId": "yolo",
+      "updated": 1
+    },
+    {
+      "id": "preprocess",
+      "type": "rectangle",
+      "x": 780,
+      "y": 145,
+      "width": 360,
+      "height": 140,
+      "angle": 0,
+      "strokeColor": "#1e40af",
+      "backgroundColor": "#dbeafe",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "roundness": {
+        "type": 3
+      },
+      "seed": 100005,
+      "boundElements": [
+        {
+          "id": "label_preprocess",
+          "type": "text"
+        },
+        {
+          "id": "a_yolo_pre",
+          "type": "arrow"
+        },
+        {
+          "id": "a_pre_dense",
+          "type": "arrow"
+        },
+        {
+          "id": "a_pre_se",
+          "type": "arrow"
+        },
+        {
+          "id": "a_pre_eff",
+          "type": "arrow"
+        }
+      ],
+      "updated": 1
+    },
+    {
+      "id": "label_preprocess",
+      "type": "text",
+      "x": 796,
+      "y": 180.5,
+      "width": 328,
+      "height": 69,
+      "angle": 0,
+      "strokeColor": "#334155",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "roughness": 0,
+      "opacity": 100,
+      "seed": 100006,
+      "boundElements": null,
+      "fontSize": 17,
+      "fontFamily": 2,
+      "text": "Crop each knee + canonical preprocessing\nMirror right - pad - CLAHE\nresize 400 - crop 384 - normalize",
+      "textAlign": "center",
+      "verticalAlign": "middle",
+      "containerId": "preprocess",
+      "updated": 1
+    },
+    {
+      "id": "dense",
+      "type": "rectangle",
+      "x": 180,
+      "y": 420,
+      "width": 320,
+      "height": 120,
+      "angle": 0,
+      "strokeColor": "#1e40af",
+      "backgroundColor": "#dbeafe",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "roundness": {
+        "type": 3
+      },
+      "seed": 100007,
+      "boundElements": [
+        {
+          "id": "label_dense",
+          "type": "text"
+        },
+        {
+          "id": "a_pre_dense",
+          "type": "arrow"
+        },
+        {
+          "id": "a_dense_vote",
+          "type": "arrow"
+        }
+      ],
+      "updated": 1
+    },
+    {
+      "id": "label_dense",
+      "type": "text",
+      "x": 196,
+      "y": 445.5,
+      "width": 288,
+      "height": 69,
+      "angle": 0,
+      "strokeColor": "#334155",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "roughness": 0,
+      "opacity": 100,
+      "seed": 100008,
+      "boundElements": null,
+      "fontSize": 17,
+      "fontFamily": 2,
+      "text": "DenseNet-121\nFaithful native CAM\nStrong overall metrics",
+      "textAlign": "center",
+      "verticalAlign": "middle",
+      "containerId": "dense",
+      "updated": 1
+    },
+    {
+      "id": "seresnext",
+      "type": "rectangle",
+      "x": 680,
+      "y": 420,
+      "width": 340,
+      "height": 120,
+      "angle": 0,
+      "strokeColor": "#6b21a8",
+      "backgroundColor": "#f3e8ff",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "roundness": {
+        "type": 3
+      },
+      "seed": 100009,
+      "boundElements": [
+        {
+          "id": "label_seresnext",
+          "type": "text"
+        },
+        {
+          "id": "a_pre_se",
+          "type": "arrow"
+        },
+        {
+          "id": "a_se_vote",
+          "type": "arrow"
+        },
+        {
+          "id": "a_se_heat",
+          "type": "arrow"
+        }
+      ],
+      "updated": 1
+    },
+    {
+      "id": "label_seresnext",
+      "type": "text",
+      "x": 696,
+      "y": 445.5,
+      "width": 308,
+      "height": 69,
+      "angle": 0,
+      "strokeColor": "#334155",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "roughness": 0,
+      "opacity": 100,
+      "seed": 100010,
+      "boundElements": null,
+      "fontSize": 17,
+      "fontFamily": 2,
+      "text": "SE-ResNeXt-50 32x4d\nFaithful native CAM\nCurrent heatmap source",
+      "textAlign": "center",
+      "verticalAlign": "middle",
+      "containerId": "seresnext",
+      "updated": 1
+    },
+    {
+      "id": "efficientnet",
+      "type": "rectangle",
+      "x": 1200,
+      "y": 420,
+      "width": 340,
+      "height": 120,
+      "angle": 0,
+      "strokeColor": "#475569",
+      "backgroundColor": "#f1f5f9",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "dashed",
+      "roughness": 0,
+      "opacity": 100,
+      "roundness": {
+        "type": 3
+      },
+      "seed": 100011,
+      "boundElements": [
+        {
+          "id": "label_efficientnet",
+          "type": "text"
+        },
+        {
+          "id": "a_pre_eff",
+          "type": "arrow"
+        },
+        {
+          "id": "a_eff_vote",
+          "type": "arrow"
+        }
+      ],
+      "updated": 1
+    },
+    {
+      "id": "label_efficientnet",
+      "type": "text",
+      "x": 1216,
+      "y": 445.5,
+      "width": 308,
+      "height": 69,
+      "angle": 0,
+      "strokeColor": "#334155",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "roughness": 0,
+      "opacity": 100,
+      "seed": 100012,
+      "boundElements": null,
+      "fontSize": 17,
+      "fontFamily": 2,
+      "text": "EfficientNet-B4 candidate\n24x24 / 12x12 native CAM + EMA\nValidation gate required",
+      "textAlign": "center",
+      "verticalAlign": "middle",
+      "containerId": "efficientnet",
+      "updated": 1
+    },
+    {
+      "id": "vote",
+      "type": "rectangle",
+      "x": 760,
+      "y": 670,
+      "width": 320,
+      "height": 120,
+      "angle": 0,
+      "strokeColor": "#854d0e",
+      "backgroundColor": "#fef9c3",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "roundness": {
+        "type": 3
+      },
+      "seed": 100013,
+      "boundElements": [
+        {
+          "id": "label_vote",
+          "type": "text"
+        },
+        {
+          "id": "a_dense_vote",
+          "type": "arrow"
+        },
+        {
+          "id": "a_se_vote",
+          "type": "arrow"
+        },
+        {
+          "id": "a_eff_vote",
+          "type": "arrow"
+        },
+        {
+          "id": "a_vote_pred",
+          "type": "arrow"
+        }
+      ],
+      "updated": 1
+    },
+    {
+      "id": "label_vote",
+      "type": "text",
+      "x": 776,
+      "y": 695.5,
+      "width": 288,
+      "height": 69,
+      "angle": 0,
+      "strokeColor": "#334155",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "roughness": 0,
+      "opacity": 100,
+      "seed": 100014,
+      "boundElements": null,
+      "fontSize": 17,
+      "fontFamily": 2,
+      "text": "Equal soft vote\n2 models now\n3 only after paired validation",
+      "textAlign": "center",
+      "verticalAlign": "middle",
+      "containerId": "vote",
+      "updated": 1
+    },
+    {
+      "id": "heatmap",
+      "type": "rectangle",
+      "x": 260,
+      "y": 690,
+      "width": 310,
+      "height": 110,
+      "angle": 0,
+      "strokeColor": "#6b21a8",
+      "backgroundColor": "#f3e8ff",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "roundness": {
+        "type": 3
+      },
+      "seed": 100015,
+      "boundElements": [
+        {
+          "id": "label_heatmap",
+          "type": "text"
+        },
+        {
+          "id": "a_se_heat",
+          "type": "arrow"
+        },
+        {
+          "id": "a_heat_resp",
+          "type": "arrow"
+        }
+      ],
+      "updated": 1
+    },
+    {
+      "id": "label_heatmap",
+      "type": "text",
+      "x": 276,
+      "y": 722.0,
+      "width": 278,
+      "height": 46,
+      "angle": 0,
+      "strokeColor": "#334155",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "roughness": 0,
+      "opacity": 100,
+      "seed": 100016,
+      "boundElements": null,
+      "fontSize": 17,
+      "fontFamily": 2,
+      "text": "Native-CAM renderer\nSE-ResNeXt predicted-class map",
+      "textAlign": "center",
+      "verticalAlign": "middle",
+      "containerId": "heatmap",
+      "updated": 1
+    },
+    {
+      "id": "prediction",
+      "type": "rectangle",
+      "x": 1280,
+      "y": 690,
+      "width": 300,
+      "height": 110,
+      "angle": 0,
+      "strokeColor": "#166534",
+      "backgroundColor": "#dcfce7",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "roundness": {
+        "type": 3
+      },
+      "seed": 100017,
+      "boundElements": [
+        {
+          "id": "label_prediction",
+          "type": "text"
+        },
+        {
+          "id": "a_vote_pred",
+          "type": "arrow"
+        },
+        {
+          "id": "a_pred_resp",
+          "type": "arrow"
+        }
+      ],
+      "updated": 1
+    },
+    {
+      "id": "label_prediction",
+      "type": "text",
+      "x": 1296,
+      "y": 722.0,
+      "width": 268,
+      "height": 46,
+      "angle": 0,
+      "strokeColor": "#334155",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "roughness": 0,
+      "opacity": 100,
+      "seed": 100018,
+      "boundElements": null,
+      "fontSize": 17,
+      "fontFamily": 2,
+      "text": "KL grade 0-4\nConfidence + 5 probabilities",
+      "textAlign": "center",
+      "verticalAlign": "middle",
+      "containerId": "prediction",
+      "updated": 1
+    },
+    {
+      "id": "response",
+      "type": "rectangle",
+      "x": 750,
+      "y": 930,
+      "width": 360,
+      "height": 120,
+      "angle": 0,
+      "strokeColor": "#166534",
+      "backgroundColor": "#dcfce7",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "roundness": {
+        "type": 3
+      },
+      "seed": 100019,
+      "boundElements": [
+        {
+          "id": "label_response",
+          "type": "text"
+        },
+        {
+          "id": "a_heat_resp",
+          "type": "arrow"
+        },
+        {
+          "id": "a_pred_resp",
+          "type": "arrow"
+        }
+      ],
+      "updated": 1
+    },
+    {
+      "id": "label_response",
+      "type": "text",
+      "x": 766,
+      "y": 955.5,
+      "width": 328,
+      "height": 69,
+      "angle": 0,
+      "strokeColor": "#334155",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "roughness": 0,
+      "opacity": 100,
+      "seed": 100020,
+      "boundElements": null,
+      "fontSize": 17,
+      "fontFamily": 2,
+      "text": "Prediction API response\nExisting JSON schema unchanged\nprediction details + gradcam_image",
+      "textAlign": "center",
+      "verticalAlign": "middle",
+      "containerId": "response",
+      "updated": 1
+    },
+    {
+      "id": "a_xray_yolo",
+      "type": "arrow",
+      "x": 290,
+      "y": 215,
+      "width": 90,
+      "height": 0,
+      "angle": 0,
+      "strokeColor": "#475569",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "seed": 100021,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          90,
+          0
+        ]
+      ],
+      "startBinding": {
+        "elementId": "xray",
+        "gap": 1,
+        "focus": 0
+      },
+      "endBinding": {
+        "elementId": "yolo",
+        "gap": 1,
+        "focus": 0
+      },
+      "startArrowhead": null,
+      "endArrowhead": "arrow",
+      "boundElements": null,
+      "updated": 1
+    },
+    {
+      "id": "a_yolo_pre",
+      "type": "arrow",
+      "x": 660,
+      "y": 215,
+      "width": 120,
+      "height": 0,
+      "angle": 0,
+      "strokeColor": "#475569",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "seed": 100022,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          120,
+          0
+        ]
+      ],
+      "startBinding": {
+        "elementId": "yolo",
+        "gap": 1,
+        "focus": 0
+      },
+      "endBinding": {
+        "elementId": "preprocess",
+        "gap": 1,
+        "focus": 0
+      },
+      "startArrowhead": null,
+      "endArrowhead": "arrow",
+      "boundElements": null,
+      "updated": 1
+    },
+    {
+      "id": "a_pre_dense",
+      "type": "arrow",
+      "x": 850,
+      "y": 285,
+      "width": 510,
+      "height": 135,
+      "angle": 0,
+      "strokeColor": "#475569",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "seed": 100023,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          65
+        ],
+        [
+          -510,
+          65
+        ],
+        [
+          -510,
+          135
+        ]
+      ],
+      "startBinding": {
+        "elementId": "preprocess",
+        "gap": 1,
+        "focus": 0
+      },
+      "endBinding": {
+        "elementId": "dense",
+        "gap": 1,
+        "focus": 0
+      },
+      "startArrowhead": null,
+      "endArrowhead": "arrow",
+      "boundElements": null,
+      "updated": 1
+    },
+    {
+      "id": "a_pre_se",
+      "type": "arrow",
+      "x": 960,
+      "y": 285,
+      "width": 110,
+      "height": 135,
+      "angle": 0,
+      "strokeColor": "#475569",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "seed": 100024,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          65
+        ],
+        [
+          -110,
+          65
+        ],
+        [
+          -110,
+          135
+        ]
+      ],
+      "startBinding": {
+        "elementId": "preprocess",
+        "gap": 1,
+        "focus": 0
+      },
+      "endBinding": {
+        "elementId": "seresnext",
+        "gap": 1,
+        "focus": 0
+      },
+      "startArrowhead": null,
+      "endArrowhead": "arrow",
+      "boundElements": null,
+      "updated": 1
+    },
+    {
+      "id": "a_pre_eff",
+      "type": "arrow",
+      "x": 1070,
+      "y": 285,
+      "width": 300,
+      "height": 135,
+      "angle": 0,
+      "strokeColor": "#475569",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "dashed",
+      "roughness": 0,
+      "opacity": 100,
+      "seed": 100025,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          65
+        ],
+        [
+          300,
+          65
+        ],
+        [
+          300,
+          135
+        ]
+      ],
+      "startBinding": {
+        "elementId": "preprocess",
+        "gap": 1,
+        "focus": 0
+      },
+      "endBinding": {
+        "elementId": "efficientnet",
+        "gap": 1,
+        "focus": 0
+      },
+      "startArrowhead": null,
+      "endArrowhead": "arrow",
+      "boundElements": null,
+      "updated": 1
+    },
+    {
+      "id": "a_dense_vote",
+      "type": "arrow",
+      "x": 340,
+      "y": 540,
+      "width": 490,
+      "height": 130,
+      "angle": 0,
+      "strokeColor": "#475569",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "seed": 100026,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          70
+        ],
+        [
+          490,
+          70
+        ],
+        [
+          490,
+          130
+        ]
+      ],
+      "startBinding": {
+        "elementId": "dense",
+        "gap": 1,
+        "focus": 0
+      },
+      "endBinding": {
+        "elementId": "vote",
+        "gap": 1,
+        "focus": 0
+      },
+      "startArrowhead": null,
+      "endArrowhead": "arrow",
+      "boundElements": null,
+      "updated": 1
+    },
+    {
+      "id": "a_se_vote",
+      "type": "arrow",
+      "x": 910,
+      "y": 540,
+      "width": 0,
+      "height": 130,
+      "angle": 0,
+      "strokeColor": "#475569",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "seed": 100027,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          130
+        ]
+      ],
+      "startBinding": {
+        "elementId": "seresnext",
+        "gap": 1,
+        "focus": 0
+      },
+      "endBinding": {
+        "elementId": "vote",
+        "gap": 1,
+        "focus": 0
+      },
+      "startArrowhead": null,
+      "endArrowhead": "arrow",
+      "boundElements": null,
+      "updated": 1
+    },
+    {
+      "id": "a_eff_vote",
+      "type": "arrow",
+      "x": 1370,
+      "y": 540,
+      "width": 360,
+      "height": 130,
+      "angle": 0,
+      "strokeColor": "#475569",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "dashed",
+      "roughness": 0,
+      "opacity": 100,
+      "seed": 100028,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          70
+        ],
+        [
+          -360,
+          70
+        ],
+        [
+          -360,
+          130
+        ]
+      ],
+      "startBinding": {
+        "elementId": "efficientnet",
+        "gap": 1,
+        "focus": 0
+      },
+      "endBinding": {
+        "elementId": "vote",
+        "gap": 1,
+        "focus": 0
+      },
+      "startArrowhead": null,
+      "endArrowhead": "arrow",
+      "boundElements": null,
+      "updated": 1
+    },
+    {
+      "id": "a_se_heat",
+      "type": "arrow",
+      "x": 760,
+      "y": 540,
+      "width": 345,
+      "height": 150,
+      "angle": 0,
+      "strokeColor": "#475569",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "seed": 100029,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          80
+        ],
+        [
+          -345,
+          80
+        ],
+        [
+          -345,
+          150
+        ]
+      ],
+      "startBinding": {
+        "elementId": "seresnext",
+        "gap": 1,
+        "focus": 0
+      },
+      "endBinding": {
+        "elementId": "heatmap",
+        "gap": 1,
+        "focus": 0
+      },
+      "startArrowhead": null,
+      "endArrowhead": "arrow",
+      "boundElements": null,
+      "updated": 1
+    },
+    {
+      "id": "a_vote_pred",
+      "type": "arrow",
+      "x": 1080,
+      "y": 730,
+      "width": 200,
+      "height": 0,
+      "angle": 0,
+      "strokeColor": "#475569",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "seed": 100030,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          200,
+          0
+        ]
+      ],
+      "startBinding": {
+        "elementId": "vote",
+        "gap": 1,
+        "focus": 0
+      },
+      "endBinding": {
+        "elementId": "prediction",
+        "gap": 1,
+        "focus": 0
+      },
+      "startArrowhead": null,
+      "endArrowhead": "arrow",
+      "boundElements": null,
+      "updated": 1
+    },
+    {
+      "id": "a_heat_resp",
+      "type": "arrow",
+      "x": 415,
+      "y": 800,
+      "width": 415,
+      "height": 130,
+      "angle": 0,
+      "strokeColor": "#475569",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "seed": 100031,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          70
+        ],
+        [
+          415,
+          70
+        ],
+        [
+          415,
+          130
+        ]
+      ],
+      "startBinding": {
+        "elementId": "heatmap",
+        "gap": 1,
+        "focus": 0
+      },
+      "endBinding": {
+        "elementId": "response",
+        "gap": 1,
+        "focus": 0
+      },
+      "startArrowhead": null,
+      "endArrowhead": "arrow",
+      "boundElements": null,
+      "updated": 1
+    },
+    {
+      "id": "a_pred_resp",
+      "type": "arrow",
+      "x": 1430,
+      "y": 800,
+      "width": 400,
+      "height": 130,
+      "angle": 0,
+      "strokeColor": "#475569",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "seed": 100032,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          70
+        ],
+        [
+          -400,
+          70
+        ],
+        [
+          -400,
+          130
+        ]
+      ],
+      "startBinding": {
+        "elementId": "prediction",
+        "gap": 1,
+        "focus": 0
+      },
+      "endBinding": {
+        "elementId": "response",
+        "gap": 1,
+        "focus": 0
+      },
+      "startArrowhead": null,
+      "endArrowhead": "arrow",
+      "boundElements": null,
+      "updated": 1
+    },
+    {
+      "id": "title",
+      "type": "text",
+      "x": 360,
+      "y": 30,
+      "width": 1200,
+      "height": 42,
+      "angle": 0,
+      "strokeColor": "#1e293b",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "roughness": 0,
+      "opacity": 100,
+      "seed": 100033,
+      "boundElements": null,
+      "fontSize": 28,
+      "fontFamily": 2,
+      "text": "Knee Osteoarthritis KL-Grading System",
+      "textAlign": "center",
+      "verticalAlign": "middle",
+      "containerId": null,
+      "updated": 1
+    },
+    {
+      "id": "subtitle",
+      "type": "text",
+      "x": 340,
+      "y": 82,
+      "width": 1240,
+      "height": 28,
+      "angle": 0,
+      "strokeColor": "#64748b",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "roughness": 0,
+      "opacity": 100,
+      "seed": 100034,
+      "boundElements": null,
+      "fontSize": 16,
+      "fontFamily": 2,
+      "text": "YOLO ROI detection -> canonical knee crop -> CNN soft vote -> faithful native CAM",
+      "textAlign": "center",
+      "verticalAlign": "middle",
+      "containerId": null,
+      "updated": 1
+    },
+    {
+      "id": "phase1",
+      "type": "text",
+      "x": 60,
+      "y": 125,
+      "width": 520,
+      "height": 30,
+      "angle": 0,
+      "strokeColor": "#334155",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "roughness": 0,
+      "opacity": 100,
+      "seed": 100035,
+      "boundElements": null,
+      "fontSize": 20,
+      "fontFamily": 2,
+      "text": "1  DETECT AND STANDARDIZE",
+      "textAlign": "left",
+      "verticalAlign": "middle",
+      "containerId": null,
+      "updated": 1
+    },
+    {
+      "id": "phase2",
+      "type": "text",
+      "x": 180,
+      "y": 375,
+      "width": 500,
+      "height": 30,
+      "angle": 0,
+      "strokeColor": "#334155",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "roughness": 0,
+      "opacity": 100,
+      "seed": 100036,
+      "boundElements": null,
+      "fontSize": 20,
+      "fontFamily": 2,
+      "text": "2  PARALLEL KL-GRADE MODELS",
+      "textAlign": "left",
+      "verticalAlign": "middle",
+      "containerId": null,
+      "updated": 1
+    },
+    {
+      "id": "phase3",
+      "type": "text",
+      "x": 260,
+      "y": 645,
+      "width": 500,
+      "height": 30,
+      "angle": 0,
+      "strokeColor": "#334155",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "roughness": 0,
+      "opacity": 100,
+      "seed": 100037,
+      "boundElements": null,
+      "fontSize": 20,
+      "fontFamily": 2,
+      "text": "3  FUSE AND EXPLAIN",
+      "textAlign": "left",
+      "verticalAlign": "middle",
+      "containerId": null,
+      "updated": 1
+    },
+    {
+      "id": "candidate_note",
+      "type": "text",
+      "x": 1190,
+      "y": 555,
+      "width": 390,
+      "height": 45,
+      "angle": 0,
+      "strokeColor": "#64748b",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "roughness": 0,
+      "opacity": 100,
+      "seed": 100038,
+      "boundElements": null,
+      "fontSize": 14,
+      "fontFamily": 2,
+      "text": "Dashed path = candidate only. Promote after\nvalidation + CAM + occlusion + ensemble gates.",
+      "textAlign": "left",
+      "verticalAlign": "middle",
+      "containerId": null,
+      "updated": 1
+    },
+    {
+      "id": "training_note",
+      "type": "text",
+      "x": 60,
+      "y": 970,
+      "width": 580,
+      "height": 54,
+      "angle": 0,
+      "strokeColor": "#64748b",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "roughness": 0,
+      "opacity": 100,
+      "seed": 100039,
+      "boundElements": null,
+      "fontSize": 15,
+      "fontFamily": 2,
+      "text": "Training uses the already-cropped Kaggle knees.\nYOLO is used only in application inference.",
+      "textAlign": "left",
+      "verticalAlign": "middle",
+      "containerId": null,
+      "updated": 1
+    }
+  ],
+  "appState": {
+    "viewBackgroundColor": "#ffffff",
+    "gridSize": null
+  },
+  "files": {}
+}

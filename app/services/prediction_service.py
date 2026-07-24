@@ -31,7 +31,7 @@ class PredictionService:
         
         if not knees:
             # Fallback if no knees detected (or YOLO disabled)
-            res = self.pipeline.predict(image_bytes)
+            res = self.pipeline.predict(image_bytes, knee_side="unknown")
             res["box"] = None
             res["yolo_confidence"] = 0.0
             res["knee_side"] = "unknown"
@@ -43,15 +43,24 @@ class PredictionService:
                 # Sort left-to-right by x coordinate (box[0])
                 knees = sorted(knees, key=lambda k: k["box"][0])
                 sides = ["right", "left"]
+            elif len(knees) == 1:
+                center_x = (knees[0]["box"][0] + knees[0]["box"][2]) / 2
+                image_width = img.shape[1]
+                if center_x < image_width * 0.40:
+                    sides = ["right"]
+                elif center_x > image_width * 0.60:
+                    sides = ["left"]
+                else:
+                    sides = ["unknown"]
             else:
                 sides = ["unknown"] * len(knees)
                 
             for idx, knee in enumerate(knees):
-                # Run prediction on the cropped knee image
-                res = self.pipeline.predict(knee["crop_bytes"])
+                side = sides[idx]
+                # Canonicalize anatomical right knees before classification.
+                res = self.pipeline.predict(knee["crop_bytes"], knee_side=side)
                 res["box"] = knee["box"]
                 res["yolo_confidence"] = knee["yolo_conf"]
-                side = sides[idx]
                 res["knee_side"] = side
                 
                 # Base64 encode the cropped ROI image
