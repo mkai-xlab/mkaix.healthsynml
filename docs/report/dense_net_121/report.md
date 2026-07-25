@@ -18,6 +18,8 @@ A summary comparison of the different runs trained on this repository. The metri
 | 2026-07-20 17:09:20 ICT | **Saved `best_model.pth` + Final-Layer Grad-CAM**<br>Checkpoint provenance must be pinned | 0.6685 (95% CI: 0.6486 - 0.6932) | 0.8223 (95% CI: 0.8017 - 0.8397) | 0.8977 (95% CI: 0.8897 - 0.9089) | 0.7345 (95% CI: 0.7138 - 0.7610) | 287 / 826 (34.75% error) | 243 (84.7%) | 4 | 5 |
 | 2026-07-21 15:07:17.633270 UTC | **Canonical Final Linear CAM (Laterality Canonicalized, Native CAM)**<br>Cross-Entropy (CE) | 0.6534 (95% CI: 0.6291 - 0.6776) | 0.8238 (95% CI: 0.8055 - 0.8419) | 0.8978 (95% CI: 0.8890 - 0.9077) | 0.7311 (95% CI: 0.7065 - 0.7586) | 287 / 826 (34.75% error) | 237 (82.6%) | 5 | 11 |
 | 2026-07-23 01:31:37.184239 UTC | **[PRODUCTION] Canonical Final Linear CAM (Laterality Canonicalized, Native CAM)**<br>Cross-Entropy (CE) | 0.6612 (95% bootstrap CI: 0.6383 - 0.6848) | 0.8178 (95% bootstrap CI: 0.7971 - 0.8366) | 0.8987 | 0.7334 | 274 / 826 (33.17% error) | Not exported | Not exported | Not exported |
+| 2026-07-25 04:34:08.758611 UTC | **[REJECTED] Natural Orientation + Flip + Gamma + EMA Native CAM**<br>Cross-Entropy (CE) | 0.4553 (95% CI: 0.4348 - 0.4801) | 0.7248 (95% CI: 0.7004 - 0.7494) | 0.8619 (95% CI: 0.8524 - 0.8731) | 0.6663 (95% CI: 0.6393 - 0.6923) | 459 / 826 (55.57% error) | 423 (92.2%) | 4 | 20 |
+| 2026-07-25 06:30:25.175448 UTC | **[SELECTED / DEPLOYED FOR EXTERNAL AUDIT] Natural Orientation Loss Ablation**<br>Cross-Entropy (CE) | 0.6504 | 0.8197 | 0.8935 | 0.7309 | Not exported | Not exported | 49 | 35 |
 
 ## Experiment Addendum: Joint Guidance and CAM Method
 
@@ -42,6 +44,218 @@ The comparison accidentally resolved `stage2_best_model.pth` because its filenam
 **Production decision:** keep native CAM because it avoids a backward pass and is exactly tied to the class-map head. Do not switch to Grad-CAM to address poor hotspot position; improve supervision, ROI standardization, or external annotation instead.
 
 Archived experiment notebook: [2026-07-22 joint-guided ablation](2026-07-22_11-52-13_densenet121_joint_guided_cam_ablation.ipynb).
+
+
+## Run: 2026-07-25 06:30:25.175448 UTC [SELECTED / DEPLOYED FOR EXTERNAL AUDIT] (DENSENET121 - Final Natural-Orientation Loss Ablation)
+### Summary
+This controlled experiment compared standard Cross-Entropy (CE), ordinal PD-2, and CE plus ordinal PD-2 under the same split, seed, sampler, augmentation, training schedule, and five-map native-CAM architecture. It retained natural left/right orientation, used horizontal flipping only as training augmentation, square-padded the complete knee ROI, and resized directly to `384x384` without a center crop. CE was selected at epoch 24 by the validation-only composite score. Its final labeled test results were Accuracy `0.6504`, QWK `0.8197`, macro F1 `0.6823`, Average Precision `0.7309`, and ROC AUC `0.8935`.
+
+The selected checkpoint was copied to `checkpoints/densenet121/best_model.pth` and loaded successfully by the DenseNet-only API. The deployment preprocessing exactly matches the deterministic experiment transform. However, an additional unlabeled external API audit found substantial off-joint native-CAM activation. This checkpoint is therefore the selected classification result and current external-audit deployment, but it is not yet validated as a production-grade explanation system.
+
+### Configurations
+| Parameter | Value |
+| --- | --- |
+| **Model** | DenseNet-121 with ImageNet initialization |
+| **Checkpoint Architecture** | `final_linear_native_cam` |
+| **Classifier / Explanation Head** | Five `1x1` class maps; logits are their spatial means; native CAM is the positive map for the selected grade |
+| **Input Preprocessing** | Square pad, LAB-space CLAHE (`clipLimit=2.0`, `tileGridSize=8x8`), direct resize to `384x384`, ImageNet normalization |
+| **Input Crop** | None; the complete square-padded ROI is retained |
+| **Laterality Canonicalization** | Disabled; left and right knees retain their natural orientation |
+| **Training Augmentation** | Horizontal flip `p=0.50`; rotation `+/-5` degrees; brightness and contrast jitter `0.08`; random erasing `p=0.10`, scale `0.02-0.05`, ratio `0.5-2.0` |
+| **Gamma / Gaussian Noise** | Disabled |
+| **Validation / Test Transform** | Deterministic; no flip, rotation, jitter, erasing, crop, or TTA |
+| **Sampler** | Full inverse-frequency `WeightedRandomSampler`, replacement enabled, one sampled epoch equal to the training-set size |
+| **Compared Loss Arms** | CE; ordinal PD-2; CE + `0.25` ordinal PD-2 |
+| **Batch Size / Workers** | 48 / 4 persistent workers |
+| **Training Schedule** | 30 epochs: 5 head warm-up + 15 coarse fine-tuning + 10 full fine-tuning |
+| **Warm-up Stage** | Backbone frozen; class-map head trained with AdamW, LR `3e-4`, weight decay `1e-4` |
+| **Coarse Stage** | Dense blocks 3 and 4 plus head trainable; backbone LR `3e-5`, head LR `3e-4`, AdamW weight decay `1e-4` |
+| **Full Fine-tuning Stage** | Restart from best coarse-stage weights; entire network trainable; AdamW LR `1e-5`, weight decay `1e-3` |
+| **Scheduler** | CosineAnnealingLR in coarse and full stages; `eta_min=1e-7`, `T_max=15` and `10` respectively |
+| **AMP / Gradient Clipping** | CUDA AMP enabled when available; global gradient norm clipped to `1.0` |
+| **EMA** | Disabled |
+| **Seed** | 42 for Python, NumPy, PyTorch, sampler, and loader generation |
+| **Checkpoint Selection** | Validation only: `0.55*QWK + 0.30*macro_F1 + 0.15*macro_AP` |
+| **Selected Loss / Epoch** | CE / epoch 24 (`finetune`) |
+| **Run Directory** | `2026-07-25_06-30-25_175448_UTC_final_noncanonical_loss_ablation/ce` |
+| **Deployed Checkpoint** | `checkpoints/densenet121/best_model.pth` |
+| **Checkpoint SHA-256** | `27854d6f160ca9455c61ed160dd2ccb2994b4e7f94c313270f69718314284400` |
+
+### Validation Loss Comparison
+| Loss | Best Epoch | Accuracy | QWK | Macro F1 | Grade 1 Recall | AP | AUC | Selection Score |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| **CE (selected)** | **24** | **0.6465** | **0.8083** | **0.6819** | 0.3856 | **0.7310** | 0.8853 | **0.7588** |
+| Ordinal PD-2 | 29 | 0.3862 | 0.6679 | 0.3352 | **0.8824** | 0.3521 | 0.6319 | 0.5207 |
+| CE + 0.25 ordinal PD-2 | 30 | 0.6453 | 0.8066 | 0.6783 | 0.4314 | 0.7308 | **0.8880** | 0.7567 |
+
+Pure ordinal PD-2 produced high Grade 1 recall but collapsed overall discrimination, precision, AP, and macro F1. The hybrid arm was close to CE but did not exceed its validation selection score. CE was therefore selected without using the test set.
+
+### Selected CE Validation Native-CAM Audit
+The audit sampled up to 50 validation cases per grade and evaluated `227` cases in total.
+
+| Metric | Score |
+| --- | ---: |
+| **Joint energy** | 0.8235 |
+| **Border energy** | 0.1130 |
+| **Lower-tibia energy** | 0.0884 |
+| **Peak inside joint rate** | 0.9956 |
+| **Joint-occlusion probability drop** | 0.5428 |
+| **Flip CAM correlation** | 0.9609 |
+| **Flip prediction consistency** | 0.8238 |
+| **Flip Jensen-Shannon divergence** | 0.0183 |
+
+These results show strong localization on the experiment's validation distribution. They must not be treated as evidence of the same behavior after a different detector, crop geometry, or imaging source.
+
+### Final Labeled Test Metrics
+| Metric | Score |
+| --- | ---: |
+| **Accuracy** | 0.6504 |
+| **QWK Score** | 0.8197 |
+| **MAE** | 0.4010 |
+| **Macro Precision / Recall / F1** | 0.6867 / 0.6804 / 0.6823 |
+| **Grade 1 Precision / Recall** | 0.3259 / 0.3953 |
+| **Average Precision** | 0.7309 |
+| **ROC AUC** | 0.8935 |
+| **Composite score, reported only** | 0.7651 |
+
+The test confusion matrix was:
+
+```text
+             Pred 0  Pred 1  Pred 2  Pred 3  Pred 4
+True Grade 0    480     125      34       0       0
+True Grade 1    111     117      67       1       0
+True Grade 2     40     109     257      41       0
+True Grade 3      1       8      31     178       5
+True Grade 4      0       0       0       6      45
+```
+
+There were `579/1656` errors. Of these, `495` were adjacent-grade errors, `49` were under-predictions by two or more grades, and `35` were over-predictions by two or more grades. Grade 1 remains the weakest boundary.
+
+### External Docker/API Audit
+The deployed API loaded the selected checkpoint as `final_linear_native_cam`, CE, epoch 24, with natural laterality and direct `384x384` preprocessing. All `22` application tests passed. Every image in `test_images` was then submitted through the production YOLO-to-DenseNet pipeline.
+
+| Audit item | Result |
+| --- | --- |
+| **External images completed** | 105 / 105 |
+| **Detected knee predictions** | 209 |
+| **Established response schema** | Unchanged |
+| **Decoded native-CAM outputs** | 209 / 209 at `384x384` |
+| **Predicted grade distribution** | Grade 0: 141; Grade 1: 40; Grade 2: 11; Grade 3: 9; Grade 4: 8 |
+| **Mean / median confidence** | 0.4352 / 0.4190 |
+| **Predictions below 0.50 confidence** | 161 / 209 |
+| **Mean / maximum request time** | 0.8092 / 1.1862 seconds |
+
+The external images do not contain KL ground-truth labels, so this audit cannot estimate Accuracy, QWK, F1, AP, or AUC. It verifies API execution, response compatibility, and qualitative/anatomical behavior only.
+
+The conservative anatomy gate requires joint energy at least `0.55`, border energy at most `0.25`, lower-tibia energy at most `0.25`, and the CAM peak inside the broad joint band. Across the complete run plus eight knee outputs used for the visual montage, `144/217` CAMs failed at least one criterion. Among those failed maps, the overlapping failure counts were:
+
+| Failure criterion | Failed maps |
+| --- | ---: |
+| **Joint energy below 0.55** | 136 / 144 |
+| **Border energy above 0.25** | 104 / 144 |
+| **Lower-tibia energy above 0.25** | 45 / 144 |
+| **Peak outside joint band** | 109 / 144 |
+
+The failed maps averaged joint energy `0.2874`, border energy `0.3126`, and lower-tibia energy `0.2068`. Some failures are conservative false rejections, such as a clinically plausible marginal hotspot whose maximum lies at the ROI boundary. Nevertheless, the low mean joint energy and multiple simultaneous failures show that threshold strictness alone cannot explain the result.
+
+### Decision and Recommendation
+* **Loss decision:** Retain CE. Neither ordinal PD-2 nor the hybrid loss improved the shared validation objective.
+* **Classification decision:** This checkpoint is a competitive DenseNet KL-grading result. Its test QWK is slightly higher than the 2026-07-23 canonical checkpoint, while its Accuracy is lower; this does not establish broad superiority.
+* **Deployment status:** The checkpoint is currently deployed for external evaluation, and the API implementation matches its saved architecture and preprocessing metadata.
+* **Explainability decision:** Do not claim production-grade anatomical localization from this checkpoint. Native CAM is faithful to the model's class-map evidence, but the external YOLO-cropped inputs expose substantial off-joint evidence.
+* **Likely cause:** Domain and ROI-geometry shift between the experiment validation images and production YOLO crops, combined with KL-only supervision and the coarse final DenseNet feature map.
+* **Next experiment:** Train and validate on ROIs generated by the exact production YOLO/cropping path, perturb ROI translation and scale during training, and compare the current final-stage CAM head with a higher-resolution stride-16 CAM head and weak outside-joint activation regularization. Do not lower the gate merely to improve its pass rate.
+
+
+## Run: 2026-07-25 04:34:08.758611 UTC [REJECTED] (DENSENET121 - Natural Orientation + Flip + Gamma + EMA Native CAM)
+### Summary
+This run completed all 30 configured epochs and evaluated the validation-selected epoch-30 EMA checkpoint on the test set. It tested natural left/right orientation instead of deterministic right-knee mirroring, horizontal flipping during training, mild random gamma correction, and an exponential moving average (EMA) of model weights. The final test results were Accuracy `0.4553`, QWK `0.7248`, macro F1 approximately `0.5334`, Average Precision `0.6663`, and ROC AUC `0.8619`. These results are substantially below the 2026-07-23 production checkpoint, so this checkpoint must not replace production.
+
+### Improvements Tested
+| Change | Exact implementation | Intended effect |
+| --- | --- | --- |
+| **Natural laterality** | `canonicalize_laterality=False` | Support single-knee inputs without requiring a reliable left/right label at inference |
+| **Horizontal flip** | Probability `0.50`, training only | Learn both knee orientations from either side |
+| **Gamma correction** | Gamma `0.90-1.10`, probability `0.20` | Increase robustness to exposure and contrast variation |
+| **Gaussian noise** | Disabled (`p=0.00`) | Avoid obscuring subtle Grade 0/1 radiographic differences |
+| **EMA checkpoint** | Decay `0.999`; EMA used for validation and saved best checkpoint | Smooth model updates and potentially improve generalization |
+| **EMA device handling** | EMA follows the model device and source tensors are aligned during updates | Prevent the prior CPU/CUDA tensor mismatch |
+| **Native CAM head** | Five bias-free `1x1` class maps followed by spatial mean logits | Keep the prediction and heatmap mathematically tied |
+
+### Configurations
+| Parameter | Value |
+| --- | --- |
+| **Model** | densenet121 |
+| **Architecture** | natural_final_linear_cam |
+| **Model Input** | 384x384 (resize to 400x400, then crop) |
+| **Pipeline** | 3-stage: 5 warm-up + 15 coarse + 10 full fine-tune epochs |
+| **Completed / Selected Epoch** | 30 / 30; validation selection score `0.6693` |
+| **Loss Function** | Cross-Entropy (CE) in all stages |
+| **Balanced Sampler** | True; full inverse-frequency (`sampler_power=1.0`) in all stages |
+| **Laterality Canonicalization** | False |
+| **Random Horizontal Flip** | `p=0.50`, training only |
+| **Gamma / Brightness / Contrast** | Gamma `0.90-1.10` at `p=0.20`; brightness and contrast jitter `0.08` |
+| **Rotation / Random Erasing** | `+/-5` degrees; erasing `p=0.10` |
+| **EMA** | Enabled; decay `0.999` |
+| **Minority Augmentations / TTA** | False / False |
+| **Batch Size / AMP** | 48 / True |
+| **Learning Rates** | Warm-up `3e-4`; coarse backbone `3e-5`, head `3e-4`; full fine-tune `1e-5` |
+| **Checkpoint Directory** | `2026-07-25_04-34-08_758611_UTC_natural_orientation_flip_gamma_ema` |
+
+### Validation Metrics at Selected Epoch
+| Metric | Score |
+| --- | --- |
+| **Accuracy** | 0.4431 |
+| **QWK Score** | 0.7090 |
+| **Macro Recall / F1** | 0.6043 / 0.5176 |
+| **Grade 1 Recall** | 0.8170 |
+| **Average Precision / ROC AUC** | 0.6485 / 0.8549 |
+| **Composite Selection Score** | 0.6693 |
+
+The EMA validation metrics improved almost monotonically through epoch 30, but never approached the production validation checkpoint (Accuracy `0.6683`, QWK `0.8139`, macro F1 `0.6952`, AP `0.7198`, AUC `0.8877`). This trajectory indicates that decay `0.999` caused substantial lag over this short, staged training schedule. Because raw-model validation was not recorded in parallel, the experiment cannot separate EMA lag from the effects of natural orientation and augmentation.
+
+### Final Test Metrics
+| Metric | Score |
+| --- | --- |
+| **Accuracy** | 0.4553 (95% CI: 0.4348 - 0.4801) |
+| **QWK Score** | 0.7248 (95% CI: 0.7004 - 0.7494) |
+| **Macro Precision / Recall / F1** | approximately 0.6219 / 0.6232 / 0.5334 |
+| **Grade 1 Precision / Recall / F1** | 0.26 / 0.79 / 0.39 |
+| **Average Precision** | 0.6663 (95% CI: 0.6393 - 0.6923) |
+| **ROC AUC** | 0.8619 (95% CI: 0.8524 - 0.8731) |
+
+The test confusion matrix was:
+
+```text
+             Pred 0  Pred 1  Pred 2  Pred 3  Pred 4
+True Grade 0    128     477      25       9       0
+True Grade 1     17     233      24      21       1
+True Grade 2      6     192     160      88       1
+True Grade 3      0       9       6     185      23
+True Grade 4      0       0       0       3      48
+```
+
+The model predicted Grade 1 for `911/1656` test images (`55.0%`). It mislabeled `477/639` true Grade 0 images as Grade 1, reducing Grade 0 recall to `0.20`. Full inverse-frequency sampling combined with checkpoint selection that rewards Grade 1 recall produced a strongly over-balanced classifier: Grade 1 recall rose to `0.79`, but its precision was only `0.26`. The relatively moderate QWK hides this failure because most errors are between adjacent grades.
+
+### Visualizations
+#### DenseNet Test Metrics
+![DenseNet natural-orientation EMA test confusion matrix, ROC, and precision-recall curves, run 2026-07-25 04:34:08.758611 UTC](assets/2026-07-25_04-34-08_natural_orientation_ema_test_metrics.png)
+
+#### DenseNet Native-CAM Examples
+![DenseNet natural-orientation EMA native-CAM examples, run 2026-07-25 04:34:08.758611 UTC](assets/2026-07-25_04-34-08_natural_orientation_ema_cam_examples.jpg)
+
+### Native-CAM Evaluation
+The five grade examples and five Grade 0-to-1 error examples place their strongest activation along the tibiofemoral joint line. Per-example joint enrichment ranged from `1.759` to `2.216` for the grade examples and from `1.964` to `2.233` for the displayed errors. Border enrichment ranged from `0.325` to `0.647`. Qualitatively, the maps are better aligned with the joint than the off-anatomy examples seen in earlier deployment montages, but several maps still concentrate at medial or lateral image margins rather than delineating a specific osteophyte or narrowed joint-space region.
+
+This CAM output is faithful to the weak classifier evidence, not proof of exact disease localization. In particular, all five displayed errors are Grade 0 knees predicted as Grade 1; their heatmaps show where the incorrect Grade 1 score came from, while the confusion matrix demonstrates that the class decision itself is poorly calibrated. The notebook did not run the earlier stratified 50-cases-per-grade occlusion audit, so its per-example enrichment values must not be compared directly with the production run's aggregate joint-energy score.
+
+### Decision and Recommendation
+* **Production decision:** Reject this checkpoint. Keep the 2026-07-23 production DenseNet checkpoint.
+* **Main failure:** Full balancing and the selection reward for Grade 1 recall caused severe Grade 0-to-1 overprediction; the high EMA decay also lagged throughout the 30-epoch schedule.
+* **What this run establishes:** Natural-orientation flip training can keep CAM hotspots near the joint, but this multi-change experiment does not establish that flip or gamma improves classification.
+* **Next controlled experiment:** Compare raw weights against EMA on every validation epoch under the same split. Initialize EMA after the five-epoch head warm-up or test decay `0.99`/`0.995`, and compare square-root sampling (`sampler_power=0.5`) with full balancing. Do not use the test set for that selection.
+
+Archived executed notebook: [2026-07-25 natural-orientation flip/gamma EMA run](2026-07-25_04-34-08_densenet121_natural_orientation_flip_gamma_ema.ipynb).
 
 
 ## Run: 2026-07-23 01:31:37.184239 UTC [PRODUCTION] (DENSENET121 - Canonical Final Linear CAM (CE + Laterality Canonicalization + Native CAM))

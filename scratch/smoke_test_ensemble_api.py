@@ -17,7 +17,7 @@ import numpy as np
 API_URL = os.getenv(
     "API_URL", "http://127.0.0.1:8005/api/v1/predict"
 )
-IMAGE_DIR = Path("/test_images")
+IMAGE_DIR = Path(os.getenv("IMAGE_DIR", "/test_images"))
 SAMPLE_SIZE = int(os.getenv("SMOKE_SAMPLE_SIZE", "20"))
 SAMPLE_SEED = 20260724
 TOP_LEVEL_KEYS = {"filename", "predictions", "annotated_image"}
@@ -34,6 +34,39 @@ PREDICTION_KEYS = {
     "gradcam_image",
 }
 DETAIL_KEYS = {"0Normal", "1Doubtful", "2Mild", "3Moderate", "4Severe"}
+
+
+def build_result(
+    selected_count: int,
+    rows: list[dict],
+    all_grades: list[int],
+    total_predictions: int,
+    complete: bool,
+) -> dict:
+    return {
+        "sample_seed": SAMPLE_SEED,
+        "images_total": selected_count,
+        "images": len(rows),
+        "predictions": total_predictions,
+        "complete": complete,
+        "schema_unchanged": True,
+        "all_heatmaps_decoded_at_384x384": True,
+        "grade_distribution": dict(sorted(Counter(all_grades).items())),
+        "mean_request_seconds": (
+            sum(row["seconds"] for row in rows) / len(rows) if rows else 0.0
+        ),
+        "max_request_seconds": (
+            max(row["seconds"] for row in rows) if rows else 0.0
+        ),
+        "rows": rows,
+    }
+
+
+def persist_result(result_path: str | None, result: dict) -> None:
+    if result_path:
+        Path(result_path).write_text(
+            json.dumps(result, indent=2, sort_keys=True), encoding="utf-8"
+        )
 
 
 def multipart_body(image_path: Path) -> tuple[bytes, str]:
@@ -76,6 +109,7 @@ def main() -> None:
     rows = []
     all_grades = []
     total_predictions = 0
+    result_path = os.getenv("RESULT_PATH")
     for image_path in selected:
         body, content_type = multipart_body(image_path)
         request = urllib.request.Request(
@@ -132,18 +166,17 @@ def main() -> None:
                 "seconds": elapsed,
             }
         )
+        persist_result(
+            result_path,
+            build_result(
+                len(selected), rows, all_grades, total_predictions, complete=False
+            ),
+        )
 
-    result = {
-        "sample_seed": SAMPLE_SEED,
-        "images": len(selected),
-        "predictions": total_predictions,
-        "schema_unchanged": True,
-        "all_heatmaps_decoded_at_384x384": True,
-        "grade_distribution": dict(sorted(Counter(all_grades).items())),
-        "mean_request_seconds": sum(row["seconds"] for row in rows) / len(rows),
-        "max_request_seconds": max(row["seconds"] for row in rows),
-        "rows": rows,
-    }
+    result = build_result(
+        len(selected), rows, all_grades, total_predictions, complete=True
+    )
+    persist_result(result_path, result)
     print("SMOKE_JSON=" + json.dumps(result, sort_keys=True))
 
 

@@ -5,6 +5,7 @@ This file records the optimized SE-ResNeXt-50 comparison run, its exact configur
 
 | Run Timestamp | Model Configuration / Loss | Accuracy | QWK Score | ROC AUC | Avg Precision | Macro F1 | Grade 1 Recall | CAM Joint Energy | CAM Border Energy |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-07-25 01:50:53.962450 UTC | **Natural Orientation + Horizontal Flip + Mild Gamma + Final Native CAM**<br>Cross-Entropy (CE) | **0.6558** | **0.8216** | **0.8980** | **0.7299** | **0.6781** | 0.4122 | 0.8516 | 0.0990 |
 | 2026-07-23 06:57:13.378879 UTC | Multiscale 24x24 Native CAM + EMA (`0.999`)<br>Cross-Entropy (CE) | 0.5676 (95% bootstrap CI: 0.5429 - 0.5918) | 0.7651 (95% bootstrap CI: 0.7406 - 0.7887) | 0.8703 | 0.6918 | 0.6220 | **0.5507** | 0.7938 | 0.1175 |
 | 2026-07-23 01:25:36.772175 UTC | **Final Linear Native CAM (Laterality Canonicalized)**<br>Cross-Entropy (CE) | 0.6389 (95% bootstrap CI: 0.6153 - 0.6624) | 0.8194 (95% bootstrap CI: 0.7999 - 0.8384) | 0.8948 | 0.7248 | 0.6671 | 0.4155 | 0.8707 | 0.0749 |
 
@@ -42,6 +43,167 @@ SE-ResNeXt native CAM and final-layer Grad-CAM had map correlation `1.0000`, mea
 **Production decision:** retain the final 12x12 native-CAM CE checkpoint with full inverse sampling. Reject the multiscale/EMA, FPN, joint-guided, and soft-label arms. Native CAM is the deployment method because it is cheaper and structurally faithful, not because it has demonstrated superior anatomical localization.
 
 Archived experiment notebooks: [CAM architecture/loss ablation](2026-07-22_11-50-51_seresnext50_cam_ablation.ipynb) and [sampler ablation](2026-07-23_15-13-05_seresnext50_sampler_ablation.ipynb).
+
+## Run: 2026-07-25 01:50:53.962450 UTC (SE-RESNEXT50-32X4D - NATURAL ORIENTATION + FLIP + GAMMA + FINAL NATIVE CAM)
+
+### Summary
+
+This run completed all 30 configured epochs on a Tesla T4 without a training error and selected epoch 28 using the validation composite score (`0.7061`). It removed deterministic right-knee canonicalization and instead exposed the model to both orientations with a training-only horizontal flip (`p=0.50`). It also added mild gamma correction (`0.90-1.10`, `p=0.20`) while retaining mild rotation, brightness/contrast jitter, CLAHE, a small random erasing region, and the original 12x12 five-map native-CAM head.
+
+Against the 2026-07-23 01:25:36.772175 UTC canonical checkpoint, locked-test Accuracy improved by `0.0169`, QWK by `0.0022`, macro F1 by `0.0110`, AP by `0.0051`, and AUC by `0.0032`. Grade 1 recall decreased slightly by `0.0033`. The CAM audit moved in the opposite direction: joint energy decreased by `0.0191` and border energy increased by `0.0241`. The run is therefore the strongest natural-orientation SE-ResNeXt candidate, but it does not prove a uniformly better metric-plus-localization model.
+
+### Configurations
+
+| Parameter | Value |
+| --- | --- |
+| **Model** | `seresnext50_32x4d` |
+| **Architecture** | `natural_final_native_cam_ce` |
+| **Model Input** | 384x384 (square pad, CLAHE, resize to 400x400, then crop) |
+| **Native-CAM Head** | Bias-free 1x1 convolution producing five 12x12 grade maps; global spatial mean produces five logits |
+| **Pipeline** | 3-stage |
+| **Epochs** | 30 (5 warm-up + 15 coarse + 10 fine-tune) |
+| **Selected Checkpoint** | Epoch 28; validation selection score 0.7061 |
+| **Loss Function** | Cross-Entropy (CE) |
+| **Balanced Sampler** | Full inverse-frequency |
+| **Laterality Canonicalization** | Disabled |
+| **Orientation Policy** | Preserve natural orientation; no deterministic inference mirroring |
+| **Training Augmentation** | Horizontal flip `p=0.50`; rotation `+/-5 degrees`; brightness/contrast `0.08`; gamma `0.90-1.10` at `p=0.20`; random erasing `p=0.10` |
+| **Gaussian Noise** | Disabled |
+| **Dataset Sizes** | Train 5,778; validation 826; test 1,656 unique images after hash deduplication |
+| **Training Class Counts** | Grade 0: 2,286; Grade 1: 1,046; Grade 2: 1,516; Grade 3: 757; Grade 4: 173 |
+| **Batch Size / Workers / GPU** | 48 / 4 / Tesla T4 |
+| **Warm-up Learning Rate** | 3e-4; native-CAM head only |
+| **Coarse Learning Rates** | Backbone 3e-5; native-CAM head 3e-4 |
+| **Fine-tune Learning Rate** | 1e-5; full model |
+| **Weight Decay** | 1e-4 in warm-up/coarse; 1e-3 in fine-tuning |
+| **Checkpoint Directory** | `2026-07-25_01-50-53_962450_UTC_natural_orientation_flip_gamma_native_cam_ce` |
+| **Executed Notebook Archive** | [`2026-07-25_01-50-53_seresnext50_32x4d_natural_orientation_flip_gamma_native_cam_ce.ipynb`](2026-07-25_01-50-53_seresnext50_32x4d_natural_orientation_flip_gamma_native_cam_ce.ipynb) |
+
+### Selected Validation Metrics
+
+| Metric | Score |
+| --- | ---: |
+| **QWK Score** | 0.7899 |
+| **Macro F1** | 0.6617 |
+| **Grade 1 Recall** | 0.3856 |
+| **Average Precision** | 0.7139 |
+| **Composite Selection Score** | 0.7061 |
+
+The stored notebook output did not print the selected epoch's validation Accuracy, macro Precision, macro Recall, AUC, or loss. They are not reconstructed here. Epoch 29 reached a slightly higher macro F1 (`0.6674`), but epoch 28 won the predeclared composite selection rule and was correctly retained.
+
+### Final Test Metrics
+
+| Metric | Score | Delta vs. 2026-07-23 canonical checkpoint |
+| --- | ---: | ---: |
+| **Accuracy** | 0.6558 | +0.0169 |
+| **QWK Score** | 0.8216 | +0.0022 |
+| **Macro Precision** | 0.6730 | +0.0053 |
+| **Macro Recall** | 0.6878 | +0.0151 |
+| **Macro F1** | 0.6781 | +0.0110 |
+| **Grade 1 Recall** | 0.4122 | -0.0033 |
+| **Average Precision** | 0.7299 | +0.0051 |
+| **ROC AUC** | 0.8980 | +0.0032 |
+| **Composite Score** | 0.7286 | Not used for checkpoint selection |
+| **Loss** | 0.7676 | -0.0229 |
+
+No confidence interval was exported by this run. The test split was loaded only after validation checkpoint selection, but it has been examined across multiple historical experiments; these values must therefore be treated as development evidence rather than a fresh external estimate.
+
+### Classification Report
+
+```text
+              precision    recall  f1-score   support
+
+     Grade 0       0.77      0.74      0.75       639
+     Grade 1       0.34      0.41      0.37       296
+     Grade 2       0.69      0.58      0.63       447
+     Grade 3       0.76      0.84      0.80       223
+     Grade 4       0.81      0.86      0.84        51
+
+    accuracy                           0.66      1656
+   macro avg       0.67      0.69      0.68      1656
+weighted avg       0.67      0.66      0.66      1656
+```
+
+The exact test confusion matrix was:
+
+```text
+             Pred 0  Pred 1  Pred 2  Pred 3  Pred 4
+True Grade 0    471     134      32       1       1
+True Grade 1    103     122      66       5       0
+True Grade 2     39      99     261      48       0
+True Grade 3      0       6      20     188       9
+True Grade 4      0       0       0       7      44
+```
+
+Grade 1 remains the principal weakness. Its recall is `0.4122` and its rounded precision is only `0.34`, showing that orientation augmentation did not resolve the Grade 0/1/2 boundary. Grade 3 and Grade 4 remain substantially easier, with recall `0.84` and `0.86` respectively.
+
+### Training History and Convergence
+
+Warm-up ended at epoch 5 with QWK `0.4611`. Coarse training reached QWK `0.7859` at epoch 20. Fine-tuning then improved the composite score from `0.6832` at epoch 21 to its maximum `0.7061` at epoch 28. Epochs 29 and 30 remained close (`0.7056` and `0.7050`), so the selected checkpoint was at a stable plateau rather than an isolated early spike.
+
+| Stage | Epoch | QWK | Macro F1 | Grade 1 Recall | AP | Selection |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Warm-up | 1 | 0.2754 | 0.2679 | 0.1373 | 0.3248 | 0.2925 |
+| Warm-up | 2 | 0.3990 | 0.2264 | 0.0654 | 0.3481 | 0.3353 |
+| Warm-up | 3 | 0.4408 | 0.2725 | 0.4967 | 0.3721 | 0.4094 |
+| Warm-up | 4 | 0.4012 | 0.2295 | 0.1242 | 0.3745 | 0.3479 |
+| Warm-up | 5 | 0.4611 | 0.3084 | 0.3333 | 0.3818 | 0.4110 |
+| Coarse | 6 | 0.6352 | 0.4353 | 0.0458 | 0.5066 | 0.5151 |
+| Coarse | 7 | 0.7074 | 0.5337 | 0.0719 | 0.5965 | 0.5885 |
+| Coarse | 8 | 0.7638 | 0.6155 | 0.1830 | 0.6448 | 0.6504 |
+| Coarse | 9 | 0.7566 | 0.5838 | 0.1961 | 0.6562 | 0.6406 |
+| Coarse | 10 | 0.7408 | 0.6124 | 0.3922 | 0.6576 | 0.6654 |
+| Coarse | 11 | 0.7532 | 0.6321 | 0.3072 | 0.6850 | 0.6702 |
+| Coarse | 12 | 0.7712 | 0.6182 | 0.2353 | 0.6817 | 0.6642 |
+| Coarse | 13 | 0.7628 | 0.6376 | 0.3791 | 0.6968 | 0.6853 |
+| Coarse | 14 | 0.7737 | 0.6504 | 0.3856 | 0.6972 | 0.6933 |
+| Coarse | 15 | 0.7793 | 0.6457 | 0.2810 | 0.6997 | 0.6840 |
+| Coarse | 16 | 0.7787 | 0.6418 | 0.3072 | 0.7045 | 0.6855 |
+| Coarse | 17 | 0.7790 | 0.6482 | 0.3333 | 0.7023 | 0.6904 |
+| Coarse | 18 | 0.7819 | 0.6517 | 0.3203 | 0.7049 | 0.6915 |
+| Coarse | 19 | 0.7843 | 0.6551 | 0.3203 | 0.7055 | 0.6933 |
+| Coarse | 20 | 0.7859 | 0.6416 | 0.2484 | 0.7036 | 0.6827 |
+| Fine-tune | 21 | 0.7746 | 0.6454 | 0.2941 | 0.6966 | 0.6832 |
+| Fine-tune | 22 | 0.7855 | 0.6554 | 0.3856 | 0.7058 | 0.7017 |
+| Fine-tune | 23 | 0.7815 | 0.6367 | 0.3399 | 0.6972 | 0.6886 |
+| Fine-tune | 24 | 0.7822 | 0.6587 | 0.3595 | 0.7051 | 0.6982 |
+| Fine-tune | 25 | 0.7885 | 0.6549 | 0.3333 | 0.7080 | 0.6967 |
+| Fine-tune | 26 | 0.7910 | 0.6602 | 0.3660 | 0.7099 | 0.7035 |
+| Fine-tune | 27 | 0.7903 | 0.6599 | 0.3660 | 0.7123 | 0.7031 |
+| **Fine-tune** | **28** | **0.7899** | **0.6617** | **0.3856** | **0.7139** | **0.7061** |
+| Fine-tune | 29 | 0.7885 | 0.6674 | 0.3725 | 0.7139 | 0.7056 |
+| Fine-tune | 30 | 0.7909 | 0.6658 | 0.3660 | 0.7117 | 0.7050 |
+
+### Visualizations
+
+#### Test Confusion Matrix
+
+![SE-ResNeXt natural-orientation test confusion matrix, run 2026-07-25 01:50:53.962450 UTC](assets/2026-07-25_01-50-53_test_confusion_matrix.png)
+
+#### Native-CAM Audit Gallery
+
+![SE-ResNeXt natural-orientation native-CAM audit, run 2026-07-25 01:50:53.962450 UTC](assets/2026-07-25_01-50-53_native_cam_audit.png)
+
+### Native-CAM Evaluation
+
+| Metric | 2026-07-23 canonical checkpoint | 2026-07-25 natural-orientation run | Delta | Direction |
+| --- | ---: | ---: | ---: | --- |
+| **Audited cases** | 227 | 227 | 0 | Same cases/count |
+| **Joint energy** | 0.8707 | 0.8516 | -0.0191 | Worse |
+| **Border energy** | 0.0749 | 0.0990 | +0.0241 | Worse |
+| **Lower-tibia energy** | 0.0880 | 0.0878 | -0.0002 | Essentially unchanged |
+| **Peak inside joint** | 0.9956 | 0.9912 | -0.0044 | Slightly worse; 225/227 peaks inside |
+
+The CAM audit remains broadly acceptable: `99.12%` of peaks were inside the broad joint proxy and `85.16%` of positive CAM energy lay inside it. It is not perfect anatomical validation. The central-band mask is only a proxy, and a mean lower-tibia energy of `0.0878` confirms that some explanations still use evidence below the intended joint space. The gallery must therefore be reviewed alongside predicted-versus-true class maps and occlusion sensitivity; a plausible overlay alone is insufficient.
+
+### Comparison and Decision
+
+| Candidate | Accuracy | QWK | Macro F1 | Grade 1 Recall | AP | AUC | Joint Energy | Border Energy |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 2026-07-23 canonical orientation | 0.6389 | 0.8194 | 0.6671 | **0.4155** | 0.7248 | 0.8948 | **0.8707** | **0.0749** |
+| **2026-07-25 natural orientation** | **0.6558** | **0.8216** | **0.6781** | 0.4122 | **0.7299** | **0.8980** | 0.8516 | 0.0990 |
+
+**Decision:** retain this checkpoint as the preferred SE-ResNeXt candidate when inference must support single-knee images without reliable laterality metadata. Do not claim that it is uniformly superior to the canonical checkpoint: the predictive improvement is modest, Grade 1 recall did not improve, and the broad CAM localization metrics regressed. Before application promotion, compare both checkpoints on the same external single-knee and bilateral-ROI cases and verify that inference uses the matching natural-orientation preprocessing.
 
 ## Run: 2026-07-23 06:57:13.378879 UTC (SE-RESNEXT50-32X4D - Multiscale 24x24 Native CAM + EMA)
 

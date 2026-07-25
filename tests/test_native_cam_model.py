@@ -16,7 +16,7 @@ EFFICIENTNET_B0_CHECKPOINT = Path("checkpoints/efficientnet_b0/best_model.pth")
 
 def test_checkpoint_loads_and_native_cam_matches_logits():
     checkpoint = torch.load(CHECKPOINT, map_location="cpu", weights_only=False)
-    assert checkpoint["architecture"] == "canonical_final_linear_cam"
+    assert checkpoint["architecture"] == "final_linear_native_cam"
 
     model = DenseNet121Model(num_classes=5, pretrained=False, ordinal_type="ce")
     model.load_state_dict(checkpoint["model_state_dict"], strict=True)

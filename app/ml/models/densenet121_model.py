@@ -9,7 +9,7 @@ from app.ml.models.base_model import BaseModel
 class DenseNet121Model(BaseModel):
     """Inference-only DenseNet-121 with a five-map native-CAM head."""
 
-    architecture = "canonical_final_linear_cam"
+    architecture = "final_linear_native_cam"
 
     def __init__(
         self,
@@ -21,7 +21,7 @@ class DenseNet121Model(BaseModel):
         super().__init__()
         if ordinal_type != "ce":
             raise ValueError(
-                "canonical_final_linear_cam requires CE logits; "
+                "final_linear_native_cam requires CE logits; "
                 f"received ordinal_type={ordinal_type!r}"
             )
 

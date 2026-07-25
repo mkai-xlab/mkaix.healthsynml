@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#17211d">
+  <title>KL Response Viewer</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand" aria-label="KL Response Viewer">
+      <span class="brand-mark">KL</span>
+      <span class="brand-name">Response Viewer</span>
+    </div>
+    <div class="header-status" id="headerStatus">No response loaded</div>
+    <nav class="header-actions" aria-label="Response actions">
+      <button class="button button-secondary" id="editButton" type="button" hidden>Edit JSON</button>
+      <button class="button button-quiet" id="clearButton" type="button">Clear</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="input-view" id="inputView" aria-labelledby="inputTitle">
+      <div class="input-tool">
+        <div class="tool-heading">
+          <div>
+            <p class="eyebrow">POST /predict</p>
+            <h1 id="inputTitle">Prediction response</h1>
+          </div>
+          <span class="schema-chip">JSON</span>
+        </div>
+
+        <label class="visually-hidden" for="responseInput">Prediction response JSON</label>
+        <textarea
+          id="responseInput"
+          spellcheck="false"
+          autocomplete="off"
+          placeholder='{"filename":"knee.png","predictions":[...],"annotated_image":"data:image/..."}'
+        ></textarea>
+
+        <div class="validation-message" id="validationMessage" role="alert" hidden></div>
+
+        <div class="tool-actions">
+          <button class="button button-secondary" id="pasteButton" type="button">Paste</button>
+          <button class="button button-secondary" id="exampleButton" type="button">Load example</button>
+          <button class="button button-primary" id="renderButton" type="button">Render response</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="result-view" id="resultView" hidden aria-live="polite">
+      <section class="summary-band" aria-labelledby="resultTitle">
+        <div class="summary-copy">
+          <p class="eyebrow">KL grading result</p>
+          <h1 id="resultTitle">Prediction</h1>
+          <p class="filename" id="filename"></p>
+        </div>
+        <div class="summary-stats" id="summaryStats"></div>
+      </section>
+
+      <section class="annotated-section" id="annotatedSection">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Detection output</p>
+            <h2>Annotated radiograph</h2>
+          </div>
+          <a class="text-action" id="annotatedDownload" download="annotated-image.jpg">Download</a>
+        </div>
+        <button class="image-button annotated-frame" id="annotatedOpen" type="button">
+          <img id="annotatedImage" alt="Annotated knee radiograph">
+          <span class="image-error" id="annotatedError" hidden>Image unavailable</span>
+        </button>
+      </section>
+
+      <section class="predictions-section" aria-labelledby="predictionsTitle">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Detected knees</p>
+            <h2 id="predictionsTitle">Predictions</h2>
+          </div>
+          <span class="count-label" id="predictionCount"></span>
+        </div>
+        <div class="prediction-list" id="predictionList"></div>
+      </section>
+
+      <section class="additional-section" id="additionalSection" hidden>
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Response metadata</p>
+            <h2>Additional fields</h2>
+          </div>
+        </div>
+        <dl class="metadata-list" id="additionalFields"></dl>
+      </section>
+    </section>
+  </main>
+
+  <dialog class="image-dialog" id="imageDialog">
+    <div class="dialog-header">
+      <strong id="dialogTitle">Image</strong>
+      <button class="close-button" id="dialogClose" type="button" aria-label="Close image">&times;</button>
+    </div>
+    <img id="dialogImage" alt="Expanded prediction image">
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>

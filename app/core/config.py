@@ -39,7 +39,7 @@ class Settings:
     )
 
     MODEL_MODE: str = normalize_model_mode(
-        os.getenv("MODEL_MODE", "ensemble")
+        os.getenv("MODEL_MODE", "densenet121")
     )
     # Retained for modules outside the inference pipeline that still read it.
     DEFAULT_MODEL_NAME: str = MODEL_MODE
@@ -49,7 +49,7 @@ class Settings:
     )
     EXPECTED_MODEL_ARCHITECTURE: str = os.getenv(
         "EXPECTED_MODEL_ARCHITECTURE",
-        "canonical_final_linear_cam",
+        "final_linear_native_cam",
     )
     SE_RESNEXT_CHECKPOINT_PATH: str = os.getenv(
         "SE_RESNEXT_CHECKPOINT_PATH",
@@ -79,7 +79,7 @@ class Settings:
     YOLO_CHECKPOINT_PATH: str = os.getenv(
         "YOLO_CHECKPOINT_PATH", "checkpoints/yolov8/best.pt"
     )
-    IMG_SIZE: int = int(os.getenv("IMG_SIZE", "400"))
+    IMG_SIZE: int = int(os.getenv("IMG_SIZE", "384"))
     CROP_SIZE: int = int(os.getenv("CROP_SIZE", "384"))
     ORDINAL_TYPE: str = os.getenv("ORDINAL_TYPE", "ce")
 

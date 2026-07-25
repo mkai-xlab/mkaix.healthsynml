@@ -49,10 +49,7 @@ class OpenCVCLAHE:
 def canonicalize_knee_laterality(
     image_rgb: np.ndarray, knee_side: str
 ) -> tuple[np.ndarray, bool]:
-    """Mirror anatomical right knees to the orientation used by the checkpoint."""
-    normalized_side = (knee_side or "unknown").strip().lower()
-    if normalized_side == "right":
-        return np.ascontiguousarray(image_rgb[:, ::-1]), True
+    """Retain natural laterality for the non-canonical production checkpoint."""
     return image_rgb, False
 
 
@@ -68,7 +65,6 @@ class PreprocessingService:
                 OpenCVCLAHE(),
                 transforms.ToPILImage(),
                 transforms.Resize((self.img_size, self.img_size)),
-                transforms.CenterCrop(self.crop_size),
             ]
         )
         self.tensor_transform = transforms.Compose(

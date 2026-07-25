@@ -16,16 +16,15 @@ def _encoded_asymmetric_image() -> bytes:
     return buffer.tobytes()
 
 
-def test_right_knee_canonicalization_is_horizontal_mirror():
+def test_natural_orientation_is_retained_for_both_knee_sides():
     image = np.arange(4 * 6 * 3, dtype=np.uint8).reshape(4, 6, 3)
     left, left_was_mirrored = canonicalize_knee_laterality(image, "left")
     right, right_was_mirrored = canonicalize_knee_laterality(image, "right")
 
     assert not left_was_mirrored
-    assert right_was_mirrored
+    assert not right_was_mirrored
     assert np.array_equal(left, image)
-    assert np.array_equal(right, image[:, ::-1])
-    assert right.flags["C_CONTIGUOUS"]
+    assert np.array_equal(right, image)
 
 
 def test_inference_preprocessing_matches_checkpoint_dimensions():
@@ -35,5 +34,5 @@ def test_inference_preprocessing_matches_checkpoint_dimensions():
 
     assert tensor.shape == (1, 3, 384, 384)
     assert processed.shape == (384, 384, 3)
-    assert was_mirrored
+    assert not was_mirrored
     assert np.isfinite(tensor.numpy()).all()

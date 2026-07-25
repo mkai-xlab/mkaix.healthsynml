@@ -15,12 +15,17 @@ from smoke_test_ensemble_api import multipart_body
 API_URL = os.getenv(
     "API_URL", "http://127.0.0.1:8005/api/v1/predict"
 )
-IMAGE_DIR = Path("/test_images")
-IMAGE_NAMES = (
+IMAGE_DIR = Path(os.getenv("IMAGE_DIR", "/test_images"))
+DEFAULT_IMAGE_NAMES = (
     "9003175_20050511_00771504_png.rf.IoxlFMVl0YwSkDAlE75n.png",
     "9003430_20050602_00834204_png.rf.Kpd9DSkhjuW0yLXWtExz.png",
     "9063928_20050706_00936604_png.rf.LRfuXW5YKk9oloWTXpP5.png",
     "9066155_20050708_00966103_png.rf.MPbUeDHCeJ08c8TNVNVc.png",
+)
+IMAGE_NAMES = tuple(
+    name.strip()
+    for name in os.getenv("IMAGE_NAMES", ",".join(DEFAULT_IMAGE_NAMES)).split(",")
+    if name.strip()
 )
 
 

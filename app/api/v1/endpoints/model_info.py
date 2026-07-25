@@ -17,8 +17,8 @@ def get_model_info():
         "loss": "cross_entropy",
         "input": {
             "resize": [settings.IMG_SIZE, settings.IMG_SIZE],
-            "center_crop": [settings.CROP_SIZE, settings.CROP_SIZE],
-            "laterality_canonicalization": True,
+            "center_crop": None,
+            "laterality_canonicalization": False,
         },
         "heatmap": {
             "method": "native_class_activation_map",
