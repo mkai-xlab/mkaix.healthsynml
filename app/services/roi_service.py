@@ -4,6 +4,13 @@ import numpy as np
 import cv2
 from app.core.config import settings
 
+
+NO_KNEE_ROI_MESSAGE = (
+    "No knee joint ROI was detected. Please upload a frontal knee X-ray "
+    "with the complete tibiofemoral joint visible."
+)
+
+
 class ROIService:
     """Service handling Knee Joint ROI Detection and Cropping using YOLOv8."""
     
@@ -38,28 +45,7 @@ class ROIService:
             
         detections = []
         if self.model is None:
-            # Fallback: Draw a dummy box in the center if model is not loaded for testing
-            h, w = img.shape[:2]
-            x1, y1, x2, y2 = int(w*0.1), int(h*0.1), int(w*0.9), int(h*0.9)
-            cv2.rectangle(img, (x1, y1), (x2, y2), (0, 0, 255), 3)
-            cv2.putText(img, "YOLOv8 Not Loaded - Dummy Box", (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
-            
-            # Crop dummy ROI
-            crop = img[y1:y2, x1:x2]
-            _, crop_buffer = cv2.imencode(".png", crop)
-            crop_base64 = base64.b64encode(crop_buffer).decode("utf-8")
-            
-            detections.append({
-                "box": [x1, y1, x2, y2],
-                "x": x1,
-                "y": y1,
-                "w": x2 - x1,
-                "h": y2 - y1,
-                "class_name": "Knee Joint (Dummy)",
-                "confidence": 1.0,
-                "knee_side": "unknown",
-                "roi_image": f"data:image/png;base64,{crop_base64}"
-            })
+            raise RuntimeError("YOLO ROI detector is unavailable.")
         else:
             # Run prediction
             results = self.model.predict(source=img, conf=0.45, save=False, verbose=False)
@@ -104,6 +90,9 @@ class ROIService:
                     "knee_side": side,
                     "roi_image": f"data:image/png;base64,{crop_base64}"
                 })
+
+            if not detections:
+                raise ValueError(NO_KNEE_ROI_MESSAGE)
                 
         # Encode to base64
         _, buffer = cv2.imencode(".jpg", img)
@@ -118,8 +107,7 @@ class ROIService:
             raise ValueError("Could not decode image from bytes.")
             
         if self.model is None:
-            # Fallback: return full image if model not available
-            return [image_bytes]
+            raise RuntimeError("YOLO ROI detector is unavailable.")
             
         results = self.model.predict(source=img, conf=0.45, save=False, verbose=False)
         boxes = results[0].boxes
@@ -138,9 +126,8 @@ class ROIService:
             _, buffer = cv2.imencode(".png", crop)
             crops.append(buffer.tobytes())
             
-        # If no knees detected, fallback to the original image
         if not crops:
-            return [image_bytes]
+            raise ValueError(NO_KNEE_ROI_MESSAGE)
             
         return crops
 
@@ -152,7 +139,7 @@ class ROIService:
             raise ValueError("Could not decode image from bytes.")
             
         if self.model is None:
-            return []
+            raise RuntimeError("YOLO ROI detector is unavailable.")
             
         results = self.model.predict(source=img, conf=0.45, save=False, verbose=False)
         boxes = results[0].boxes
@@ -175,7 +162,10 @@ class ROIService:
                 "crop_bytes": buffer.tobytes(),
                 "yolo_conf": conf
             })
-            
+
+        if not knees:
+            raise ValueError(NO_KNEE_ROI_MESSAGE)
+
         return knees
 
 # Global instance of ROI Service

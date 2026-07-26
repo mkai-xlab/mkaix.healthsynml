@@ -1,0 +1,38 @@
+{
+  "run_timestamp": "2026-07-25_15-32-33_UTC",
+  "images": 105,
+  "knees": 209,
+  "passed_cams": 71,
+  "failed_cams": 138,
+  "unique_failed_images": 73,
+  "reason_counts": {
+    "high_border_energy": 99,
+    "low_joint_energy": 130,
+    "peak_outside_joint": 103,
+    "high_lower_tibia_energy": 41
+  },
+  "pattern_counts": {
+    "threshold_only": 4,
+    "upper_femur_or_top_border": 54,
+    "far_lateral_border": 40,
+    "lower_tibia_or_bottom_border": 39,
+    "diffuse_or_off_joint": 31
+  },
+  "grade_counts": {
+    "3": 9,
+    "2": 11,
+    "0": 141,
+    "1": 40,
+    "4": 8
+  },
+  "failed_grade_counts": {
+    "3": 5,
+    "0": 111,
+    "2": 1,
+    "1": 14,
+    "4": 7
+  },
+  "mean_request_seconds": 0.757045146790534,
+  "max_request_seconds": 1.0320378469996285,
+  "api_schema_unchanged": true
+}

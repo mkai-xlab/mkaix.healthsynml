@@ -15,7 +15,7 @@ class PredictionService:
         the classification pipeline, and returns a list of predictions alongside
         an annotated original image.
         """
-        from app.services.roi_service import roi_service
+        from app.services.roi_service import NO_KNEE_ROI_MESSAGE, roi_service
         import cv2
         import numpy as np
         import base64
@@ -30,13 +30,8 @@ class PredictionService:
         ai_results = []
         
         if not knees:
-            # Fallback if no knees detected (or YOLO disabled)
-            res = self.pipeline.predict(image_bytes, knee_side="unknown")
-            res["box"] = None
-            res["yolo_confidence"] = 0.0
-            res["knee_side"] = "unknown"
-            res["roi_image"] = None
-            ai_results.append(res)
+            # Defensive guard for alternate ROI service implementations.
+            raise ValueError(NO_KNEE_ROI_MESSAGE)
         else:
             # Determine knee side (anatomical right/left) if exactly 2 ROIs are detected
             if len(knees) == 2:

@@ -8,9 +8,9 @@ services:
     volumes:
       - ./checkpoints:/app/checkpoints:ro
     environment:
-      MODEL_MODE: ${MODEL_MODE:-ensemble}
+      MODEL_MODE: ${MODEL_MODE:-densenet121}
       MODEL_CHECKPOINT_PATH: /app/checkpoints/densenet121/best_model.pth
-      EXPECTED_MODEL_ARCHITECTURE: canonical_final_linear_cam
+      EXPECTED_MODEL_ARCHITECTURE: final_linear_native_cam
       SE_RESNEXT_CHECKPOINT_PATH: /app/checkpoints/se_resnext50_32x4d/best_model (1).pth
       EXPECTED_SE_RESNEXT_ARCHITECTURE: final_native_cam_ce
       EFFICIENTNET_B0_CHECKPOINT_PATH: /app/checkpoints/efficientnet_b0/best_model.pth

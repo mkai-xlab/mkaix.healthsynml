@@ -21,6 +21,36 @@ A summary comparison of the different runs trained on this repository. The metri
 | 2026-07-25 04:34:08.758611 UTC | **[REJECTED] Natural Orientation + Flip + Gamma + EMA Native CAM**<br>Cross-Entropy (CE) | 0.4553 (95% CI: 0.4348 - 0.4801) | 0.7248 (95% CI: 0.7004 - 0.7494) | 0.8619 (95% CI: 0.8524 - 0.8731) | 0.6663 (95% CI: 0.6393 - 0.6923) | 459 / 826 (55.57% error) | 423 (92.2%) | 4 | 20 |
 | 2026-07-25 06:30:25.175448 UTC | **[SELECTED / DEPLOYED FOR EXTERNAL AUDIT] Natural Orientation Loss Ablation**<br>Cross-Entropy (CE) | 0.6504 | 0.8197 | 0.8935 | 0.7309 | Not exported | Not exported | 49 | 35 |
 
+## Run: 2026-07-25 23:48:22.997435 UTC (DENSENET121 - PREPROCESSING QUALITY ABLATION)
+
+### Summary
+
+This validation-only six-arm experiment selected `clahe1_25_then_pad`: LAB
+CLAHE with `clipLimit=1.25` applied before square padding, followed by direct
+resize to `384x384`. The selected epoch-30 checkpoint achieved validation
+Accuracy `0.6695`, QWK `0.8274`, macro F1 `0.7061`, Grade 1 recall `0.5294`, AP
+`0.7411`, and AUC `0.8951`. It improved the shared classification objective and
+broad native-CAM geometry relative to the current `pad -> CLAHE 2.0` arm.
+
+The test split was not opened. The current baseline also crossed an interrupted
+run with fresh optimizer state, so this is a candidate-selection result rather
+than a production promotion. The selected arm audited 227 validation CAMs:
+joint energy `0.8339`, border energy `0.1092`, lower-tibia energy `0.0719`, and
+gate pass `225/227`. Grade 4 remained the most border-focused class, and a
+well-positioned CAM did not guarantee a correct KL prediction.
+
+**Decision:** retain `clahe1_25_then_pad` for an uninterrupted two-arm,
+multi-seed confirmation. Only then evaluate once on a newly locked labeled
+holdout and repeat the external production-YOLO CAM audit with matching
+preprocessing. Do not replace production from this validation result alone.
+
+Full metrics, preprocessing details, limitations, research references, and
+good-versus-bad CAM examples are in the [complete preprocessing ablation
+report](2026-07-25_23-48-22_preprocessing_quality_ablation.md).
+
+Archived executed notebook:
+[2026-07-25 preprocessing quality ablation](2026-07-25_23-48-22_densenet121_preprocessing_quality_ablation.ipynb).
+
 ## Experiment Addendum: Joint Guidance and CAM Method
 
 ### Run: 2026-07-22 11:52:13.081467 UTC (JOINT-GUIDED NATIVE-CAM ABLATION)
