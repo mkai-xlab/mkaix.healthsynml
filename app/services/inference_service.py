@@ -13,12 +13,12 @@ class InferenceService:
 
     def run_inference_with_class_maps(
         self, model: nn.Module, tensor: torch.Tensor
-    ) -> tuple[torch.Tensor, torch.Tensor]:
-        """Run one CNN pass and retain the maps that directly produce the logits."""
-        if not hasattr(model, "forward_with_class_maps"):
-            raise TypeError("The configured model does not expose native class maps")
+    ) -> tuple[torch.Tensor, torch.Tensor | None]:
+        """Return logits and optional native maps without building a graph."""
         with torch.no_grad():
-            return model.forward_with_class_maps(tensor)
+            if hasattr(model, "forward_with_class_maps"):
+                return model.forward_with_class_maps(tensor)
+            return model(tensor), None
 
 # Singleton instance
 inference_service = InferenceService()

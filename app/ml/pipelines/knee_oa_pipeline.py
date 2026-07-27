@@ -130,7 +130,7 @@ class KneeOAPipeline:
         self.model_mode = settings.MODEL_MODE
         self.ordinal_type = settings.ORDINAL_TYPE
         if self.ordinal_type != "ce":
-            raise RuntimeError("Native-CAM checkpoints require ORDINAL_TYPE=ce")
+            raise RuntimeError("Production classifier checkpoints require ORDINAL_TYPE=ce")
 
         component_names = self.mode_components[self.model_mode]
         configured_weights = {
@@ -276,15 +276,23 @@ class KneeOAPipeline:
         )
         result = self.postprocess(probabilities)
         height, width = processed_image.shape[:2]
-        component_cams = {
-            name: native_cam_service.extract_cam(
-                model=self.models[name],
-                class_maps=outputs[name][1],
-                predicted_class=result["predicted_class"],
-                output_size=(height, width),
-            )
-            for name in self.models
-        }
+        component_cams = {}
+        for name, model in self.models.items():
+            class_maps = outputs[name][1]
+            if class_maps is None:
+                component_cams[name] = native_cam_service.extract_gradcam(
+                    model=model,
+                    input_tensor=input_tensor,
+                    predicted_class=result["predicted_class"],
+                    output_size=(height, width),
+                )
+            else:
+                component_cams[name] = native_cam_service.extract_cam(
+                    model=model,
+                    class_maps=class_maps,
+                    predicted_class=result["predicted_class"],
+                    output_size=(height, width),
+                )
         anatomy_metrics = {
             name: native_cam_service.energy_metrics(cam)
             for name, cam in component_cams.items()
@@ -307,7 +315,7 @@ class KneeOAPipeline:
             and selected_metrics["peak_inside_joint"]
         ):
             logger.warning(
-                "No native-CAM candidate passed the anatomy gate; using best "
+                "No CAM candidate passed the anatomy gate; using best "
                 "available component=%s metrics=%s",
                 heatmap_component,
                 selected_metrics,

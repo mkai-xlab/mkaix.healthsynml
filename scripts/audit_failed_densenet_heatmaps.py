@@ -1,4 +1,4 @@
-"""Export failed production DenseNet native-CAM cases with raw gate metrics."""
+"""Export failed production DenseNet CAM cases with raw gate metrics."""
 
 from __future__ import annotations
 
@@ -97,7 +97,7 @@ def render_tile(
     )
     cv2.putText(tile, title[:130], (8, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.48, (255, 255, 255), 1, cv2.LINE_AA)
     cv2.putText(tile, metrics[:155], (8, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (255, 255, 255), 1, cv2.LINE_AA)
-    for x, label in ((8, "YOLO ROI"), (size + 8, "Exact model input"), (size * 2 + 8, "Native CAM")):
+    for x, label in ((8, "YOLO ROI"), (size + 8, "Exact model input"), (size * 2 + 8, "Grad-CAM")):
         cv2.putText(tile, label, (x, 75), cv2.FONT_HERSHEY_SIMPLEX, 0.48, (255, 255, 255), 1, cv2.LINE_AA)
     return tile
 
@@ -151,12 +151,20 @@ def main() -> None:
             )
             probabilities = F.softmax(logits.float(), dim=1)
             predicted_grade = int(probabilities.argmax(1).item())
-            cam = native_cam_service.extract_cam(
-                model=model,
-                class_maps=class_maps,
-                predicted_class=predicted_grade,
-                output_size=processed.shape[:2],
-            )
+            if class_maps is None:
+                cam = native_cam_service.extract_gradcam(
+                    model=model,
+                    input_tensor=tensor,
+                    predicted_class=predicted_grade,
+                    output_size=processed.shape[:2],
+                )
+            else:
+                cam = native_cam_service.extract_cam(
+                    model=model,
+                    class_maps=class_maps,
+                    predicted_class=predicted_grade,
+                    output_size=processed.shape[:2],
+                )
             metrics = native_cam_service.energy_metrics(cam)
             reasons = failure_reasons(metrics)
             row = {
@@ -209,6 +217,7 @@ def main() -> None:
         ),
         "checkpoint": pipeline.checkpoint_metadata,
         "preprocessing": "CLAHE 1.25 -> SquarePad -> Resize 384",
+        "heatmap_method": "gradient_gradcam_features_norm5",
     }
     (OUTPUT_DIR / "summary.json").write_text(
         json.dumps(summary, indent=2), encoding="utf-8"

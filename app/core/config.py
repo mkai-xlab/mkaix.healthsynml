@@ -49,7 +49,7 @@ class Settings:
     )
     EXPECTED_MODEL_ARCHITECTURE: str = os.getenv(
         "EXPECTED_MODEL_ARCHITECTURE",
-        "final_linear_native_cam",
+        "timm_densenet121_linear_gradcam",
     )
     SE_RESNEXT_CHECKPOINT_PATH: str = os.getenv(
         "SE_RESNEXT_CHECKPOINT_PATH",

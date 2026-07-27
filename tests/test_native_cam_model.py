@@ -5,6 +5,7 @@ import torch
 from app.ml.models.densenet121_model import DenseNet121Model
 from app.ml.models.efficientnet_b0_model import EfficientNetB0Model
 from app.ml.models.se_resnext50_32x4d_model import SEResNeXt50NativeCAMModel
+from app.services.gradcam_service import NativeCAMService
 
 
 CHECKPOINT = Path("checkpoints/densenet121/best_model.pth")
@@ -14,9 +15,9 @@ SE_RESNEXT_CHECKPOINT = Path(
 EFFICIENTNET_B0_CHECKPOINT = Path("checkpoints/efficientnet_b0/best_model.pth")
 
 
-def test_checkpoint_loads_and_native_cam_matches_logits():
+def test_densenet_checkpoint_loads_and_generates_gradcam():
     checkpoint = torch.load(CHECKPOINT, map_location="cpu", weights_only=False)
-    assert checkpoint["architecture"] == "final_linear_native_cam"
+    assert checkpoint["architecture"] == "timm_densenet121_linear_gradcam"
 
     model = DenseNet121Model(num_classes=5, pretrained=False, ordinal_type="ce")
     model.load_state_dict(checkpoint["model_state_dict"], strict=True)
@@ -24,15 +25,12 @@ def test_checkpoint_loads_and_native_cam_matches_logits():
 
     sample = torch.zeros(1, 3, 384, 384)
     with torch.no_grad():
-        logits, class_maps = model.forward_with_class_maps(sample)
-
-    assert class_maps.shape == (1, 5, 12, 12)
+        logits = model(sample)
     assert logits.shape == (1, 5)
-    assert torch.allclose(logits, class_maps.mean(dim=(2, 3)), atol=1e-7)
 
     predicted_class = int(logits.argmax(dim=1).item())
-    cam = model.native_cam_from_class_maps(
-        class_maps, predicted_class, output_size=(384, 384)
+    cam = NativeCAMService.extract_gradcam(
+        model, sample, predicted_class, output_size=(384, 384)
     )
     assert cam.shape == (384, 384)
     assert float(cam.min()) >= 0.0
