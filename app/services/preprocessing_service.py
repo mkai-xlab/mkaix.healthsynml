@@ -30,7 +30,7 @@ class SquarePadOpenCV:
 class OpenCVCLAHE:
     """Apply the same LAB-space CLAHE transform used during training."""
 
-    def __init__(self, clip_limit: float = 2.0, tile_grid_size=(8, 8)):
+    def __init__(self, clip_limit: float = 1.25, tile_grid_size=(8, 8)):
         self.clip_limit = clip_limit
         self.tile_grid_size = tile_grid_size
 
@@ -61,8 +61,8 @@ class PreprocessingService:
         self.crop_size = settings.CROP_SIZE
         self.spatial_transform = transforms.Compose(
             [
+                OpenCVCLAHE(clip_limit=1.25),
                 SquarePadOpenCV(),
-                OpenCVCLAHE(),
                 transforms.ToPILImage(),
                 transforms.Resize((self.img_size, self.img_size)),
             ]

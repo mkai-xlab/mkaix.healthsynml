@@ -2,6 +2,8 @@ import cv2
 import numpy as np
 
 from app.services.preprocessing_service import (
+    OpenCVCLAHE,
+    SquarePadOpenCV,
     canonicalize_knee_laterality,
     preprocessing_service,
 )
@@ -36,3 +38,11 @@ def test_inference_preprocessing_matches_checkpoint_dimensions():
     assert processed.shape == (384, 384, 3)
     assert not was_mirrored
     assert np.isfinite(tensor.numpy()).all()
+
+
+def test_inference_uses_clahe_1_25_before_square_padding():
+    operations = preprocessing_service.spatial_transform.transforms
+
+    assert isinstance(operations[0], OpenCVCLAHE)
+    assert operations[0].clip_limit == 1.25
+    assert isinstance(operations[1], SquarePadOpenCV)
