@@ -2,7 +2,12 @@ import cv2
 import numpy as np
 import pytest
 
-from app.services.roi_service import NO_KNEE_ROI_MESSAGE, ROIService
+from app.services.roi_service import (
+    NO_KNEE_ROI_MESSAGE,
+    YOLO_ROI_EXPANSION,
+    ROIService,
+    make_square_roi,
+)
 
 
 class _EmptyResult:
@@ -29,7 +34,7 @@ def _service() -> ROIService:
 
 @pytest.mark.parametrize(
     "method_name",
-    ["detect_and_draw_boxes", "crop_knees", "detect_knees_with_coords"],
+    ["detect_and_draw_boxes", "detect_knees_with_coords"],
 )
 def test_roi_methods_reject_images_without_a_detection(method_name):
     with pytest.raises(ValueError, match="No knee joint ROI was detected") as error:
@@ -44,3 +49,24 @@ def test_roi_methods_reject_an_unavailable_detector():
 
     with pytest.raises(RuntimeError, match="YOLO ROI detector is unavailable"):
         service.detect_knees_with_coords(_image_bytes())
+
+
+def test_make_square_roi_expands_the_larger_box_dimension():
+    image = np.full((100, 200, 3), 255, dtype=np.uint8)
+
+    crop = make_square_roi(image, [50, 10, 130, 90])
+
+    expected_side = int(np.ceil(80 * YOLO_ROI_EXPANSION))
+    assert crop.shape == (expected_side, expected_side, 3)
+    assert np.all(crop == 255)
+
+
+def test_make_square_roi_pads_only_when_the_expansion_reaches_an_edge():
+    image = np.full((100, 100, 3), 255, dtype=np.uint8)
+
+    crop = make_square_roi(image, [0, 0, 20, 40])
+
+    expected_side = int(np.ceil(40 * YOLO_ROI_EXPANSION))
+    assert crop.shape == (expected_side, expected_side, 3)
+    assert np.all(crop[0, 0] == 0)
+    assert np.any(crop == 255)

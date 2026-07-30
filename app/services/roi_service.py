@@ -1,3 +1,4 @@
+import math
 import os
 import base64
 import numpy as np
@@ -9,6 +10,41 @@ NO_KNEE_ROI_MESSAGE = (
     "No knee joint ROI was detected. Please upload a frontal knee X-ray "
     "with the complete tibiofemoral joint visible."
 )
+YOLO_ROI_EXPANSION = 1.15
+
+
+def make_square_roi(
+    image: np.ndarray, box: list[float] | tuple[float, float, float, float]
+) -> np.ndarray:
+    """Match the expanded square YOLO ROI geometry used for classifier training."""
+    height, width = image.shape[:2]
+    x1, y1, x2, y2 = map(float, box)
+    box_width, box_height = x2 - x1, y2 - y1
+    if box_width <= 0 or box_height <= 0:
+        raise ValueError(f"Invalid YOLO box: {box}")
+
+    center_x, center_y = (x1 + x2) / 2, (y1 + y2) / 2
+    side = int(math.ceil(max(box_width, box_height) * YOLO_ROI_EXPANSION))
+    wanted_x1 = int(math.floor(center_x - side / 2))
+    wanted_y1 = int(math.floor(center_y - side / 2))
+    wanted_x2, wanted_y2 = wanted_x1 + side, wanted_y1 + side
+
+    crop = image[
+        max(0, wanted_y1) : min(height, wanted_y2),
+        max(0, wanted_x1) : min(width, wanted_x2),
+    ]
+    if crop.size == 0:
+        raise ValueError(f"YOLO box does not overlap the image: {box}")
+
+    return cv2.copyMakeBorder(
+        crop,
+        max(0, -wanted_y1),
+        max(0, wanted_y2 - height),
+        max(0, -wanted_x1),
+        max(0, wanted_x2 - width),
+        cv2.BORDER_CONSTANT,
+        value=(0, 0, 0),
+    )
 
 
 class ROIService:
@@ -42,7 +78,8 @@ class ROIService:
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
         if img is None:
             raise ValueError("Could not decode image from bytes.")
-            
+        source_img = img.copy()
+
         detections = []
         if self.model is None:
             raise RuntimeError("YOLO ROI detector is unavailable.")
@@ -74,8 +111,8 @@ class ROIService:
                 label = f"{class_name} ({side}): {conf:.2f}" if side != "unknown" else f"{class_name}: {conf:.2f}"
                 cv2.putText(img, label, (x1, max(15, y1 - 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
                 
-                # Crop image
-                crop = img[y1:y2, x1:x2]
+                # Match the training ROI while keeping the drawn display image separate.
+                crop = make_square_roi(source_img, [x1, y1, x2, y2])
                 _, crop_buffer = cv2.imencode(".png", crop)
                 crop_base64 = base64.b64encode(crop_buffer).decode("utf-8")
                 
@@ -99,38 +136,6 @@ class ROIService:
         img_base64 = base64.b64encode(buffer).decode("utf-8")
         return f"data:image/jpeg;base64,{img_base64}", detections
 
-    def crop_knees(self, image_bytes: bytes) -> list[bytes]:
-        """Runs knee joint detection and returns list of cropped image bytes for downstream classification."""
-        nparr = np.frombuffer(image_bytes, np.uint8)
-        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        if img is None:
-            raise ValueError("Could not decode image from bytes.")
-            
-        if self.model is None:
-            raise RuntimeError("YOLO ROI detector is unavailable.")
-            
-        results = self.model.predict(source=img, conf=0.45, save=False, verbose=False)
-        boxes = results[0].boxes
-        
-        # Sort boxes by left-to-right coordinate so we keep a consistent ordering (e.g. left knee first)
-        sorted_boxes = sorted(boxes, key=lambda b: float(b.xyxy[0][0]))
-        
-        crops = []
-        for box in sorted_boxes:
-            x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())
-            
-            # Crop image
-            crop = img[y1:y2, x1:x2]
-            
-            # Encode back to bytes
-            _, buffer = cv2.imencode(".png", crop)
-            crops.append(buffer.tobytes())
-            
-        if not crops:
-            raise ValueError(NO_KNEE_ROI_MESSAGE)
-            
-        return crops
-
     def detect_knees_with_coords(self, image_bytes: bytes) -> list[dict]:
         """Runs knee joint detection and returns list of dicts with box coords and crop bytes."""
         nparr = np.frombuffer(image_bytes, np.uint8)
@@ -151,8 +156,8 @@ class ROIService:
             x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())
             conf = float(box.conf[0])
             
-            # Crop image
-            crop = img[y1:y2, x1:x2]
+            # Match the expanded square ROI used during paired-view training.
+            crop = make_square_roi(img, [x1, y1, x2, y2])
             
             # Encode back to bytes
             _, buffer = cv2.imencode(".png", crop)
