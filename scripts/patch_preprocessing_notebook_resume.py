@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-NOTEBOOK = ROOT / "notebooks/experiments/dense_net_121_preprocessing_quality_ablation.ipynb"
+NOTEBOOK = ROOT / "notebooks/experiments/densenet121/preprocessing/dense_net_121_preprocessing_quality_ablation.ipynb"
 
 
 NEW_TRAIN_ARM = r'''def train_arm(spec):

@@ -1,0 +1,14 @@
+services:
+  knee-oa-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: knee-oa-api:paired-view-test
+    container_name: knee-oa-api-paired-view-test
+    env_file:
+      - ./local.env
+    ports:
+      - "8005:8005"
+    volumes:
+      - ./checkpoints:/app/checkpoints:ro
+    restart: "no"

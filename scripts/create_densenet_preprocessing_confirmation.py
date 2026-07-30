@@ -10,8 +10,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "notebooks/experiments/dense_net_121_preprocessing_quality_ablation.ipynb"
-TARGET = ROOT / "notebooks/experiments/dense_net_121_preprocessing_confirmation.ipynb"
+SOURCE = ROOT / "notebooks/experiments/densenet121/preprocessing/dense_net_121_preprocessing_quality_ablation.ipynb"
+TARGET = ROOT / "notebooks/experiments/densenet121/preprocessing/dense_net_121_preprocessing_confirmation.ipynb"
 
 SPECS = '''DETERMINISTIC_SPECS = [
     {
