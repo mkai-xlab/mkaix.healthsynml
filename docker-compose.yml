@@ -1,16 +1,14 @@
-name: knee-oai
-
 services:
   ai:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: knee-oai-ai
+    container_name: knee-oa-ai
     restart: unless-stopped
     ports:
       - "${AI_PORT:-8005}:8005"
     env_file:
-      - ../env/ai.env
+      - ./env/ai.env
     volumes:
       - ./checkpoints:/app/checkpoints:ro
     healthcheck:
@@ -25,3 +23,10 @@ services:
       timeout: 10s
       retries: 3
       start_period: 60s
+    networks:
+      - knee-oa-net
+
+networks:
+  knee-oa-net:
+    external: true
+    name: knee-oa-net
