@@ -58,3 +58,7 @@ checkpoints/
 
 test_images
 .codex
+# env
+*.env
+!env/
+!env/ai.env
