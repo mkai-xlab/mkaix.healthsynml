@@ -330,7 +330,14 @@ def artifact_rows(rows: list[dict[str, str]]) -> list[dict[str, str]]:
         })
     for doc in sorted(REPORT.rglob("*.md")):
         result.append({"artifact": str(doc.relative_to(ROOT)), "artifact_type": "report markdown", "status": "source report", "run_timestamp": ""})
-    planned = ROOT / "notebooks" / "experiments" / "dense_net_121_roi_robustness_ablation.ipynb"
+    planned = (
+        ROOT
+        / "notebooks"
+        / "experiments"
+        / "densenet121"
+        / "heatmaps"
+        / "dense_net_121_roi_robustness_ablation.ipynb"
+    )
     if planned.exists():
         result.append({"artifact": str(planned.relative_to(ROOT)), "artifact_type": "notebook", "status": "planned/not run", "run_timestamp": ""})
     recent_run = ROOT / "2026-07-28_02-00-33_963495_UTC_cutout_ablation"
