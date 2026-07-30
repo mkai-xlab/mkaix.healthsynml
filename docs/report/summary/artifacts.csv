@@ -33,7 +33,7 @@ docs/report/efficientnet_b0/report.md,report markdown,source report,
 docs/report/ensemble/2026-07-24_09-03-08_three_model_weighted_soft_voting.md,report markdown,source report,
 docs/report/ensemble/2026-07-24_16-50-26_365170_UTC_deployed_api_full_test.md,report markdown,source report,
 docs/report/se_resnext50_32x4d/report.md,report markdown,source report,
-notebooks/experiments/dense_net_121_roi_robustness_ablation.ipynb,notebook,planned/not run,
+notebooks/experiments/densenet121/heatmaps/dense_net_121_roi_robustness_ablation.ipynb,notebook,planned/not run,
 2026-07-28_02-00-33_963495_UTC_cutout_ablation/report.md,md,completed run artifact,2026-07-28 02:00:33.963495 UTC
 2026-07-28_02-00-33_963495_UTC_cutout_ablation/arm_comparison.csv,csv,completed run artifact,2026-07-28 02:00:33.963495 UTC
 2026-07-28_02-00-33_963495_UTC_cutout_ablation/gradcam_comparison_summary.json,json,completed run artifact,2026-07-28 02:00:33.963495 UTC
