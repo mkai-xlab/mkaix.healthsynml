@@ -36,6 +36,5 @@ jobs:
             cd ~/healthsync/mkaix.healthsynml/
             git checkout dev
             git pull --ff-only origin dev
-            cd ../mkaix.healthsyncbe/
             docker compose config --quiet
             docker compose up -d --build ai
