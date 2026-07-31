@@ -22,18 +22,14 @@ docs/report/se_resnext50_32x4d/2026-07-25_01-50-53_seresnext50_32x4d_natural_ori
 docs/report/se_resnext50_32x4d/se_resnext50_32x4d.ipynb,notebook,archived/unmatched; inspect before citing,
 docs/report/dense_net_121/2026-07-25_15-32-33_UTC_api_cam_localization_audit.md,report markdown,source report,
 docs/report/dense_net_121/2026-07-25_23-48-22_preprocessing_quality_ablation.md,report markdown,source report,
+docs/report/dense_net_121/2026-07-29_dataset_paper_lineage_summary.md,report markdown,source report,
+docs/report/dense_net_121/2026-07-29_densenet121_metric_gradcam_design_review.md,report markdown,source report,
+docs/report/dense_net_121/2026-07-30_glcm_experiment_plan.md,report markdown,source report,
 docs/report/dense_net_121/assets/2026-07-25_15-32-33_UTC_api_cam_localization_audit/report.md,report markdown,source report,
 docs/report/dense_net_121/joint_guided_cam_run_2026-07-22.md,report markdown,source report,
 docs/report/dense_net_121/localization_strategy_proposal.md,report markdown,source report,
 docs/report/dense_net_121/native_cam_method_and_references.md,report markdown,source report,
 docs/report/dense_net_121/report.md,report markdown,source report,
-docs/report/dense_net_201/dense_net_201_configuration_guide.md,report markdown,source report,
-docs/report/dense_net_201/dense_net_201_test_results.md,report markdown,source report,
 docs/report/efficientnet_b0/report.md,report markdown,source report,
-docs/report/ensemble/2026-07-24_09-03-08_three_model_weighted_soft_voting.md,report markdown,source report,
-docs/report/ensemble/2026-07-24_16-50-26_365170_UTC_deployed_api_full_test.md,report markdown,source report,
 docs/report/se_resnext50_32x4d/report.md,report markdown,source report,
 notebooks/experiments/densenet121/heatmaps/dense_net_121_roi_robustness_ablation.ipynb,notebook,planned/not run,
-2026-07-28_02-00-33_963495_UTC_cutout_ablation/report.md,md,completed run artifact,2026-07-28 02:00:33.963495 UTC
-2026-07-28_02-00-33_963495_UTC_cutout_ablation/arm_comparison.csv,csv,completed run artifact,2026-07-28 02:00:33.963495 UTC
-2026-07-28_02-00-33_963495_UTC_cutout_ablation/gradcam_comparison_summary.json,json,completed run artifact,2026-07-28 02:00:33.963495 UTC

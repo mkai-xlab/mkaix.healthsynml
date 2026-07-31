@@ -224,21 +224,14 @@ YOLOv8,2026-07-26 07:25:09,YOLOv8n joint detector current best.pt,detector_valid
 YOLOv8,2026-07-26 07:25:09,YOLOv8n joint detector current best.pt,detector_validation,validation_recall,0.99145,checkpoints/yolov8/best.pt
 YOLOv8,2026-07-26 07:25:09,YOLOv8n joint detector current best.pt,detector_validation,validation_map50,0.99500,checkpoints/yolov8/best.pt
 YOLOv8,2026-07-26 07:25:09,YOLOv8n joint detector current best.pt,detector_validation,validation_map50_95,0.90477,checkpoints/yolov8/best.pt
-DenseNet-121,2026-07-28 02:00:33.963495,Cutout ablation: aggressive_double_cutout,validation,qwk,0.8126277960220584,repository artifact
-DenseNet-121,2026-07-28 02:00:33.963495,Cutout ablation: aggressive_double_cutout,validation,macro_f1,0.6819234872143023,repository artifact
-DenseNet-121,2026-07-28 02:00:33.963495,Cutout ablation: aggressive_double_cutout,validation,grade1_recall,0.45751633986928103,repository artifact
-DenseNet-121,2026-07-28 02:00:33.963495,Cutout ablation: aggressive_double_cutout,validation,average_precision,0.7430301895958674,repository artifact
-DenseNet-121,2026-07-28 02:00:33.963495,Cutout ablation: aggressive_double_cutout,validation,selection_score,0.762976862415803,repository artifact
-DenseNet-121,2026-07-28 02:00:33.963495,Cutout ablation: aggressive_single_cutout,validation,qwk,0.8202226229712083,repository artifact
-DenseNet-121,2026-07-28 02:00:33.963495,Cutout ablation: aggressive_single_cutout,validation,macro_f1,0.68151148175952,repository artifact
-DenseNet-121,2026-07-28 02:00:33.963495,Cutout ablation: aggressive_single_cutout,validation,grade1_recall,0.43137254901960786,repository artifact
-DenseNet-121,2026-07-28 02:00:33.963495,Cutout ablation: aggressive_single_cutout,validation,average_precision,0.7438495789896049,repository artifact
-DenseNet-121,2026-07-28 02:00:33.963495,Cutout ablation: aggressive_single_cutout,validation,selection_score,0.7671533240104613,repository artifact
-DenseNet-121,2026-07-28 02:00:33.963495,Cutout ablation: baseline_random_erasing,validation,qwk,0.8037057762855189,repository artifact
-DenseNet-121,2026-07-28 02:00:33.963495,Cutout ablation: baseline_random_erasing,validation,macro_f1,0.6832540391938888,repository artifact
-DenseNet-121,2026-07-28 02:00:33.963495,Cutout ablation: baseline_random_erasing,validation,grade1_recall,0.49019607843137253,repository artifact
-DenseNet-121,2026-07-28 02:00:33.963495,Cutout ablation: baseline_random_erasing,validation,average_precision,0.7298324958134197,repository artifact
-DenseNet-121,2026-07-28 02:00:33.963495,Cutout ablation: baseline_random_erasing,validation,selection_score,0.756489263087215,repository artifact
+DenseNet-121,2026-07-30 15:45:03.830205,Production YOLO ROI robustness fine-tune,validation,accuracy,0.6186,notebook inline outputs
+DenseNet-121,2026-07-30 15:45:03.830205,Production YOLO ROI robustness fine-tune,validation,qwk,0.7650,notebook inline outputs
+DenseNet-121,2026-07-30 15:45:03.830205,Production YOLO ROI robustness fine-tune,validation,macro_f1,0.6451,notebook inline outputs
+DenseNet-121,2026-07-30 15:45:03.830205,Production YOLO ROI robustness fine-tune,validation,average_precision,0.6756,notebook inline outputs
+DenseNet-121,2026-07-30 15:45:03.830205,Production YOLO ROI robustness fine-tune,validation,selection_score,0.7156,notebook inline outputs
+DenseNet-121,2026-07-30 15:45:03.830205,Production YOLO ROI robustness fine-tune,cam,joint_energy,0.8505,notebook inline outputs
+DenseNet-121,2026-07-30 15:45:03.830205,Production YOLO ROI robustness fine-tune,cam,border_energy,0.0844,notebook inline outputs
+DenseNet-121,2026-07-30 15:45:03.830205,Production YOLO ROI robustness fine-tune,cam,peak_inside_rate,1.0000,notebook inline outputs
 DenseNet-201,not recorded,Optimized multi-scale DenseNet-201,test,accuracy,0.6624,docs/report/dense_net_201/dense_net_201_test_results.md
 DenseNet-201,not recorded,Optimized multi-scale DenseNet-201,test,qwk,0.7763,docs/report/dense_net_201/dense_net_201_test_results.md
 DenseNet-201,not recorded,Optimized multi-scale DenseNet-201,test,macro_f1,0.63,docs/report/dense_net_201/dense_net_201_test_results.md

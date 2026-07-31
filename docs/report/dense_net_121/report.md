@@ -1,6 +1,21 @@
 # DenseNet-121 Training Execution Log
 This file automatically logs training runs, hyperparameters, metrics, and visualization plots.
 
+## Current Deployment Record: 2026-07-30 09:03:29 UTC
+
+The local API currently serves `timm_densenet121_linear_gradcam` from
+`checkpoints/densenet121/2026-07-30_09-03-29_850983_UTC_paired_view_yolo_roi/best_model.pth`.
+It is a CE DenseNet-121 checkpoint selected at epoch 4 of paired published/YOLO-ROI adaptation. The API uses the YOLOv8 checkpoint
+`checkpoints/yolov8/2026-07-26_20-49-25_joint_detection/best.pt`, expands each detected box by `1.15 x` the largest box dimension, makes a centred square ROI, and pads black only outside the source radiograph. It applies natural orientation, LAB CLAHE 1.25, square padding, resize to `384 x 384`, ImageNet normalization, and predicted-class Grad-CAM from `features.norm5`.
+
+The locked fixed-YOLO-ROI validation result before the production crop correction was Accuracy `0.5884`, QWK `0.7405`, macro F1 `0.6220`, macro AP `0.6665`, and Grade 4 recall `0.9259`. These are validation results, not a new test claim.
+
+### 2026-07-30 15:45:03 UTC: Production-ROI Robustness Fine-Tune
+
+This five-epoch CE fine-tune used only labelled full radiographs with cached production YOLO boxes. Training varied expansion from `1.10` to `1.20` and shifted crop centre by up to `5%`; validation always used the fixed production `1.15` square crop. Epoch 4 improved Accuracy to `0.6186`, QWK to `0.7650`, macro F1 to `0.6451`, and macro AP to `0.6756`. Grade 4 recall decreased from `0.9259` to `0.8889`.
+
+The candidate was **not promoted**. Across the same 227 Grad-CAM audit cases, average joint energy decreased from `0.8648` to `0.8505` and border energy increased from `0.0761` to `0.0844`; only peak-inside-joint rate improved (`0.9956` to `1.0000`). This is a metric improvement without the required aggregate explanation improvement. The executed notebook is [production ROI robustness](../../../notebooks/experiments/densenet121/roi/dense_net_121_production_roi_robustness.ipynb). See [AI production report](../../AI_REPORT.md) for the active deployment configuration.
+
 ## Model Performance and Diagnostic Comparison
 A summary comparison of the different runs trained on this repository. The metrics represent performance on the final test set (with 95% confidence intervals where available), and the error details represent diagnostic metrics on the validation set.
 
