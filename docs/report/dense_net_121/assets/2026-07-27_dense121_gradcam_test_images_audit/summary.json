@@ -1,0 +1,46 @@
+{
+  "images": 105,
+  "predictions": 209,
+  "gate_passes": 75,
+  "gate_failures": 134,
+  "gate_pass_rate": 0.3588516746411483,
+  "grade_distribution": {
+    "3": 9,
+    "2": 7,
+    "4": 122,
+    "1": 12,
+    "0": 59
+  },
+  "failed_grade_distribution": {
+    "3": 1,
+    "2": 2,
+    "4": 121,
+    "0": 9,
+    "1": 1
+  },
+  "failure_reasons": {
+    "high_border_energy": 20,
+    "low_joint_energy": 128,
+    "peak_outside_joint": 95,
+    "high_lower_tibia_energy": 3
+  },
+  "checkpoint": {
+    "architecture": "timm_densenet121_linear_gradcam",
+    "epoch": 29,
+    "loss_type": "ce",
+    "validation_metrics": {
+      "loss": 0.8160565465183581,
+      "acc": 65.85956416464892,
+      "qwk": 0.8071397474967349,
+      "macro_precision": 0.6947891154133504,
+      "macro_recall": 0.6935126282450393,
+      "macro_f1": 0.6904353457065483,
+      "grade1_recall": 0.5228758169934641,
+      "auc": 0.8908882246867338,
+      "ap": 0.7339812716369435,
+      "selection_score": 0.7611546555807102
+    }
+  },
+  "preprocessing": "CLAHE 1.25 -> SquarePad -> Resize 384",
+  "heatmap_method": "gradient_gradcam_features_norm5"
+}

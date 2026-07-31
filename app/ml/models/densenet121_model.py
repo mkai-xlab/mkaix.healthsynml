@@ -1,29 +1,41 @@
 import torch
 import torch.nn as nn
+import timm
+
 from app.ml.models.base_model import BaseModel
-import torchvision.models as models
+
 
 class DenseNet121Model(BaseModel):
-    """
-    DenseNet-121 model wrapper subclass for Knee Osteoarthritis Kellgren-Lawrence Grade classification.
-    """
-    def __init__(self, num_classes: int = 5, pretrained: bool = True, dropout_rate: float = 0.5):
-        super(DenseNet121Model, self).__init__()
-        
-        weights = models.DenseNet121_Weights.DEFAULT if pretrained else None
-        self.model = models.densenet121(weights=weights)
+    """Standard five-logit DenseNet-121 with post-hoc Grad-CAM support."""
 
-        num_ftrs = self.model.classifier.in_features
-        # Add a Dropout layer before the final linear layer for regularization
-        self.model.classifier = nn.Sequential(
-            nn.Dropout(p=dropout_rate),
-            nn.Linear(num_ftrs, num_classes)
+    architecture = "timm_densenet121_linear_gradcam"
+
+    def __init__(
+        self,
+        num_classes: int = 5,
+        pretrained: bool = False,
+        ordinal_type: str = "ce",
+        **_: object,
+    ):
+        super().__init__()
+        if ordinal_type != "ce":
+            raise ValueError(
+                "timm_densenet121_linear_gradcam requires CE logits; "
+                f"received ordinal_type={ordinal_type!r}"
+            )
+
+        self.num_classes = num_classes
+        self.backbone = timm.create_model(
+            "densenet121",
+            pretrained=pretrained,
+            num_classes=num_classes,
+            drop_rate=0.20,
         )
-        
-        self.use_timm = False
-        
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        Runs standard forward pass
-        """
-        return self.model(x)
+
+    @property
+    def gradcam_target_layer(self) -> nn.Module:
+        """Final spatial DenseNet feature tensor used by the training audit."""
+        return self.backbone.features.norm5
+
+    def forward(self, images: torch.Tensor) -> torch.Tensor:
+        return self.backbone(images)

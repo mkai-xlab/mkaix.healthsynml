@@ -1,0 +1,32 @@
+services:
+  ai:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: knee-oa-ai
+    restart: unless-stopped
+    ports:
+      - "${AI_PORT:-8005}:8005"
+    env_file:
+      - ../env/ai.env
+    volumes:
+      - ./checkpoints:/app/checkpoints:ro
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8005/api/v1/health', timeout=5)",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - knee-oa-net
+
+networks:
+  knee-oa-net:
+    external: true
+    name: knee-oa-net

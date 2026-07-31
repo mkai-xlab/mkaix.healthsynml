@@ -35,3 +35,9 @@ notebooks/
 bruno/
 tests/
 checkpoints/
+test_data/
+test_images/
+scratch/
+*.zip
+*_ablations*/
+2026-*/

@@ -1,0 +1,41 @@
+name: Deploy Development to AWS EC2
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - "app/**"
+      - "tests/**"
+      - "main.py"
+      - "requirements.txt"
+      - "Dockerfile"
+      - "compose.yaml"
+      - ".github/workflows/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ml-aws-ec2-development
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Deliver ML service via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_PUBLIC_IP }}
+          username: ubuntu
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            cd ~/healthsync/mkaix.healthsynml/
+            git checkout dev
+            git pull --ff-only origin dev
+            cd ../mkaix.healthsyncbe/
+            docker compose config --quiet
+            docker compose up -d --build ai
