@@ -10,6 +10,21 @@ router = APIRouter()
 @router.get("")
 def get_model_info():
     pipeline = prediction_service.pipeline
+    if pipeline.model_mode == "ensemble":
+        heatmap = {
+            "method": "dynamic_per_case_gradcam",
+            "source": "selected component final convolutional feature layer",
+            "gradient_free": False,
+        }
+    else:
+        heatmap = {
+            "method": "predicted_class_gradcam",
+            "source": (
+                f"{pipeline.heatmap_model_name} final convolutional feature layer"
+            ),
+            "gradient_free": False,
+        }
+
     return {
         "model": pipeline.model_name,
         "architecture": pipeline.checkpoint_metadata["architecture"],
@@ -20,11 +35,5 @@ def get_model_info():
             "center_crop": None,
             "laterality_canonicalization": False,
         },
-        "heatmap": {
-            "method": "native_class_activation_map",
-            "source": (
-                f"{pipeline.heatmap_model_name} five-map head for the selected grade"
-            ),
-            "gradient_free": True,
-        },
+        "heatmap": heatmap,
     }

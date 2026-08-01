@@ -16,7 +16,7 @@ This file records SE-ResNeXt-50 runs, their exact configurations, predictive met
 
 Notebook 03 fine-tuned the selected CE SE-ResNeXt checkpoint for five epochs using a 50/50 mixture of published `224x224` crops and production-style YOLO square ROIs. The model retained its five-map `final_native_cam_ce` classification head, but notebook 04 generated post-hoc Grad-CAM from the final SE-ResNeXt feature tensor. Epoch 4 won the validation-only two-domain score (`0.6997`) and was evaluated once on the locked YOLO-ROI test split.
 
-The locked test result was Accuracy `0.5894`, QWK `0.7461`, macro F1 `0.6002`, AP `0.6368`, and AUC `0.8462`. It is lower than both the 2026-07-25 published-crop SE-ResNeXt result and the current DenseNet paired-view production result. Grade 1 remains the largest weakness: only `81/296` cases were correct, giving precision `0.2516`, recall `0.2736`, and F1 `0.2621`.
+The locked production-ROI test result was Accuracy `0.5894`, QWK `0.7461`, macro F1 `0.6002`, AP `0.6368`, and AUC `0.8462`. Grade 1 remains the largest weakness: only `81/296` cases were correct, giving precision `0.2516`, recall `0.2736`, and F1 `0.2621`.
 
 The Grad-CAM galleries generally activate at a medial or lateral joint margin. Several misclassified examples have nearly identical predicted- and true-class maps, while others rely on a single border region. These figures demonstrate model evidence but do not establish lesion localization because no expert osteophyte or joint-space-narrowing masks were available. No numeric Grad-CAM anatomy audit was computed in this notebook, so joint-energy or border-energy values are not inferred from visual inspection.
 
@@ -45,8 +45,8 @@ The Grad-CAM galleries generally activate at a medial or lateral joint margin. S
 | **Validation Counts** | Grade 0: 328; Grade 1: 153; Grade 2: 212; Grade 3: 106; Grade 4: 27 |
 | **Checkpoint Selection** | Mean of published-view and YOLO-view `0.55 QWK + 0.30 macro F1 + 0.15 macro AP` |
 | **Heatmap Method** | Post-hoc predicted-class and true-class Grad-CAM from the final feature tensor |
-| **Training Notebook** | [`2026-08-01_05-29-59_seresnext50_32x4d_paired_view_yolo_adaptation.ipynb`](2026-08-01_05-29-59_seresnext50_32x4d_paired_view_yolo_adaptation.ipynb) |
-| **Evaluation Notebook** | [`2026-08-01_07-59-46_seresnext50_32x4d_paired_view_yolo_gradcam_evaluation.ipynb`](2026-08-01_07-59-46_seresnext50_32x4d_paired_view_yolo_gradcam_evaluation.ipynb) |
+| **Training Notebook** | [`2026-08-01_05-29-59_seresnext50_32x4d_paired_view_yolo_adaptation.ipynb`](runs/2026-08-01_05-29-59_paired_view_yolo_adaptation/2026-08-01_05-29-59_seresnext50_32x4d_paired_view_yolo_adaptation.ipynb) |
+| **Evaluation Notebook** | [`2026-08-01_07-59-46_seresnext50_32x4d_paired_view_yolo_gradcam_evaluation.ipynb`](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/2026-08-01_07-59-46_seresnext50_32x4d_paired_view_yolo_gradcam_evaluation.ipynb) |
 
 ### Complete Adaptation History
 
@@ -99,7 +99,7 @@ True Grade 3      3      19      32     155      14
 True Grade 4      0       0       1       5      45
 ```
 
-![Locked SE-ResNeXt paired-view YOLO-ROI confusion matrix](assets/2026-08-01_07-59-46_paired_view_gradcam/test_confusion_matrix.png)
+![Locked SE-ResNeXt paired-view YOLO-ROI confusion matrix](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/test_confusion_matrix.png)
 
 ### Grad-CAM Figures
 
@@ -107,21 +107,21 @@ Correct cases, five per true grade:
 
 | True grade | Correct-case gallery |
 | ---: | --- |
-| 0 | [Grade 0 correct Grad-CAM](assets/2026-08-01_07-59-46_paired_view_gradcam/output_00.png) |
-| 1 | [Grade 1 correct Grad-CAM](assets/2026-08-01_07-59-46_paired_view_gradcam/output_06.png) |
-| 2 | [Grade 2 correct Grad-CAM](assets/2026-08-01_07-59-46_paired_view_gradcam/output_12.png) |
-| 3 | [Grade 3 correct Grad-CAM](assets/2026-08-01_07-59-46_paired_view_gradcam/output_18.png) |
-| 4 | [Grade 4 correct Grad-CAM](assets/2026-08-01_07-59-46_paired_view_gradcam/output_24.png) |
+| 0 | [Grade 0 correct Grad-CAM](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_00.png) |
+| 1 | [Grade 1 correct Grad-CAM](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_06.png) |
+| 2 | [Grade 2 correct Grad-CAM](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_12.png) |
+| 3 | [Grade 3 correct Grad-CAM](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_18.png) |
+| 4 | [Grade 4 correct Grad-CAM](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_24.png) |
 
 Misclassified predicted-class versus true-class Grad-CAM pairs:
 
 | True grade | Five failure panels |
 | ---: | --- |
-| 0 | [1](assets/2026-08-01_07-59-46_paired_view_gradcam/output_01.png), [2](assets/2026-08-01_07-59-46_paired_view_gradcam/output_02.png), [3](assets/2026-08-01_07-59-46_paired_view_gradcam/output_03.png), [4](assets/2026-08-01_07-59-46_paired_view_gradcam/output_04.png), [5](assets/2026-08-01_07-59-46_paired_view_gradcam/output_05.png) |
-| 1 | [1](assets/2026-08-01_07-59-46_paired_view_gradcam/output_07.png), [2](assets/2026-08-01_07-59-46_paired_view_gradcam/output_08.png), [3](assets/2026-08-01_07-59-46_paired_view_gradcam/output_09.png), [4](assets/2026-08-01_07-59-46_paired_view_gradcam/output_10.png), [5](assets/2026-08-01_07-59-46_paired_view_gradcam/output_11.png) |
-| 2 | [1](assets/2026-08-01_07-59-46_paired_view_gradcam/output_13.png), [2](assets/2026-08-01_07-59-46_paired_view_gradcam/output_14.png), [3](assets/2026-08-01_07-59-46_paired_view_gradcam/output_15.png), [4](assets/2026-08-01_07-59-46_paired_view_gradcam/output_16.png), [5](assets/2026-08-01_07-59-46_paired_view_gradcam/output_17.png) |
-| 3 | [1](assets/2026-08-01_07-59-46_paired_view_gradcam/output_19.png), [2](assets/2026-08-01_07-59-46_paired_view_gradcam/output_20.png), [3](assets/2026-08-01_07-59-46_paired_view_gradcam/output_21.png), [4](assets/2026-08-01_07-59-46_paired_view_gradcam/output_22.png), [5](assets/2026-08-01_07-59-46_paired_view_gradcam/output_23.png) |
-| 4 | [1](assets/2026-08-01_07-59-46_paired_view_gradcam/output_25.png), [2](assets/2026-08-01_07-59-46_paired_view_gradcam/output_26.png), [3](assets/2026-08-01_07-59-46_paired_view_gradcam/output_27.png), [4](assets/2026-08-01_07-59-46_paired_view_gradcam/output_28.png), [5](assets/2026-08-01_07-59-46_paired_view_gradcam/output_29.png) |
+| 0 | [1](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_01.png), [2](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_02.png), [3](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_03.png), [4](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_04.png), [5](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_05.png) |
+| 1 | [1](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_07.png), [2](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_08.png), [3](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_09.png), [4](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_10.png), [5](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_11.png) |
+| 2 | [1](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_13.png), [2](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_14.png), [3](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_15.png), [4](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_16.png), [5](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_17.png) |
+| 3 | [1](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_19.png), [2](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_20.png), [3](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_21.png), [4](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_22.png), [5](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_23.png) |
+| 4 | [1](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_25.png), [2](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_26.png), [3](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_27.png), [4](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_28.png), [5](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_29.png) |
 
 ### Comparison and Decision
 
@@ -131,7 +131,7 @@ Misclassified predicted-class versus true-class Grad-CAM pairs:
 | 2026-08-01 SE-ResNeXt, production YOLO ROIs | 0.5894 | 0.7461 | 0.6002 | 0.2736 | 0.6368 | 0.8462 |
 | Current DenseNet, production YOLO ROIs | 0.5972 | 0.7702 | 0.6215 | 0.3750 | 0.6696 | 0.8611 |
 
-The first row uses a different crop domain and is not a controlled head-to-head comparison. The DenseNet and new SE-ResNeXt rows use the same production-style ROI test protocol and favor DenseNet on every reported aggregate metric. **Decision: do not replace the DenseNet production classifier with this SE-ResNeXt checkpoint.** Retain the checkpoint as an archived ensemble/research candidate. Its Grad-CAM figures are useful qualitative evidence, but this notebook did not measure anatomy energy, border energy, or occlusion faithfulness.
+The first row uses a different crop domain and is not a controlled head-to-head comparison. The paired-view test row records the SE-ResNeXt result on production-style ROIs. Its Grad-CAM figures are useful qualitative evidence, but this notebook did not measure anatomy energy, border energy, or occlusion faithfulness.
 
 ## Experiment Addendum: CAM Architecture, Loss, Sampler, and Explanation Method
 
@@ -166,7 +166,7 @@ SE-ResNeXt native CAM and final-layer Grad-CAM had map correlation `1.0000`, mea
 
 **Production decision:** retain the final 12x12 native-CAM CE checkpoint with full inverse sampling. Reject the multiscale/EMA, FPN, joint-guided, and soft-label arms. Native CAM is the deployment method because it is cheaper and structurally faithful, not because it has demonstrated superior anatomical localization.
 
-Archived experiment notebooks: [CAM architecture/loss ablation](2026-07-22_11-50-51_seresnext50_cam_ablation.ipynb) and [sampler ablation](2026-07-23_15-13-05_seresnext50_sampler_ablation.ipynb).
+Archived experiment notebooks: [CAM architecture/loss ablation](runs/2026-07-22_11-50-51_cam_architecture_loss_ablation/2026-07-22_11-50-51_seresnext50_cam_ablation.ipynb) and [sampler ablation](runs/2026-07-23_15-13-05_sampler_ablation/2026-07-23_15-13-05_seresnext50_sampler_ablation.ipynb).
 
 ## Run: 2026-07-25 01:50:53.962450 UTC (SE-RESNEXT50-32X4D - NATURAL ORIENTATION + FLIP + GAMMA + FINAL NATIVE CAM)
 
@@ -201,7 +201,7 @@ Against the 2026-07-23 01:25:36.772175 UTC canonical checkpoint, locked-test Acc
 | **Fine-tune Learning Rate** | 1e-5; full model |
 | **Weight Decay** | 1e-4 in warm-up/coarse; 1e-3 in fine-tuning |
 | **Checkpoint Directory** | `2026-07-25_01-50-53_962450_UTC_natural_orientation_flip_gamma_native_cam_ce` |
-| **Executed Notebook Archive** | [`2026-07-25_01-50-53_seresnext50_32x4d_natural_orientation_flip_gamma_native_cam_ce.ipynb`](2026-07-25_01-50-53_seresnext50_32x4d_natural_orientation_flip_gamma_native_cam_ce.ipynb) |
+| **Executed Notebook Archive** | [`2026-07-25_01-50-53_seresnext50_32x4d_natural_orientation_flip_gamma_native_cam_ce.ipynb`](runs/2026-07-25_01-50-53_natural_orientation_flip_gamma_native_cam_ce/2026-07-25_01-50-53_seresnext50_32x4d_natural_orientation_flip_gamma_native_cam_ce.ipynb) |
 
 ### Selected Validation Metrics
 
@@ -302,11 +302,11 @@ Warm-up ended at epoch 5 with QWK `0.4611`. Coarse training reached QWK `0.7859`
 
 #### Test Confusion Matrix
 
-![SE-ResNeXt natural-orientation test confusion matrix, run 2026-07-25 01:50:53.962450 UTC](assets/2026-07-25_01-50-53_test_confusion_matrix.png)
+![SE-ResNeXt natural-orientation test confusion matrix, run 2026-07-25 01:50:53.962450 UTC](runs/2026-07-25_01-50-53_natural_orientation_flip_gamma_native_cam_ce/assets/2026-07-25_01-50-53_test_confusion_matrix.png)
 
 #### Native-CAM Audit Gallery
 
-![SE-ResNeXt natural-orientation native-CAM audit, run 2026-07-25 01:50:53.962450 UTC](assets/2026-07-25_01-50-53_native_cam_audit.png)
+![SE-ResNeXt natural-orientation native-CAM audit, run 2026-07-25 01:50:53.962450 UTC](runs/2026-07-25_01-50-53_natural_orientation_flip_gamma_native_cam_ce/assets/2026-07-25_01-50-53_native_cam_audit.png)
 
 ### Native-CAM Evaluation
 
@@ -357,7 +357,7 @@ This run completed all 30 configured epochs without a runtime error and selected
 | **Fine-tune Learning Rate** | 1e-5; full model |
 | **Weight Decay** | 1e-4 in warm-up/coarse; 1e-3 in fine-tuning |
 | **Checkpoint Directory** | `2026-07-23_06-57-13_378879_UTC_multiscale24_native_cam_ce_ema` |
-| **Executed Notebook Archive** | [`2026-07-23_06-57-13_seresnext50_32x4d_multiscale24_native_cam_ce_ema.ipynb`](2026-07-23_06-57-13_seresnext50_32x4d_multiscale24_native_cam_ce_ema.ipynb) |
+| **Executed Notebook Archive** | [`2026-07-23_06-57-13_seresnext50_32x4d_multiscale24_native_cam_ce_ema.ipynb`](runs/2026-07-23_06-57-13_multiscale24_native_cam_ce_ema/2026-07-23_06-57-13_seresnext50_32x4d_multiscale24_native_cam_ce_ema.ipynb) |
 
 ### Selected Validation Metrics
 
@@ -462,11 +462,11 @@ Validation QWK, AP, and the selection score were still increasing at epoch 30. T
 
 #### Test Confusion Matrix
 
-![SE-ResNeXt test confusion matrix, run 2026-07-23 06:57:13.378879 UTC](assets/2026-07-23_06-57-13_test_confusion_matrix.png)
+![SE-ResNeXt test confusion matrix, run 2026-07-23 06:57:13.378879 UTC](runs/2026-07-23_06-57-13_multiscale24_native_cam_ce_ema/assets/2026-07-23_06-57-13_test_confusion_matrix.png)
 
 #### Native-CAM Worst Cases
 
-![SE-ResNeXt multiscale native-CAM worst cases, run 2026-07-23 06:57:13.378879 UTC](assets/2026-07-23_06-57-13_native_cam_worst_cases.png)
+![SE-ResNeXt multiscale native-CAM worst cases, run 2026-07-23 06:57:13.378879 UTC](runs/2026-07-23_06-57-13_multiscale24_native_cam_ce_ema/assets/2026-07-23_06-57-13_native_cam_worst_cases.png)
 
 ### Native-CAM Evaluation
 
@@ -523,7 +523,7 @@ This comparison run completed all 30 configured epochs without a runtime error. 
 | **Fine-tune Learning Rate** | 1e-5; full model |
 | **Weight Decay** | 1e-4 in warm-up/coarse; 1e-3 in fine-tuning |
 | **Checkpoint Directory** | `2026-07-23_01-25-36_772175_UTC_final_native_cam_ce` |
-| **Executed Notebook Archive** | [`2026-07-23_01-25-36_seresnext50_32x4d_final_native_cam_ce.ipynb`](2026-07-23_01-25-36_seresnext50_32x4d_final_native_cam_ce.ipynb) |
+| **Executed Notebook Archive** | [`2026-07-23_01-25-36_seresnext50_32x4d_final_native_cam_ce.ipynb`](runs/2026-07-23_01-25-36_final_native_cam_ce/2026-07-23_01-25-36_seresnext50_32x4d_final_native_cam_ce.ipynb) |
 
 ### Selected Validation Metrics
 
@@ -619,11 +619,11 @@ True Grade 4      0       0       0       9      42
 
 #### Confusion Matrix, ROC, and Precision-Recall Curves
 
-![SE-ResNeXt test metrics, run 2026-07-23 01:25:36.772175 UTC](assets/2026-07-23_01-25-36_test_metrics.png)
+![SE-ResNeXt test metrics, run 2026-07-23 01:25:36.772175 UTC](runs/2026-07-23_01-25-36_final_native_cam_ce/assets/2026-07-23_01-25-36_test_metrics.png)
 
 #### Native-CAM Audit and Worst Cases
 
-![SE-ResNeXt native-CAM audit, run 2026-07-23 01:25:36.772175 UTC](assets/2026-07-23_01-25-36_native_cam_audit.png)
+![SE-ResNeXt native-CAM audit, run 2026-07-23 01:25:36.772175 UTC](runs/2026-07-23_01-25-36_final_native_cam_ce/assets/2026-07-23_01-25-36_native_cam_audit.png)
 
 ### Native-CAM Evaluation
 

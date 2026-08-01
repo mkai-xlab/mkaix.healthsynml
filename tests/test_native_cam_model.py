@@ -48,6 +48,7 @@ def test_se_resnext_checkpoint_loads_and_native_cam_matches_logits():
     )
     model.load_state_dict(checkpoint["model_state_dict"], strict=True)
     model.eval()
+    assert model.gradcam_target_layer is model.backbone.layer4
 
     sample = torch.zeros(1, 3, 384, 384)
     with torch.no_grad():

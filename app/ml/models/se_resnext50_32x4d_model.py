@@ -7,7 +7,7 @@ from app.ml.models.base_model import BaseModel
 
 
 class SEResNeXt50NativeCAMModel(BaseModel):
-    """Inference-only SE-ResNeXt-50 with a five-map native-CAM head."""
+    """SE-ResNeXt-50 classifier with a five-map head and Grad-CAM support."""
 
     architecture = "final_native_cam_ce"
 
@@ -37,6 +37,11 @@ class SEResNeXt50NativeCAMModel(BaseModel):
 
     def class_maps(self, images: torch.Tensor) -> torch.Tensor:
         return self.class_conv(self.backbone(images)[0])
+
+    @property
+    def gradcam_target_layer(self) -> nn.Module:
+        """Final spatial block used to generate post-hoc Grad-CAM."""
+        return self.backbone.layer4
 
     @staticmethod
     def logits_from_class_maps(class_maps: torch.Tensor) -> torch.Tensor:

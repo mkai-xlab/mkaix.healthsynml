@@ -279,7 +279,16 @@ class KneeOAPipeline:
         component_cams = {}
         for name, model in self.models.items():
             class_maps = outputs[name][1]
-            if class_maps is None:
+            if name == "seresnext50_32x4d":
+                # The deployed SE-ResNeXt response must contain post-hoc Grad-CAM,
+                # not the native class map used by its linear classifier head.
+                component_cams[name] = native_cam_service.extract_gradcam(
+                    model=model,
+                    input_tensor=input_tensor,
+                    predicted_class=result["predicted_class"],
+                    output_size=(height, width),
+                )
+            elif class_maps is None:
                 component_cams[name] = native_cam_service.extract_gradcam(
                     model=model,
                     input_tensor=input_tensor,

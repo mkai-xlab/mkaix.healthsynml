@@ -2,7 +2,7 @@
 
 Document status: production-only configuration  
 Model family: DenseNet-121  
-Production checkpoint timestamp: `2026-07-30 09:03:29 UTC`
+Checkpoint timestamp: `2026-07-30 09:03:29 UTC`
 
 # CHAPTER 1: SYSTEM SCOPE
 
@@ -227,4 +227,4 @@ Operational verification covers health readiness, no-ROI behavior, single- and b
 
 ## Conclusion
 
-The production classifier is a standard DenseNet-121 with a linear five-class head, CE loss, mild augmentation, inverse-frequency sampling, three-stage base training, and five-epoch paired-view adaptation. Inference uses natural laterality, production YOLO square crops, LAB CLAHE `1.25`, `384 x 384` input, and predicted-class Grad-CAM. No ensemble, SE-ResNeXt, EfficientNet, CORN, CORAL, ordinal loss, native CAM, EMA, canonicalization, or test-time augmentation is part of this production configuration.
+This DenseNet-121 configuration uses a linear five-class head, CE loss, mild augmentation, inverse-frequency sampling, three-stage base training, and five-epoch paired-view adaptation. Inference uses natural laterality, production YOLO square crops, LAB CLAHE `1.25`, `384 x 384` input, and predicted-class Grad-CAM.
