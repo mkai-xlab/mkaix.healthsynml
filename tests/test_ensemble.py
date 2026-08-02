@@ -1,10 +1,7 @@
 import torch
 import torch.nn.functional as F
 
-from app.ml.pipelines.knee_oa_pipeline import (
-    select_heatmap_component,
-    weighted_soft_vote,
-)
+from app.services.ensemble_service import ensemble_service
 
 
 def test_weighted_soft_vote_combines_probabilities_not_logits():
@@ -22,7 +19,7 @@ def test_weighted_soft_vote_combines_probabilities_not_logits():
         "seresnext50_32x4d": 0.35,
         "efficientnet_b0": 0.15,
     }
-    actual = weighted_soft_vote(logits, weights)
+    actual = ensemble_service.weighted_soft_vote(logits, weights)
     expected = (
         F.softmax(densenet_logits, dim=1) * 0.50
         + F.softmax(se_resnext_logits, dim=1) * 0.35
@@ -42,7 +39,7 @@ def test_weighted_soft_vote_combines_probabilities_not_logits():
 
 def test_weighted_soft_vote_rejects_incompatible_inputs():
     try:
-        weighted_soft_vote({"only": torch.zeros(1, 5)}, {"only": 1.0})
+        ensemble_service.weighted_soft_vote({"only": torch.zeros(1, 5)}, {"only": 1.0})
     except ValueError as error:
         assert "at least two" in str(error)
     else:
@@ -79,7 +76,7 @@ def test_heatmap_source_uses_per_case_anatomy_not_model_average():
         },
     }
 
-    selected = select_heatmap_component(probabilities, 2, anatomy)
+    selected = ensemble_service.select_heatmap_component(probabilities, 2, anatomy)
 
     assert selected == "seresnext50_32x4d"
 
@@ -106,6 +103,6 @@ def test_heatmap_source_does_not_force_bad_agreeing_map():
         },
     }
 
-    assert select_heatmap_component(probabilities, 0, anatomy) == (
+    assert ensemble_service.select_heatmap_component(probabilities, 0, anatomy) == (
         "seresnext50_32x4d"
     )

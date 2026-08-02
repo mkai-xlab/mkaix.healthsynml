@@ -1,6 +1,5 @@
 import logging
 import os
-from collections.abc import Mapping
 
 import numpy as np
 import torch
@@ -9,76 +8,18 @@ import torch.nn.functional as F
 
 from app.core.config import settings
 from app.ml.model_registry import get_model
-from app.services.gradcam_service import native_cam_service
+from app.services.ensemble_service import (
+    MAX_HEATMAP_BORDER_ENERGY,
+    MAX_HEATMAP_LOWER_TIBIA_ENERGY,
+    MIN_HEATMAP_JOINT_ENERGY,
+    ensemble_service,
+)
+from app.services.gradcam_service import gradcam_service
 from app.services.inference_service import inference_service
 from app.services.preprocessing_service import preprocessing_service
 
 
 logger = logging.getLogger(__name__)
-
-# Conservative deployment gates. They reject the upper-femur and lower-tibia
-# failure patterns observed in the 2026-07-24 application audit.
-MIN_HEATMAP_JOINT_ENERGY = 0.55
-MAX_HEATMAP_BORDER_ENERGY = 0.25
-MAX_HEATMAP_LOWER_TIBIA_ENERGY = 0.25
-
-
-def weighted_soft_vote(
-    logits: Mapping[str, torch.Tensor], weights: Mapping[str, float]
-) -> torch.Tensor:
-    """Combine CE model probabilities using normalized non-negative weights."""
-    if len(logits) < 2:
-        raise ValueError("Soft voting requires at least two logits tensors")
-    if set(logits) != set(weights):
-        raise ValueError("Ensemble logits and weights must have identical model names")
-    values = list(logits.values())
-    if any(value.shape != values[0].shape for value in values[1:]):
-        raise ValueError("Ensemble logits must have identical shapes")
-    if any(not np.isfinite(weight) or weight < 0 for weight in weights.values()):
-        raise ValueError("Ensemble weights must be finite and non-negative")
-    total_weight = float(sum(weights.values()))
-    if total_weight <= 0:
-        raise ValueError("At least one ensemble weight must be positive")
-
-    return sum(
-        F.softmax(logits[name].float(), dim=1) * (weights[name] / total_weight)
-        for name in logits
-    )
-
-
-def select_heatmap_component(
-    probabilities: Mapping[str, torch.Tensor],
-    predicted_class: int,
-    anatomy_metrics: Mapping[str, Mapping[str, float]],
-) -> str:
-    """Choose predicted-grade evidence using per-case anatomical measurements."""
-    if set(probabilities) != set(anatomy_metrics):
-        raise ValueError("Heatmap probabilities and anatomy metrics must align")
-
-    def acceptable(name: str) -> bool:
-        metrics = anatomy_metrics[name]
-        return bool(
-            metrics["joint_energy"] >= MIN_HEATMAP_JOINT_ENERGY
-            and metrics["border_energy"] <= MAX_HEATMAP_BORDER_ENERGY
-            and metrics["lower_tibia_energy"]
-            <= MAX_HEATMAP_LOWER_TIBIA_ENERGY
-            and metrics["peak_inside_joint"]
-        )
-
-    passing = [name for name in probabilities if acceptable(name)]
-    candidates = passing or list(probabilities)
-
-    # A map must be both anatomically concentrated and supported by its model for
-    # the ensemble's selected grade. Agreement is intentionally not a hard gate.
-    return max(
-        candidates,
-        key=lambda name: (
-            anatomy_metrics[name]["anatomy_score"]
-            * float(probabilities[name][0, predicted_class].item()),
-            anatomy_metrics[name]["anatomy_score"],
-        ),
-    )
-
 
 class KneeOAPipeline:
     """Environment-selected single-model or soft-voting KL pipeline."""
@@ -87,18 +28,20 @@ class KneeOAPipeline:
         "densenet121": {
             "registry_name": "densenet121",
             "checkpoint_setting": "MODEL_CHECKPOINT_PATH",
-            "architecture_setting": "EXPECTED_MODEL_ARCHITECTURE",
         },
         "seresnext50_32x4d": {
             "registry_name": "seresnext50_32x4d",
             "checkpoint_setting": "SE_RESNEXT_CHECKPOINT_PATH",
-            "architecture_setting": "EXPECTED_SE_RESNEXT_ARCHITECTURE",
         },
         "efficientnet_b0": {
             "registry_name": "efficientnet_b0",
             "checkpoint_setting": "EFFICIENTNET_B0_CHECKPOINT_PATH",
-            "architecture_setting": "EXPECTED_EFFICIENTNET_B0_ARCHITECTURE",
         },
+    }
+    component_weights = {
+        "densenet121": 0.55,
+        "seresnext50_32x4d": 0.45,
+        "efficientnet_b0": 0.0,
     }
     mode_components = {
         "densenet121": ("densenet121",),
@@ -128,18 +71,10 @@ class KneeOAPipeline:
     def __init__(self):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model_mode = settings.MODEL_MODE
-        self.ordinal_type = settings.ORDINAL_TYPE
-        if self.ordinal_type != "ce":
-            raise RuntimeError("Production classifier checkpoints require ORDINAL_TYPE=ce")
 
         component_names = self.mode_components[self.model_mode]
-        configured_weights = {
-            "densenet121": settings.ENSEMBLE_DENSENET_WEIGHT,
-            "seresnext50_32x4d": settings.ENSEMBLE_SE_RESNEXT_WEIGHT,
-            "efficientnet_b0": settings.ENSEMBLE_EFFICIENTNET_B0_WEIGHT,
-        }
         self.ensemble_weights = {
-            name: configured_weights[name] for name in component_names
+            name: self.component_weights[name] for name in component_names
         }
         self.models = {}
         self.checkpoint_paths = {}
@@ -150,9 +85,6 @@ class KneeOAPipeline:
             model, component_metadata = self._load_component(
                 model_name=config["registry_name"],
                 checkpoint_path=checkpoint_path,
-                expected_architecture=getattr(
-                    settings, config["architecture_setting"]
-                ),
             )
             self.models[component_name] = model
             self.checkpoint_paths[component_name] = checkpoint_path
@@ -162,7 +94,7 @@ class KneeOAPipeline:
         if self.model_mode == "ensemble":
             self.heatmap_model_name = "dynamic_per_case_anatomy_gate"
             self.checkpoint_metadata = {
-                "architecture": "two_model_weighted_soft_voting_native_cam_ensemble",
+                "architecture": "two_model_weighted_soft_voting_gradcam_ensemble",
                 "epoch": {
                     name: value["epoch"] for name, value in metadata.items()
                 },
@@ -181,7 +113,6 @@ class KneeOAPipeline:
         self,
         model_name: str,
         checkpoint_path: str,
-        expected_architecture: str,
     ) -> tuple[nn.Module, dict]:
         absolute_path = os.path.abspath(checkpoint_path)
         if not os.path.isfile(absolute_path):
@@ -206,10 +137,16 @@ class KneeOAPipeline:
         if not isinstance(checkpoint, dict):
             raise RuntimeError("Checkpoint must contain architecture metadata and weights")
         architecture = checkpoint.get("architecture")
+        expected_architecture = model.architecture
         if architecture != expected_architecture:
             raise RuntimeError(
                 f"{model_name} checkpoint architecture {architecture!r} does not match "
                 f"{expected_architecture!r}"
+            )
+        loss_type = checkpoint.get("loss_type")
+        if loss_type not in {None, "ce", "cross_entropy"}:
+            raise RuntimeError(
+                f"{model_name} checkpoint loss_type={loss_type!r} is not CE-compatible"
             )
         checkpoint_model_name = checkpoint.get("model_name")
         if checkpoint_model_name not in {None, model_name}:
@@ -225,7 +162,7 @@ class KneeOAPipeline:
         metadata = {
             "architecture": architecture,
             "epoch": checkpoint.get("epoch"),
-            "loss_type": checkpoint.get("loss_type"),
+            "loss_type": loss_type or "ce",
             "validation_metrics": {
                 key: value
                 for key, value in checkpoint.get("validation_metrics", {}).items()
@@ -261,55 +198,37 @@ class KneeOAPipeline:
             preprocessing_service.preprocess_image(image_bytes, knee_side=knee_side)
         )
         input_tensor = input_tensor.to(self.device)
-        outputs = {
-            name: inference_service.run_inference_with_class_maps(model, input_tensor)
+        logits = {
+            name: inference_service.run_inference(model, input_tensor)
             for name, model in self.models.items()
         }
-        logits = {name: value[0] for name, value in outputs.items()}
         component_probabilities = {
             name: F.softmax(value.float(), dim=1) for name, value in logits.items()
         }
         probabilities = (
             next(iter(component_probabilities.values()))
             if len(logits) == 1
-            else weighted_soft_vote(logits, self.ensemble_weights)
+            else ensemble_service.weighted_soft_vote(logits, self.ensemble_weights)
         )
         result = self.postprocess(probabilities)
         height, width = processed_image.shape[:2]
-        component_cams = {}
-        for name, model in self.models.items():
-            class_maps = outputs[name][1]
-            if name == "seresnext50_32x4d":
-                # The deployed SE-ResNeXt response must contain post-hoc Grad-CAM,
-                # not the native class map used by its linear classifier head.
-                component_cams[name] = native_cam_service.extract_gradcam(
-                    model=model,
-                    input_tensor=input_tensor,
-                    predicted_class=result["predicted_class"],
-                    output_size=(height, width),
-                )
-            elif class_maps is None:
-                component_cams[name] = native_cam_service.extract_gradcam(
-                    model=model,
-                    input_tensor=input_tensor,
-                    predicted_class=result["predicted_class"],
-                    output_size=(height, width),
-                )
-            else:
-                component_cams[name] = native_cam_service.extract_cam(
-                    model=model,
-                    class_maps=class_maps,
-                    predicted_class=result["predicted_class"],
-                    output_size=(height, width),
-                )
+        component_cams = {
+            name: gradcam_service.extract_gradcam(
+                model=model,
+                input_tensor=input_tensor,
+                predicted_class=result["predicted_class"],
+                output_size=(height, width),
+            )
+            for name, model in self.models.items()
+        }
         anatomy_metrics = {
-            name: native_cam_service.energy_metrics(cam)
+            name: gradcam_service.energy_metrics(cam)
             for name, cam in component_cams.items()
         }
         heatmap_component = (
             next(iter(self.models))
             if len(self.models) == 1
-            else select_heatmap_component(
+            else ensemble_service.select_heatmap_component(
                 component_probabilities,
                 result["predicted_class"],
                 anatomy_metrics,
@@ -329,10 +248,10 @@ class KneeOAPipeline:
                 heatmap_component,
                 selected_metrics,
             )
-        native_cam_image = native_cam_service.render_heatmap(
+        gradcam_image = gradcam_service.render_heatmap(
             component_cams[heatmap_component], processed_image
         )
 
         # Keep the established response field for existing clients.
-        result["gradcam_image"] = native_cam_image
+        result["gradcam_image"] = gradcam_image
         return result

@@ -1,13 +1,12 @@
 import timm
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 from app.ml.models.base_model import BaseModel
 
 
-class SEResNeXt50NativeCAMModel(BaseModel):
-    """SE-ResNeXt-50 classifier with a five-map head and Grad-CAM support."""
+class SEResNeXt50Model(BaseModel):
+    """SE-ResNeXt-50 classifier with post-hoc Grad-CAM support."""
 
     architecture = "final_native_cam_ce"
 
@@ -56,23 +55,3 @@ class SEResNeXt50NativeCAMModel(BaseModel):
     def forward(self, images: torch.Tensor) -> torch.Tensor:
         logits, _ = self.forward_with_class_maps(images)
         return logits
-
-    @staticmethod
-    def native_cam_from_class_maps(
-        class_maps: torch.Tensor,
-        class_index: int,
-        output_size: tuple[int, int],
-    ) -> torch.Tensor:
-        if class_maps.ndim != 4 or class_maps.size(0) != 1:
-            raise ValueError("Native CAM currently expects one BxCxHxW inference sample")
-        if not 0 <= class_index < class_maps.size(1):
-            raise ValueError(f"Class index is out of range: {class_index}")
-
-        cam = F.relu(class_maps[:, class_index : class_index + 1])
-        cam = F.interpolate(
-            cam,
-            size=output_size,
-            mode="bilinear",
-            align_corners=False,
-        )[0, 0]
-        return cam / cam.max().clamp_min(1e-8)

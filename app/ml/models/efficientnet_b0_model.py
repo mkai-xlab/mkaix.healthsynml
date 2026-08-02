@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import torchvision.models as models
 
 from app.ml.models.base_model import BaseModel
@@ -35,6 +34,11 @@ class EfficientNetB0Model(BaseModel):
     def class_maps(self, images: torch.Tensor) -> torch.Tensor:
         return self.class_conv(self.features(images))
 
+    @property
+    def gradcam_target_layer(self) -> nn.Module:
+        """Final convolutional EfficientNet feature block for Grad-CAM."""
+        return self.features[-1]
+
     @staticmethod
     def logits_from_class_maps(class_maps: torch.Tensor) -> torch.Tensor:
         return class_maps.mean(dim=(2, 3))
@@ -48,23 +52,3 @@ class EfficientNetB0Model(BaseModel):
     def forward(self, images: torch.Tensor) -> torch.Tensor:
         logits, _ = self.forward_with_class_maps(images)
         return logits
-
-    @staticmethod
-    def native_cam_from_class_maps(
-        class_maps: torch.Tensor,
-        class_index: int,
-        output_size: tuple[int, int],
-    ) -> torch.Tensor:
-        if class_maps.ndim != 4 or class_maps.size(0) != 1:
-            raise ValueError("Native CAM currently expects one BxCxHxW sample")
-        if not 0 <= class_index < class_maps.size(1):
-            raise ValueError(f"Class index is out of range: {class_index}")
-
-        cam = F.relu(class_maps[:, class_index : class_index + 1])
-        cam = F.interpolate(
-            cam,
-            size=output_size,
-            mode="bilinear",
-            align_corners=False,
-        )[0, 0]
-        return cam / cam.max().clamp_min(1e-8)

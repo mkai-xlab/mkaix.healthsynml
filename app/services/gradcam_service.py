@@ -6,8 +6,8 @@ import torch
 import torch.nn.functional as F
 
 
-class NativeCAMService:
-    """Render the class map that is directly averaged into the predicted logit."""
+class GradCAMService:
+    """Generate, assess, and render post-hoc Grad-CAM heatmaps."""
 
     @staticmethod
     def energy_metrics(cam: np.ndarray) -> dict[str, float]:
@@ -50,23 +50,6 @@ class NativeCAMService:
             "peak_inside_joint": peak_inside_joint,
             "anatomy_score": anatomy_score,
         }
-
-    @staticmethod
-    def extract_cam(
-        model: torch.nn.Module,
-        class_maps: torch.Tensor,
-        predicted_class: int,
-        output_size: tuple[int, int],
-    ) -> np.ndarray:
-        """Return the normalized native map used for scoring and rendering."""
-        if not hasattr(model, "native_cam_from_class_maps"):
-            raise TypeError("The configured model does not support native CAM")
-        cam_tensor = model.native_cam_from_class_maps(
-            class_maps,
-            class_index=predicted_class,
-            output_size=output_size,
-        )
-        return cam_tensor.detach().cpu().numpy()
 
     @staticmethod
     def extract_gradcam(
@@ -130,28 +113,4 @@ class NativeCAMService:
         encoded = base64.b64encode(buffer).decode("ascii")
         return f"data:image/jpeg;base64,{encoded}"
 
-    def generate_heatmap(
-        self,
-        model: torch.nn.Module,
-        class_maps: torch.Tensor,
-        processed_image: np.ndarray,
-        predicted_class: int,
-    ) -> tuple[str, dict[str, float]]:
-        height, width = processed_image.shape[:2]
-        cam = self.extract_cam(
-            model=model,
-            class_maps=class_maps,
-            predicted_class=predicted_class,
-            output_size=(height, width),
-        )
-        encoded = self.render_heatmap(cam, processed_image)
-        metrics = self.energy_metrics(cam)
-        metrics["source_height"] = float(class_maps.shape[-2])
-        metrics["source_width"] = float(class_maps.shape[-1])
-        return encoded, metrics
-
-
-native_cam_service = NativeCAMService()
-
-# Compatibility import for existing clients/modules. This now generates native CAM.
-gradcam_service = native_cam_service
+gradcam_service = GradCAMService()
