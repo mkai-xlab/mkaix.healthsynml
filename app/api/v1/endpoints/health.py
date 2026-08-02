@@ -6,7 +6,11 @@ from app.services.prediction_service import prediction_service
 router = APIRouter()
 
 
-@router.get("")
+@router.get(
+    "",
+    summary="Check API health",
+    description="Returns service readiness, active model mode, device, and checkpoint metadata.",
+)
 def check_health():
     pipeline = prediction_service.pipeline
     return {

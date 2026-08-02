@@ -46,7 +46,12 @@ app.add_middleware(
 )
 
 # --- API Endpoints ---
-@app.get("/", tags=["General"])
+@app.get(
+    "/",
+    tags=["General"],
+    summary="Show API welcome message",
+    description="Confirms that the Knee OA API process is reachable.",
+)
 def read_root():
     """Root endpoint to check if the API is running."""
     return {"message": "Welcome to the Knee OA Classification API!"}
@@ -58,12 +63,18 @@ def tools_dashboard() -> FileResponse:
     return FileResponse(TOOLS_HOME)
 
 
-@app.get("/tools/viewer", include_in_schema=False)
+@app.get(
+    "/result-viewer",
+    tags=["Result Viewer"],
+    summary="Open the prediction result viewer",
+    description="Browser viewer for rendering a complete JSON response from POST /api/v1/predict.",
+    include_in_schema=False,
+)
 def response_viewer_page() -> FileResponse:
     return FileResponse(RESPONSE_VIEWER_PAGE)
 
 
-@app.get("/tools/viewer/{asset_path:path}", include_in_schema=False)
+@app.get("/result-viewer/{asset_path:path}", include_in_schema=False)
 def response_viewer_asset(asset_path: str) -> FileResponse:
     """Serve the existing viewer CSS/JS without changing its JSON behavior."""
     viewer_root = REPOSITORY_ROOT / "tools" / "kl_response_viewer"
@@ -73,3 +84,15 @@ def response_viewer_asset(asset_path: str) -> FileResponse:
 
         raise HTTPException(status_code=404, detail="Viewer asset not found")
     return FileResponse(candidate)
+
+
+# Backward-compatible aliases for existing bookmarks. The viewer is now served
+# by this API container; no second viewer container is required.
+@app.get("/tools/viewer", include_in_schema=False)
+def legacy_response_viewer_page() -> FileResponse:
+    return response_viewer_page()
+
+
+@app.get("/tools/viewer/{asset_path:path}", include_in_schema=False)
+def legacy_response_viewer_asset(asset_path: str) -> FileResponse:
+    return response_viewer_asset(asset_path)
