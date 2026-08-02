@@ -23,7 +23,7 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 60
     steps:
       - name: Deliver ML service via SSH
         uses: appleboy/ssh-action@v1.2.0
@@ -37,4 +37,6 @@ jobs:
             git checkout dev
             git pull --ff-only origin dev
             docker compose config --quiet
+            docker rm -f knee-oa-ai || true
             docker compose up -d --build ai
+            docker image prune -f

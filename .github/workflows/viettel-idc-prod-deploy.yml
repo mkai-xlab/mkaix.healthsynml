@@ -21,7 +21,7 @@ jobs:
   deploy:
     if: inputs.confirm_delivery
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 60
 
     steps:
       - name: Deliver ML service via SSH
@@ -36,4 +36,6 @@ jobs:
             git checkout main
             git pull --ff-only origin main
             docker compose config --quiet
+            docker rm -f knee-oa-ai || true
             docker compose up -d --build ai
+            docker image prune -f
