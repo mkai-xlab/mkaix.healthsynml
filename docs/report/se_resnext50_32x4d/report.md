@@ -1,13 +1,137 @@
 # SE-ResNeXt-50 Training Execution Log
-This file records the optimized SE-ResNeXt-50 comparison run, its exact configuration, predictive metrics, and native-CAM audit.
+This file records SE-ResNeXt-50 runs, their exact configurations, predictive metrics, and native-CAM or Grad-CAM evidence.
 
 ## Model Performance Summary
 
 | Run Timestamp | Model Configuration / Loss | Accuracy | QWK Score | ROC AUC | Avg Precision | Macro F1 | Grade 1 Recall | CAM Joint Energy | CAM Border Energy |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-08-01 07:59:46.827053 UTC | **Paired Published/YOLO-ROI Adaptation + Post-hoc Grad-CAM**<br>Cross-Entropy (CE) | 0.5894 | 0.7461 | 0.8462 | 0.6368 | 0.6002 | 0.2736 | Not measured | Not measured |
 | 2026-07-25 01:50:53.962450 UTC | **Natural Orientation + Horizontal Flip + Mild Gamma + Final Native CAM**<br>Cross-Entropy (CE) | **0.6558** | **0.8216** | **0.8980** | **0.7299** | **0.6781** | 0.4122 | 0.8516 | 0.0990 |
 | 2026-07-23 06:57:13.378879 UTC | Multiscale 24x24 Native CAM + EMA (`0.999`)<br>Cross-Entropy (CE) | 0.5676 (95% bootstrap CI: 0.5429 - 0.5918) | 0.7651 (95% bootstrap CI: 0.7406 - 0.7887) | 0.8703 | 0.6918 | 0.6220 | **0.5507** | 0.7938 | 0.1175 |
 | 2026-07-23 01:25:36.772175 UTC | **Final Linear Native CAM (Laterality Canonicalized)**<br>Cross-Entropy (CE) | 0.6389 (95% bootstrap CI: 0.6153 - 0.6624) | 0.8194 (95% bootstrap CI: 0.7999 - 0.8384) | 0.8948 | 0.7248 | 0.6671 | 0.4155 | 0.8707 | 0.0749 |
+
+## Run: 2026-08-01 07:59:46.827053 UTC (SE-RESNEXT50-32X4D - PAIRED-VIEW YOLO-ROI ADAPTATION + GRAD-CAM)
+
+### Summary
+
+Notebook 03 fine-tuned the selected CE SE-ResNeXt checkpoint for five epochs using a 50/50 mixture of published `224x224` crops and production-style YOLO square ROIs. The model retained its five-map `final_native_cam_ce` classification head, but notebook 04 generated post-hoc Grad-CAM from the final SE-ResNeXt feature tensor. Epoch 4 won the validation-only two-domain score (`0.6997`) and was evaluated once on the locked YOLO-ROI test split.
+
+The locked production-ROI test result was Accuracy `0.5894`, QWK `0.7461`, macro F1 `0.6002`, AP `0.6368`, and AUC `0.8462`. Grade 1 remains the largest weakness: only `81/296` cases were correct, giving precision `0.2516`, recall `0.2736`, and F1 `0.2621`.
+
+The Grad-CAM galleries generally activate at a medial or lateral joint margin. Several misclassified examples have nearly identical predicted- and true-class maps, while others rely on a single border region. These figures demonstrate model evidence but do not establish lesion localization because no expert osteophyte or joint-space-narrowing masks were available. No numeric Grad-CAM anatomy audit was computed in this notebook, so joint-energy or border-energy values are not inferred from visual inspection.
+
+### Configurations
+
+| Parameter | Value |
+| --- | --- |
+| **Model** | `seresnext50_32x4d` |
+| **Architecture** | `final_native_cam_ce`; five final `1x1` class maps and spatial-mean logits |
+| **Initialization** | `2026-08-01_03-46-16_723682_UTC_original_224_ce_3stage/best_model.pth` |
+| **Training Run** | `2026-08-01_05-29-59_660657_UTC_paired_view_yolo_roi` |
+| **Model Input** | `384x384` |
+| **ROI Policy** | YOLO square ROI expanded by `1.15 * max(box width, box height)`; external black padding only |
+| **Deterministic Processing** | LAB CLAHE `1.25` -> square pad -> resize `384x384` -> ImageNet normalization |
+| **Training Views** | Published crop `p=0.50`; production YOLO ROI `p=0.50` |
+| **Training Augmentation** | Horizontal flip `p=0.50`; rotation `+/-5 degrees`; brightness/contrast `0.08`; random erasing `p=0.10`, scale `0.02-0.05` |
+| **Loss Function** | Cross-Entropy (CE); no MSE, ordinal, or CAM loss |
+| **Balanced Sampler** | Full inverse-frequency `WeightedRandomSampler`, replacement enabled |
+| **Adaptation Epochs** | 5 full-network epochs |
+| **Selected Checkpoint** | Epoch 4; robust validation selection `0.699705` |
+| **Optimizer** | AdamW; learning rate `1e-5`; weight decay `1e-3` |
+| **Scheduler** | Cosine annealing to `1e-7` over five epochs |
+| **Batch / Workers / Seed** | 48 / 2 / 42 |
+| **AMP / Gradient Clipping** | CUDA AMP; global norm `1.0` |
+| **Training Counts** | Grade 0: 2,286; Grade 1: 1,046; Grade 2: 1,516; Grade 3: 757; Grade 4: 173 |
+| **Validation Counts** | Grade 0: 328; Grade 1: 153; Grade 2: 212; Grade 3: 106; Grade 4: 27 |
+| **Checkpoint Selection** | Mean of published-view and YOLO-view `0.55 QWK + 0.30 macro F1 + 0.15 macro AP` |
+| **Heatmap Method** | Post-hoc predicted-class and true-class Grad-CAM from the final feature tensor |
+| **Training Notebook** | [`2026-08-01_05-29-59_seresnext50_32x4d_paired_view_yolo_adaptation.ipynb`](runs/2026-08-01_05-29-59_paired_view_yolo_adaptation/2026-08-01_05-29-59_seresnext50_32x4d_paired_view_yolo_adaptation.ipynb) |
+| **Evaluation Notebook** | [`2026-08-01_07-59-46_seresnext50_32x4d_paired_view_yolo_gradcam_evaluation.ipynb`](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/2026-08-01_07-59-46_seresnext50_32x4d_paired_view_yolo_gradcam_evaluation.ipynb) |
+
+### Complete Adaptation History
+
+The test split was not used during these five epochs. Published and YOLO-ROI validation scores were computed separately after every epoch.
+
+| Epoch | Train Loss | Published QWK | Published F1 | Published AP | YOLO QWK | YOLO F1 | YOLO AP | Robust Selection |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 0.7579 | 0.7861 | 0.6517 | 0.7017 | 0.6731 | 0.5577 | 0.6166 | 0.6815 |
+| 2 | 0.7041 | 0.7877 | 0.6599 | 0.7086 | 0.6981 | 0.5845 | 0.6314 | 0.6957 |
+| 3 | 0.7057 | 0.7746 | 0.6269 | 0.7066 | 0.6934 | 0.5696 | 0.6334 | 0.6837 |
+| **4** | **0.6917** | **0.7923** | **0.6636** | **0.7145** | **0.7013** | **0.5851** | **0.6408** | **0.6997** |
+| 5 | 0.6856 | 0.7855 | 0.6413 | 0.7099 | 0.6964 | 0.5731 | 0.6383 | 0.6908 |
+
+### Locked YOLO-ROI Test Metrics
+
+Evaluation set: `1,656` production-style YOLO square ROIs.
+
+| Metric | Score |
+| --- | ---: |
+| **Accuracy** | 0.5894 |
+| **QWK** | 0.7461 |
+| **Macro Precision** | 0.5930 |
+| **Macro Recall** | 0.6161 |
+| **Macro F1** | 0.6002 |
+| **Average Precision** | 0.6368 |
+| **ROC AUC (OvR)** | 0.8462 |
+| **Composite Reference** | 0.6860; not used for checkpoint selection |
+
+No confidence intervals were exported. The test set has also been examined by previous runs, so these metrics are development evidence rather than a new external clinical estimate.
+
+### Classification Report
+
+| True grade | Support | Precision | Recall | F1 |
+| ---: | ---: | ---: | ---: | ---: |
+| 0 | 639 | 0.6827 | 0.7574 | 0.7181 |
+| 1 | 296 | 0.2516 | 0.2736 | 0.2621 |
+| 2 | 447 | 0.6134 | 0.4720 | 0.5335 |
+| 3 | 223 | 0.7143 | 0.6951 | 0.7045 |
+| 4 | 51 | 0.7031 | 0.8824 | 0.7826 |
+| **Macro average** | 1,656 | **0.5930** | **0.6161** | **0.6002** |
+
+The exact confusion matrix was:
+
+```text
+             Pred 0  Pred 1  Pred 2  Pred 3  Pred 4
+True Grade 0    484     110      37       7       1
+True Grade 1    144      81      63       6       2
+True Grade 2     78     112     211      44       2
+True Grade 3      3      19      32     155      14
+True Grade 4      0       0       1       5      45
+```
+
+![Locked SE-ResNeXt paired-view YOLO-ROI confusion matrix](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/test_confusion_matrix.png)
+
+### Grad-CAM Figures
+
+Correct cases, five per true grade:
+
+| True grade | Correct-case gallery |
+| ---: | --- |
+| 0 | [Grade 0 correct Grad-CAM](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_00.png) |
+| 1 | [Grade 1 correct Grad-CAM](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_06.png) |
+| 2 | [Grade 2 correct Grad-CAM](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_12.png) |
+| 3 | [Grade 3 correct Grad-CAM](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_18.png) |
+| 4 | [Grade 4 correct Grad-CAM](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_24.png) |
+
+Misclassified predicted-class versus true-class Grad-CAM pairs:
+
+| True grade | Five failure panels |
+| ---: | --- |
+| 0 | [1](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_01.png), [2](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_02.png), [3](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_03.png), [4](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_04.png), [5](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_05.png) |
+| 1 | [1](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_07.png), [2](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_08.png), [3](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_09.png), [4](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_10.png), [5](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_11.png) |
+| 2 | [1](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_13.png), [2](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_14.png), [3](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_15.png), [4](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_16.png), [5](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_17.png) |
+| 3 | [1](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_19.png), [2](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_20.png), [3](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_21.png), [4](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_22.png), [5](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_23.png) |
+| 4 | [1](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_25.png), [2](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_26.png), [3](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_27.png), [4](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_28.png), [5](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_29.png) |
+
+### Comparison and Decision
+
+| Candidate and evaluation domain | Accuracy | QWK | Macro F1 | Grade 1 Recall | AP | AUC |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 2026-07-25 SE-ResNeXt, published crops | **0.6558** | **0.8216** | **0.6781** | **0.4122** | **0.7299** | **0.8980** |
+| 2026-08-01 SE-ResNeXt, production YOLO ROIs | 0.5894 | 0.7461 | 0.6002 | 0.2736 | 0.6368 | 0.8462 |
+| Current DenseNet, production YOLO ROIs | 0.5972 | 0.7702 | 0.6215 | 0.3750 | 0.6696 | 0.8611 |
+
+The first row uses a different crop domain and is not a controlled head-to-head comparison. The paired-view test row records the SE-ResNeXt result on production-style ROIs. Its Grad-CAM figures are useful qualitative evidence, but this notebook did not measure anatomy energy, border energy, or occlusion faithfulness.
 
 ## Experiment Addendum: CAM Architecture, Loss, Sampler, and Explanation Method
 
@@ -38,11 +162,11 @@ Full inverse sampling won the predeclared combined objective and broad joint con
 
 ### Run: 2026-07-24 01:12:36.714882 UTC (GRAD-CAM VS NATIVE CAM)
 
-SE-ResNeXt native CAM and final-layer Grad-CAM had map correlation `1.0000`, mean pixel difference `0.00008`, and maximum difference `0.000592`. The statistical decision was `no_demonstrated_superiority`. The run used `stage2_best_model.pth` because of a resolver substring bug, so exact final-checkpoint localization values require a corrected rerun. See [the complete CAM comparison report](../cam_comparison/report.md).
+SE-ResNeXt native CAM and final-layer Grad-CAM had map correlation `1.0000`, mean pixel difference `0.00008`, and maximum difference `0.000592`. The statistical decision was `no_demonstrated_superiority`. The run used `stage2_best_model.pth` because of a resolver substring bug, so exact final-checkpoint localization values require a corrected rerun. See the [executed CAM comparison notebook](../../../notebooks/experiments/model_comparison/three_model_gradcam_vs_native_cam.ipynb).
 
 **Production decision:** retain the final 12x12 native-CAM CE checkpoint with full inverse sampling. Reject the multiscale/EMA, FPN, joint-guided, and soft-label arms. Native CAM is the deployment method because it is cheaper and structurally faithful, not because it has demonstrated superior anatomical localization.
 
-Archived experiment notebooks: [CAM architecture/loss ablation](2026-07-22_11-50-51_seresnext50_cam_ablation.ipynb) and [sampler ablation](2026-07-23_15-13-05_seresnext50_sampler_ablation.ipynb).
+Archived experiment notebooks: [CAM architecture/loss ablation](runs/2026-07-22_11-50-51_cam_architecture_loss_ablation/2026-07-22_11-50-51_seresnext50_cam_ablation.ipynb) and [sampler ablation](runs/2026-07-23_15-13-05_sampler_ablation/2026-07-23_15-13-05_seresnext50_sampler_ablation.ipynb).
 
 ## Run: 2026-07-25 01:50:53.962450 UTC (SE-RESNEXT50-32X4D - NATURAL ORIENTATION + FLIP + GAMMA + FINAL NATIVE CAM)
 
@@ -77,7 +201,7 @@ Against the 2026-07-23 01:25:36.772175 UTC canonical checkpoint, locked-test Acc
 | **Fine-tune Learning Rate** | 1e-5; full model |
 | **Weight Decay** | 1e-4 in warm-up/coarse; 1e-3 in fine-tuning |
 | **Checkpoint Directory** | `2026-07-25_01-50-53_962450_UTC_natural_orientation_flip_gamma_native_cam_ce` |
-| **Executed Notebook Archive** | [`2026-07-25_01-50-53_seresnext50_32x4d_natural_orientation_flip_gamma_native_cam_ce.ipynb`](2026-07-25_01-50-53_seresnext50_32x4d_natural_orientation_flip_gamma_native_cam_ce.ipynb) |
+| **Executed Notebook Archive** | [`2026-07-25_01-50-53_seresnext50_32x4d_natural_orientation_flip_gamma_native_cam_ce.ipynb`](runs/2026-07-25_01-50-53_natural_orientation_flip_gamma_native_cam_ce/2026-07-25_01-50-53_seresnext50_32x4d_natural_orientation_flip_gamma_native_cam_ce.ipynb) |
 
 ### Selected Validation Metrics
 
@@ -178,11 +302,11 @@ Warm-up ended at epoch 5 with QWK `0.4611`. Coarse training reached QWK `0.7859`
 
 #### Test Confusion Matrix
 
-![SE-ResNeXt natural-orientation test confusion matrix, run 2026-07-25 01:50:53.962450 UTC](assets/2026-07-25_01-50-53_test_confusion_matrix.png)
+![SE-ResNeXt natural-orientation test confusion matrix, run 2026-07-25 01:50:53.962450 UTC](runs/2026-07-25_01-50-53_natural_orientation_flip_gamma_native_cam_ce/assets/2026-07-25_01-50-53_test_confusion_matrix.png)
 
 #### Native-CAM Audit Gallery
 
-![SE-ResNeXt natural-orientation native-CAM audit, run 2026-07-25 01:50:53.962450 UTC](assets/2026-07-25_01-50-53_native_cam_audit.png)
+![SE-ResNeXt natural-orientation native-CAM audit, run 2026-07-25 01:50:53.962450 UTC](runs/2026-07-25_01-50-53_natural_orientation_flip_gamma_native_cam_ce/assets/2026-07-25_01-50-53_native_cam_audit.png)
 
 ### Native-CAM Evaluation
 
@@ -233,7 +357,7 @@ This run completed all 30 configured epochs without a runtime error and selected
 | **Fine-tune Learning Rate** | 1e-5; full model |
 | **Weight Decay** | 1e-4 in warm-up/coarse; 1e-3 in fine-tuning |
 | **Checkpoint Directory** | `2026-07-23_06-57-13_378879_UTC_multiscale24_native_cam_ce_ema` |
-| **Executed Notebook Archive** | [`2026-07-23_06-57-13_seresnext50_32x4d_multiscale24_native_cam_ce_ema.ipynb`](2026-07-23_06-57-13_seresnext50_32x4d_multiscale24_native_cam_ce_ema.ipynb) |
+| **Executed Notebook Archive** | [`2026-07-23_06-57-13_seresnext50_32x4d_multiscale24_native_cam_ce_ema.ipynb`](runs/2026-07-23_06-57-13_multiscale24_native_cam_ce_ema/2026-07-23_06-57-13_seresnext50_32x4d_multiscale24_native_cam_ce_ema.ipynb) |
 
 ### Selected Validation Metrics
 
@@ -338,11 +462,11 @@ Validation QWK, AP, and the selection score were still increasing at epoch 30. T
 
 #### Test Confusion Matrix
 
-![SE-ResNeXt test confusion matrix, run 2026-07-23 06:57:13.378879 UTC](assets/2026-07-23_06-57-13_test_confusion_matrix.png)
+![SE-ResNeXt test confusion matrix, run 2026-07-23 06:57:13.378879 UTC](runs/2026-07-23_06-57-13_multiscale24_native_cam_ce_ema/assets/2026-07-23_06-57-13_test_confusion_matrix.png)
 
 #### Native-CAM Worst Cases
 
-![SE-ResNeXt multiscale native-CAM worst cases, run 2026-07-23 06:57:13.378879 UTC](assets/2026-07-23_06-57-13_native_cam_worst_cases.png)
+![SE-ResNeXt multiscale native-CAM worst cases, run 2026-07-23 06:57:13.378879 UTC](runs/2026-07-23_06-57-13_multiscale24_native_cam_ce_ema/assets/2026-07-23_06-57-13_native_cam_worst_cases.png)
 
 ### Native-CAM Evaluation
 
@@ -399,7 +523,7 @@ This comparison run completed all 30 configured epochs without a runtime error. 
 | **Fine-tune Learning Rate** | 1e-5; full model |
 | **Weight Decay** | 1e-4 in warm-up/coarse; 1e-3 in fine-tuning |
 | **Checkpoint Directory** | `2026-07-23_01-25-36_772175_UTC_final_native_cam_ce` |
-| **Executed Notebook Archive** | [`2026-07-23_01-25-36_seresnext50_32x4d_final_native_cam_ce.ipynb`](2026-07-23_01-25-36_seresnext50_32x4d_final_native_cam_ce.ipynb) |
+| **Executed Notebook Archive** | [`2026-07-23_01-25-36_seresnext50_32x4d_final_native_cam_ce.ipynb`](runs/2026-07-23_01-25-36_final_native_cam_ce/2026-07-23_01-25-36_seresnext50_32x4d_final_native_cam_ce.ipynb) |
 
 ### Selected Validation Metrics
 
@@ -495,11 +619,11 @@ True Grade 4      0       0       0       9      42
 
 #### Confusion Matrix, ROC, and Precision-Recall Curves
 
-![SE-ResNeXt test metrics, run 2026-07-23 01:25:36.772175 UTC](assets/2026-07-23_01-25-36_test_metrics.png)
+![SE-ResNeXt test metrics, run 2026-07-23 01:25:36.772175 UTC](runs/2026-07-23_01-25-36_final_native_cam_ce/assets/2026-07-23_01-25-36_test_metrics.png)
 
 #### Native-CAM Audit and Worst Cases
 
-![SE-ResNeXt native-CAM audit, run 2026-07-23 01:25:36.772175 UTC](assets/2026-07-23_01-25-36_native_cam_audit.png)
+![SE-ResNeXt native-CAM audit, run 2026-07-23 01:25:36.772175 UTC](runs/2026-07-23_01-25-36_final_native_cam_ce/assets/2026-07-23_01-25-36_native_cam_audit.png)
 
 ### Native-CAM Evaluation
 

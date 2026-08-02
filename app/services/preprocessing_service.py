@@ -58,7 +58,6 @@ class PreprocessingService:
 
     def __init__(self):
         self.img_size = settings.IMG_SIZE
-        self.crop_size = settings.CROP_SIZE
         self.spatial_transform = transforms.Compose(
             [
                 OpenCVCLAHE(clip_limit=1.25),

@@ -1,75 +1,62 @@
-# Knee Osteoarthritis Configurable Native-CAM API
+# Knee Osteoarthritis AI
 
-FastAPI inference service for Kellgren-Lawrence grades 0-4. The inference path combines YOLOv8 knee-joint detection with an environment-selected DenseNet-121, SE-ResNeXt-50, EfficientNet-B0, or the production DenseNet/SE-ResNeXt ensemble.
+FastAPI inference service for Kellgren-Lawrence grades 0-4. The current local production mode combines YOLOv8 knee-joint detection with a DenseNet-121 classifier and Grad-CAM explanation.
 
-The complete training, evaluation, native-CAM, ensemble, and deployment record
-is in [the three-model KL system document](docs/three_model_kl_system.md).
+## Current Production Setup
 
-All classifiers are inference-only native-CAM models. Production ensemble mode combines DenseNet and SE-ResNeXt five-class softmax vectors using normalized `0.55/0.45` weights. EfficientNet-B0 remains available as a standalone comparison mode but is excluded from the production vote because its completed standalone run did not beat the other two models and no labeled paired ensemble validation has shown that it adds value.
+- Model mode: `densenet121`
+- Classifier: `timm_densenet121_linear_gradcam`, CE, epoch 4
+- Classifier checkpoint: `checkpoints/densenet121/2026-07-30_09-03-29_850983_UTC_paired_view_yolo_roi/best_model.pth`
+- YOLO checkpoint: `checkpoints/yolov8/2026-07-26_20-49-25_joint_detection/best.pt`
+- ROI: YOLO box expanded by `1.15 x` its largest dimension, centered square, black padding only outside the source image
+- Preprocessing: LAB CLAHE 1.25, square pad, resize `384 x 384`, ImageNet normalization
+- Explanation: predicted-class Grad-CAM from DenseNet `features.norm5`
 
-For each ensemble prediction, the service measures the predicted-grade map from both active models on that exact ROI. A map passes the anatomy gate when joint energy is at least `0.55`, border and lower-tibia energy are at most `0.25`, and its peak lies inside the broad joint band. Among passing maps, the service maximizes predicted-grade class support multiplied by the per-case anatomy score. If neither map passes, it renders the best available map and emits a warning. This prevents class agreement alone from forcing an obviously misplaced map.
+The API returns the historical `gradcam_image` field. It is a Grad-CAM overlay when `MODEL_MODE=densenet121`.
 
-## Runtime Contract
+## Start Locally
 
-- DenseNet checkpoint: `checkpoints/densenet121/best_model.pth`
-- SE-ResNeXt checkpoint: `checkpoints/se_resnext50_32x4d/best_model (1).pth`
-- EfficientNet-B0 checkpoint: `checkpoints/efficientnet_b0/best_model.pth`
-- YOLO checkpoint: `checkpoints/yolov8/best.pt`
-- Preprocessing: laterality canonicalization, square padding, CLAHE, resize to 400, center crop to 384, ImageNet normalization
-- Right knee convention: right ROIs are horizontally mirrored before classification
-- Classification: selected single-model softmax or weighted average of DenseNet and SE-ResNeXt five-class CE softmax vectors
-- Production ensemble weights: DenseNet `0.55`, SE-ResNeXt `0.45`, EfficientNet-B0 `0.00` (excluded)
-- Heatmap: selected model's native CAM in single-model mode; per-case anatomy-gated native CAM in ensemble mode
-
-`MODEL_MODE` accepts exactly `densenet121`, `se_resnext`, `efficientnet_b0`, or `ensemble`. Single-model modes load only their required checkpoint. Ensemble mode requires the DenseNet and SE-ResNeXt checkpoints; it does not load EfficientNet-B0. The application exits at startup if a required checkpoint is missing, incompatible, or declares the wrong architecture; it never falls back to random weights.
-
-## Docker
-
-Build and start with the checkpoint directory mounted read-only:
+`local.env` selects the local model and detector paths. Do not commit checkpoint files or private environment files.
 
 ```bash
-docker compose up --build -d
+make up
+make ai-health
 ```
 
-Equivalent direct command:
+Open API documentation at `http://localhost:8005/docs`. Open the prediction-response viewer at `http://localhost:8088` and paste a complete `/api/v1/predict` response.
+
+Useful targets:
 
 ```bash
-docker build -t knee-oa-native-cam:latest .
-docker run --rm \
-  --name knee-oa-native-cam \
-  -p 8005:8005 \
-  -e MODEL_MODE=ensemble \
-  -v "$(pwd)/checkpoints:/app/checkpoints:ro" \
-  knee-oa-native-cam:latest
+make status
+make ai-logs
+make viewer-logs
+make test
+make experiments
+make down
 ```
 
-For the production ensemble, use `-e MODEL_MODE=ensemble`. Its default voting
-weights can be overridden with `ENSEMBLE_DENSENET_WEIGHT` and
-`ENSEMBLE_SE_RESNEXT_WEIGHT`. `ENSEMBLE_EFFICIENTNET_B0_WEIGHT` is retained for
-configuration compatibility but has no effect unless EfficientNet is added to a
-future validated ensemble implementation.
+`make experiments` rebuilds [all_experiments.xlsx](docs/report/all_experiments.xlsx) and the CSV tabs in `docs/report/summary/` from archived report artifacts.
 
-Endpoints:
+## API Contract
 
-- Health: `GET http://127.0.0.1:8005/api/v1/health`
-- Model information: `GET http://127.0.0.1:8005/api/v1/models`
-- Prediction: `POST http://127.0.0.1:8005/api/v1/predict`
-- ROI inspection: `POST http://127.0.0.1:8005/api/v1/predict/detect-roi`
-- OpenAPI: `http://127.0.0.1:8005/docs`
+- `GET /api/v1/health`
+- `GET /api/v1/models`
+- `POST /api/v1/predict` with form field `file`
+- `POST /api/v1/predict/detect-roi` with form field `file`
 
-Example:
+Each detected knee contains the raw YOLO box, side, detector confidence, grade probabilities, ROI image, and heatmap. The output schema is stable; do not add model-specific fields to it without a compatibility decision.
 
-```bash
-curl -X POST http://127.0.0.1:8005/api/v1/predict \
-  -F "file=@test_data/example.png"
-```
+## Training and Reports
 
-Each detected knee returns its box, side, YOLO confidence, KL probabilities, ROI image, and `gradcam_image`. The historical `gradcam_image` field now contains the faithful native-CAM overlay, so existing clients keep the same JSON contract. The top-level response also includes the annotated source radiograph.
+- Controlled notebooks: [notebooks/experiments](notebooks/experiments/README.md)
+- DenseNet history: [report.md](docs/report/dense_net_121/report.md)
+- Current production record: [AI_REPORT.md](docs/AI_REPORT.md)
+- Current runtime architecture: [architecture.md](docs/architecture.md)
+- Experiment inventory: [all_experiments.xlsx](docs/report/all_experiments.xlsx)
 
-## Tests
+Historical notebooks are retained for provenance. Completed runs must have an exact timestamp, checkpoint path, metrics, and visual evidence before being considered for promotion.
 
-```bash
-pytest -q
-```
+## Limitations
 
-The focused tests verify model-mode validation, strict checkpoint compatibility, probability-level soft voting, native-CAM/logit identity, per-case anatomy gating, heatmap dimensions, and laterality canonicalization.
+KL grade is a whole-knee label. Grad-CAM is not a segmentation mask and cannot prove that a prediction is clinically correct. The system is for research and capstone demonstration, not independent clinical diagnosis.

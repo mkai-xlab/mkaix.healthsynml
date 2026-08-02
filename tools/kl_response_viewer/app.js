@@ -312,7 +312,7 @@ function createPredictionCard(prediction, index, filename) {
   const images = createElement("div", "image-column");
   images.append(
     createPredictionImage(prediction.roi_image, "ROI image", filename),
-    createPredictionImage(prediction.gradcam_image, "Native CAM heatmap", filename),
+    createPredictionImage(prediction.gradcam_image, "Class activation heatmap", filename),
   );
   body.append(metrics, images);
   article.append(header, body);

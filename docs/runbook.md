@@ -1,66 +1,32 @@
-# 📖 Operations Runbook
+# Local Operations Runbook
 
-This runbook describes configurations, troubleshooting steps, and error resolving procedures.
+## Start and Stop
 
----
-
-## ⚙️ Environment Variables Config
-
-The following environment variables can be configured in the `.env` file or exported to the shell:
-
-| Variable Name | Description | Default Value | Allowed Values |
-| :--- | :--- | :--- | :--- |
-| `APP_NAME` | Display name of the API | `"MKAI Knee Osteoarthritis API"` | Any string |
-| `APP_ENV` | Running environment mode | `development` | `development`, `production`, `testing` |
-| `LOG_LEVEL` | Logging filter verbosity | `INFO` | `DEBUG`, `INFO`, `WARNING`, `ERROR` |
-| `IMAGE_SIZE` | Model input dimensions | `224` | Integers (e.g., `224`, `256`, `512`) |
-| `MODEL_WEIGHTS_DIR` | Directory containing keras weights | `model_weights/` | Relative or absolute path |
-
----
-
-## 🚨 Error Codes & REST Responses
-
-Standard API exceptions return a structured error response matching the `ErrorResponse` schema (HTTP status codes 400, 422, or 500):
-
-```json
-{
-  "error": {
-    "code": "INVALID_INPUT_FILE_ERROR",
-    "message": "Uploaded file is empty.",
-    "details": {}
-  }
-}
+```bash
+make up
+make status
+make ai-health
+make down
 ```
 
-### Common Error Classifications:
+The API runs on `http://localhost:8005`; the response viewer runs on `http://localhost:8088`.
 
-* **`INVALID_INPUT_FILE_ERROR` (HTTP 400)**:
-  * *Trigger*: The uploaded file size is 0 bytes, or the extension does not match permitted image formats (`.png`, `.jpg`, `.jpeg`) or DICOM configurations.
-  * *Fix*: Verify the format of the selected file before upload.
-* **`DICOM_PROCESSING_ERROR` (HTTP 422)**:
-  * *Trigger*: The byte stream is corrupted, or does not contain `PixelData` tags.
-  * *Fix*: Inspect the DICOM file using metadata viewers to ensure it is not corrupted and is uncompressed.
-* **`MODEL_LOAD_ERROR` (HTTP 500)**:
-  * *Trigger*: A model registry weight file load operation failed.
-  * *Fix*: Verify the weights folder permissions and file paths.
+## Required Local Configuration
 
----
+`local.env` must set `MODEL_MODE`, `MODEL_CHECKPOINT_PATH`, and `YOLO_CHECKPOINT_PATH`. Paths are relative to the repository and must resolve within the read-only `/app/checkpoints` mount.
 
-## 📊 Troubleshooting Checklist
+The active local configuration is DenseNet-121 with the July 30 paired-view checkpoint and the July 26 YOLO detector. Verify the loaded architecture and epoch with `make ai-health` or the API health response.
 
-### ⚠️ Warning: Running in Mock Inference Mode
-* **Symptoms**: Predictions run immediately, but logs display warnings: `Weights file not found for efficientnet_b0... Falling back to Mock Inference Mode`.
-* **Fix**: Ensure that the three model weight files are downloaded and placed under the respective folders in the project directory:
-  * `model_weights/efficientnet_b0/best_model.keras`
-  * `model_weights/densenet121/best_model.keras`
-  * `model_weights/mobilenet_v2/best_model.keras`
+## Troubleshooting
 
-### 🐌 Performance Bottlenecks (X-Process-Time is high)
-* **Symptoms**: The custom header `X-Process-Time` returns values greater than 500ms.
-* **Checks**:
-  1. Open logs to look at execution time breakdowns.
-  2. If `inference_ms` is high, check if TensorFlow is running on GPU:
-     ```bash
-     python -c "import tensorflow as tf; print('GPUs Available:', tf.config.list_physical_devices('GPU'))"
-     ```
-  3. If `dicom_processing_ms` is high, ensure the uploaded files are not excessively large (DICOM files containing hundreds of slices). The API is optimized for single-slice radiographs.
+| Symptom | Check |
+| --- | --- |
+| API does not start | `make ai-logs`; confirm both checkpoint paths in `local.env` exist. |
+| Port is occupied | Stop the existing service with `make ai-down`, then run `make ai-up`. |
+| No knee ROI | Upload a frontal knee radiograph with the complete tibiofemoral joint visible; the API returns a validation error when YOLO finds no joint. |
+| Heatmap at ROI edge | Verify the app uses the 1.15 square ROI build. A heatmap is evidence visualization, not a diagnosis. |
+| Viewer does not load | Run `make viewer-up`, then open `http://localhost:8088`. |
+
+## Maintenance
+
+Run `make experiments` only after archived report artifacts are updated. This refreshes the workbook and CSV inventory without training models or changing checkpoints.

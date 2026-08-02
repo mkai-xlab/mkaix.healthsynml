@@ -14,26 +14,24 @@ docs/report/dense_net_121/2026-07-25_23-48-22_densenet121_preprocessing_quality_
 docs/report/dense_net_121/dense_net_121.ipynb,notebook,matched to completed row,
 docs/report/efficientnet_b0/2026-07-23_16-08-50_efficientnet_b_scale_ablation_incomplete.ipynb,notebook,archived/unmatched; inspect before citing,2026-07-23_16-08-50_
 docs/report/efficientnet_b0/2026-07-24_04-45-25_efficientnet_b0_final_native_cam_ce.ipynb,notebook,matched to completed row,2026-07-24_04-45-25_
-docs/report/se_resnext50_32x4d/2026-07-22_11-50-51_seresnext50_cam_ablation.ipynb,notebook,matched to completed row,2026-07-22_11-50-51_
-docs/report/se_resnext50_32x4d/2026-07-23_01-25-36_seresnext50_32x4d_final_native_cam_ce.ipynb,notebook,matched to completed row,2026-07-23_01-25-36_
-docs/report/se_resnext50_32x4d/2026-07-23_06-57-13_seresnext50_32x4d_multiscale24_native_cam_ce_ema.ipynb,notebook,matched to completed row,2026-07-23_06-57-13_
-docs/report/se_resnext50_32x4d/2026-07-23_15-13-05_seresnext50_sampler_ablation.ipynb,notebook,matched to completed row,2026-07-23_15-13-05_
-docs/report/se_resnext50_32x4d/2026-07-25_01-50-53_seresnext50_32x4d_natural_orientation_flip_gamma_native_cam_ce.ipynb,notebook,matched to completed row,2026-07-25_01-50-53_
-docs/report/se_resnext50_32x4d/se_resnext50_32x4d.ipynb,notebook,archived/unmatched; inspect before citing,
+docs/report/se_resnext50_32x4d/runs/2026-07-22_11-50-51_cam_architecture_loss_ablation/2026-07-22_11-50-51_seresnext50_cam_ablation.ipynb,notebook,matched to completed row,2026-07-22_11-50-51_
+docs/report/se_resnext50_32x4d/runs/2026-07-23_01-25-36_final_native_cam_ce/2026-07-23_01-25-36_seresnext50_32x4d_final_native_cam_ce.ipynb,notebook,matched to completed row,2026-07-23_01-25-36_
+docs/report/se_resnext50_32x4d/runs/2026-07-23_06-57-13_multiscale24_native_cam_ce_ema/2026-07-23_06-57-13_seresnext50_32x4d_multiscale24_native_cam_ce_ema.ipynb,notebook,matched to completed row,2026-07-23_06-57-13_
+docs/report/se_resnext50_32x4d/runs/2026-07-23_15-13-05_sampler_ablation/2026-07-23_15-13-05_seresnext50_sampler_ablation.ipynb,notebook,matched to completed row,2026-07-23_15-13-05_
+docs/report/se_resnext50_32x4d/runs/2026-07-25_01-50-53_natural_orientation_flip_gamma_native_cam_ce/2026-07-25_01-50-53_seresnext50_32x4d_natural_orientation_flip_gamma_native_cam_ce.ipynb,notebook,matched to completed row,2026-07-25_01-50-53_
+docs/report/se_resnext50_32x4d/runs/2026-07-23_06-57-13_multiscale24_native_cam_ce_ema/legacy_notebook_copy.ipynb,notebook,preserved legacy duplicate; do not cite as a separate run,
 docs/report/dense_net_121/2026-07-25_15-32-33_UTC_api_cam_localization_audit.md,report markdown,source report,
 docs/report/dense_net_121/2026-07-25_23-48-22_preprocessing_quality_ablation.md,report markdown,source report,
+docs/report/dense_net_121/2026-07-29_dataset_paper_lineage_summary.md,report markdown,source report,
+docs/report/dense_net_121/2026-07-29_densenet121_metric_gradcam_design_review.md,report markdown,source report,
+docs/report/dense_net_121/2026-07-30_glcm_experiment_plan.md,report markdown,source report,
 docs/report/dense_net_121/assets/2026-07-25_15-32-33_UTC_api_cam_localization_audit/report.md,report markdown,source report,
 docs/report/dense_net_121/joint_guided_cam_run_2026-07-22.md,report markdown,source report,
 docs/report/dense_net_121/localization_strategy_proposal.md,report markdown,source report,
 docs/report/dense_net_121/native_cam_method_and_references.md,report markdown,source report,
 docs/report/dense_net_121/report.md,report markdown,source report,
-docs/report/dense_net_201/dense_net_201_configuration_guide.md,report markdown,source report,
-docs/report/dense_net_201/dense_net_201_test_results.md,report markdown,source report,
 docs/report/efficientnet_b0/report.md,report markdown,source report,
-docs/report/ensemble/2026-07-24_09-03-08_three_model_weighted_soft_voting.md,report markdown,source report,
-docs/report/ensemble/2026-07-24_16-50-26_365170_UTC_deployed_api_full_test.md,report markdown,source report,
 docs/report/se_resnext50_32x4d/report.md,report markdown,source report,
 notebooks/experiments/densenet121/heatmaps/dense_net_121_roi_robustness_ablation.ipynb,notebook,planned/not run,
-2026-07-28_02-00-33_963495_UTC_cutout_ablation/report.md,md,completed run artifact,2026-07-28 02:00:33.963495 UTC
-2026-07-28_02-00-33_963495_UTC_cutout_ablation/arm_comparison.csv,csv,completed run artifact,2026-07-28 02:00:33.963495 UTC
-2026-07-28_02-00-33_963495_UTC_cutout_ablation/gradcam_comparison_summary.json,json,completed run artifact,2026-07-28 02:00:33.963495 UTC
+docs/report/se_resnext50_32x4d/runs/2026-08-01_05-29-59_paired_view_yolo_adaptation/2026-08-01_05-29-59_seresnext50_32x4d_paired_view_yolo_adaptation.ipynb,notebook,matched to completed row,2026-08-01_05-29-59_
+docs/report/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/2026-08-01_07-59-46_seresnext50_32x4d_paired_view_yolo_gradcam_evaluation.ipynb,notebook,matched to completed row,2026-08-01_07-59-46_
