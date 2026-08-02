@@ -10,9 +10,49 @@ HealthSync is a computer-aided knee osteoarthritis grading prototype. It accepts
 
 The system uses radiographs only. It does not use age, BMI, pain score, symptoms, or other clinical metadata. One input may contain one knee or a bilateral pair; detection and grading are performed per ROI. The returned KL class is an image-model estimate, not a clinical diagnosis. It must be interpreted with the source radiograph and patient context.
 
-# CHAPTER 2: PRODUCTION PIPELINE
+# CHAPTER 2: PAIRED-VIEW YOLO DATASET PREPARATION
 
-## 2.1. Knee Detection and ROI Construction
+## 2.1. Relationship to the Public Kaggle Dataset
+
+The paired-view dataset is derived from the public Knee Osteoarthritis Dataset with Severity, but it is not identical to the original published-crop directory. The Kaggle benchmark supplies the five KL labels and the fixed classifier split. The paired-view adaptation adds a second image view: a production-style square ROI generated from the corresponding full radiograph by the trained YOLOv8 detector.
+
+The labels are inherited from the matching labeled knee image; YOLO does not produce KL labels. Therefore, the paired-view process changes the image representation and field of view, not the ground-truth grade. The original Kaggle class total (`9,750`) must not be reported as the size of the paired YOLO-ROI dataset.
+
+## 2.2. Deduplicated Fixed Split
+
+After the project split and image-hash deduplication, the classifier evaluation used `8,260` unique labeled knee images. The same split was retained for published crops and generated YOLO views; no image was reassigned between train, validation, and test during ROI generation.
+
+| Split | Grade 0 | Grade 1 | Grade 2 | Grade 3 | Grade 4 | Total |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Training | 2,286 | 1,046 | 1,516 | 757 | 173 | 5,778 |
+| Validation | 328 | 153 | 212 | 106 | 27 | 826 |
+| Locked test | 639 | 296 | 447 | 223 | 51 | 1,656 |
+| **All unique labeled images** | **3,253** | **1,495** | **2,175** | **1,086** | **251** | **8,260** |
+
+The locked test labels are the original expert KL labels. The production-domain test result is reported separately because its inputs are YOLO-generated ROIs rather than the published Kaggle crops.
+
+## 2.3. YOLO ROI Generation
+
+For each full radiograph, YOLOv8 detects one or more knee joints. Each detection is converted into a classifier image using this deterministic procedure:
+
+1. Read the detector box in source-image pixel coordinates.
+2. Set the square side to `1.15 * max(box width, box height)`.
+3. Keep the square centered on the detected box so both joint margins and marginal osteophytes remain visible.
+4. Clip the source portion to the radiograph bounds.
+5. Fill only out-of-bounds areas with black padding; never stretch or center-crop the anatomy.
+6. Save the square ROI with the source label, split, and laterality metadata.
+
+Images with no detector box are not silently assigned a KL grade. During API inference they return the explicit no-ROI error. During dataset auditing they are recorded as missing detections and must be resolved before a production-domain evaluation is accepted.
+
+## 2.4. Paired-View Training Use
+
+The adaptation does not simply double the training set and does not train on unlabeled detector output. For each training item, the loader selects the published Kaggle crop with probability `0.50` or the matching YOLO square ROI with probability `0.50`. Both views use the same KL label. Validation evaluates the two views separately, and checkpoint selection uses the mean of the published-view and YOLO-view validation scores. This prevents a checkpoint from being selected only because it performs well on the easier published-crop domain.
+
+The final deterministic classifier transform for both views is LAB CLAHE (`clipLimit=1.25`, `8x8` tiles), square padding, resize to `384 x 384`, tensor conversion, and ImageNet normalization. No horizontal canonicalization is applied.
+
+# CHAPTER 3: PRODUCTION PIPELINE
+
+## 3.1. Knee Detection and ROI Construction
 
 The production YOLOv8 checkpoint is:
 
@@ -28,7 +68,7 @@ Each detected box is converted to the DenseNet input ROI as follows:
 
 This policy preserves marginal osteophytes while limiting irrelevant femoral and tibial shaft content. It supports bilateral and single-knee radiographs. If YOLO detects no knee, the API returns an explicit no-ROI error instead of running the classifier on the full image.
 
-## 2.2. Deterministic Classifier Preprocessing
+## 3.2. Deterministic Classifier Preprocessing
 
 The same preprocessing is used for validation, testing, and inference:
 
@@ -43,15 +83,15 @@ The same preprocessing is used for validation, testing, and inference:
 
 Natural left/right orientation is retained. Production inference does not use laterality canonicalization, horizontal flipping, test-time augmentation, Otsu thresholding, gamma correction, Gaussian noise, or random erasing.
 
-## 2.3. Input and Failure Handling
+## 3.3. Input and Failure Handling
 
 The detector defines the classifier's field of view. The classifier never falls back to grading the full radiograph when no joint is detected. A no-detection condition returns an explicit API error so that detector failure cannot silently become a KL prediction. The square operation expands the shorter box dimension rather than stretching anatomy, and padding is introduced only when the expanded square lies outside the original image.
 
 The preprocessing contract is checkpoint-specific. Changing ROI expansion, CLAHE strength/order, resize resolution, normalization, or laterality handling creates a different input distribution and requires a controlled evaluation before deployment.
 
-# CHAPTER 3: PRODUCTION DENSENET-121
+# CHAPTER 4: PRODUCTION DENSENET-121
 
-## 3.1. Architecture
+## 4.1. Architecture
 
 The classifier is the standard ImageNet-initialized `timm` DenseNet-121:
 
@@ -68,7 +108,7 @@ The classifier is the standard ImageNet-initialized `timm` DenseNet-121:
 
 The production model does not use a hidden `1024 -> 256 -> 5` classifier or a native class-map head.
 
-## 3.2. Loss and Class Balancing
+## 4.2. Loss and Class Balancing
 
 All production training stages use five-class cross-entropy (CE). MSE, CORAL, CORN, focal CORN, ordinal PD-2, label smoothing, and hybrid ordinal losses are not used by the deployed checkpoint.
 
@@ -79,7 +119,7 @@ The training loader uses a full inverse-frequency `WeightedRandomSampler`:
 - sampled epoch length: equal to the training-set length
 - minority-only augmentation: disabled
 
-## 3.3. Training Augmentation
+## 4.3. Training Augmentation
 
 Only the training loader uses stochastic augmentation:
 
@@ -95,7 +135,7 @@ Only the training loader uses stochastic augmentation:
 
 Gamma correction, Gaussian noise, double cutout, minority-only augmentation, and EMA are disabled.
 
-## 3.4. Base Three-Stage Training
+## 4.4. Base Three-Stage Training
 
 Common settings are batch size `48`, seed `42`, CUDA automatic mixed precision when available, AdamW, and global gradient-norm clipping at `1.0`. Early stopping and EMA are disabled.
 
@@ -109,7 +149,7 @@ Checkpoints are selected using validation only:
 
 `selection = 0.55 * QWK + 0.30 * macro_F1 + 0.15 * macro_AP`
 
-## 3.5. Paired-View Production Adaptation
+## 4.5. Paired-View Production Adaptation
 
 The selected base checkpoint was fine-tuned for five additional full-network epochs. Each training item used either the published knee crop or its production-style YOLO square ROI with probability `0.50` for each view.
 
@@ -128,13 +168,13 @@ The selected base checkpoint was fine-tuned for five additional full-network epo
 
 Validation evaluates published crops and fixed production YOLO ROIs separately. The robust selection score is the mean of both domains' `0.55 QWK + 0.30 macro F1 + 0.15 macro AP` scores.
 
-## 3.6. Reproducibility Record
+## 4.6. Reproducibility Record
 
 The base and adaptation notebooks retain the executed outputs used to select this artifact. The checkpoint is identified by both its timestamped directory and SHA-256 digest; a generic filename alone is not sufficient provenance. Training seed `42` controls Python, NumPy, PyTorch, sampler, and loader generators. CUDA kernels and package versions can still introduce small numerical variation, so a retrained artifact must receive a new timestamp and evaluation record even when its configuration is unchanged.
 
-# CHAPTER 4: PRODUCTION EVALUATION
+# CHAPTER 5: PRODUCTION EVALUATION
 
-## 4.1. Deployed Artifact
+## 5.1. Deployed Artifact
 
 | Item | Value |
 | --- | --- |
@@ -147,7 +187,7 @@ The base and adaptation notebooks retain the executed outputs used to select thi
 | ROI expansion | `1.15` |
 | Selected adaptation epoch | 4 |
 
-## 4.2. Locked Production-ROI Test Result
+## 5.2. Locked Production-ROI Test Result
 
 The deployed checkpoint was evaluated on `1,656` labeled production-style YOLO square ROIs with the deterministic production transform.
 
@@ -171,7 +211,32 @@ The deployed checkpoint was evaluated on `1,656` labeled production-style YOLO s
 
 The model has strong Grade 4 recall but weak Grade 1 discrimination. No confidence intervals were exported for this exact evaluation, so none are claimed.
 
-## 4.3. Production Grad-CAM
+## 5.3. SE-ResNeXt-50 Comparative Result
+
+The SE-ResNeXt-50 32x4d paired-view checkpoint was evaluated on the same `1,656` labeled production-style YOLO square ROIs. This is a comparative model result; it uses the same ROI construction, deterministic preprocessing, and locked test split as DenseNet-121.
+
+| Metric | Result |
+| --- | ---: |
+| Accuracy | `0.5894` |
+| QWK | `0.7461` |
+| Macro precision | `0.5930` |
+| Macro recall | `0.6161` |
+| Macro F1 | `0.6002` |
+| Macro AP | `0.6368` |
+| Macro ROC AUC (OvR) | `0.8462` |
+
+| KL grade | Support | Precision | Recall | F1 |
+| ---: | ---: | ---: | ---: | ---: |
+| 0 | 639 | 0.6827 | 0.7574 | 0.7181 |
+| 1 | 296 | 0.2516 | 0.2736 | 0.2621 |
+| 2 | 447 | 0.6134 | 0.4720 | 0.5335 |
+| 3 | 223 | 0.7143 | 0.6951 | 0.7045 |
+| 4 | 51 | 0.7031 | 0.8824 | 0.7826 |
+| **Macro average** | **1,656** | **0.5930** | **0.6161** | **0.6002** |
+
+The SE-ResNeXt checkpoint uses post-hoc predicted-class Grad-CAM from its final convolutional feature layer. Its locked YOLO-ROI metrics are lower than the DenseNet-121 result on this split; both results are retained because they are separate model evaluations, not an ensemble claim.
+
+## 5.4. Production Grad-CAM
 
 The API generates predicted-class Grad-CAM from `backbone.features.norm5`, the final normalized convolutional features before global pooling and classification:
 
@@ -183,19 +248,31 @@ The API generates predicted-class Grad-CAM from `backbone.features.norm5`, the f
 6. Resize and normalize the map to the exact DenseNet ROI.
 7. Overlay the map on that ROI.
 
-No native CAM is used. The following evaluation panels show one successful and one failed case for every true KL grade. Each panel contains the original ROI, the predicted-class Grad-CAM, and the true-class Grad-CAM. The failed panels are deliberately retained: a heatmap can overlap the joint and still support the wrong grade.
+No native CAM is used. Each example below contains one ROI, one predicted-class Grad-CAM, and one true-class Grad-CAM. Five representative examples are shown for each model, one per true KL grade.
 
-| True grade | Successful prediction | Failed prediction |
-| ---: | --- | --- |
-| 0 | ![Grade 0 successful Grad-CAM](report/dense_net_121/runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/gradcam_success_grade_0.png) | ![Grade 0 failed Grad-CAM](report/dense_net_121/runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/gradcam_failure_grade_0.png) |
-| 1 | ![Grade 1 successful Grad-CAM](report/dense_net_121/runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/gradcam_success_grade_1.png) | ![Grade 1 failed Grad-CAM](report/dense_net_121/runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/gradcam_failure_grade_1.png) |
-| 2 | ![Grade 2 successful Grad-CAM](report/dense_net_121/runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/gradcam_success_grade_2.png) | ![Grade 2 failed Grad-CAM](report/dense_net_121/runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/gradcam_failure_grade_2.png) |
-| 3 | ![Grade 3 successful Grad-CAM](report/dense_net_121/runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/gradcam_success_grade_3.png) | ![Grade 3 failed Grad-CAM](report/dense_net_121/runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/gradcam_failure_grade_3.png) |
-| 4 | ![Grade 4 successful Grad-CAM](report/dense_net_121/runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/gradcam_success_grade_4.png) | ![Grade 4 failed Grad-CAM](report/dense_net_121/runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/gradcam_failure_grade_4.png) |
+### DenseNet-121 Grad-CAM Examples
 
-Grad-CAM indicates pixels that influenced a class score; it is not an osteophyte or joint-space-narrowing segmentation. Independent normalization also makes heatmap intensity incomparable between cases. The visual review should therefore check ROI adequacy, joint-line coverage, border/shaft shortcuts, prediction correctness, and predicted-versus-true class evidence together.
+| True grade | ROI + predicted-class Grad-CAM |
+| ---: | --- |
+| 0 | ![DenseNet Grade 0 ROI and Grad-CAM](report/dense_net_121/runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/gradcam_pair_grade_0.png) |
+| 1 | ![DenseNet Grade 1 ROI and Grad-CAM](report/dense_net_121/runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/gradcam_pair_grade_1.png) |
+| 2 | ![DenseNet Grade 2 ROI and Grad-CAM](report/dense_net_121/runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/gradcam_pair_grade_2.png) |
+| 3 | ![DenseNet Grade 3 ROI and Grad-CAM](report/dense_net_121/runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/gradcam_pair_grade_3.png) |
+| 4 | ![DenseNet Grade 4 ROI and Grad-CAM](report/dense_net_121/runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/gradcam_pair_grade_4.png) |
 
-## 4.4. Limitations
+### SE-ResNeXt-50 Grad-CAM Examples
+
+| True grade | ROI + predicted-class Grad-CAM |
+| ---: | --- |
+| 0 | ![SE-ResNeXt Grade 0 ROI and Grad-CAM](report/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/gradcam_pair_grade_0.png) |
+| 1 | ![SE-ResNeXt Grade 1 ROI and Grad-CAM](report/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/gradcam_pair_grade_1.png) |
+| 2 | ![SE-ResNeXt Grade 2 ROI and Grad-CAM](report/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/gradcam_pair_grade_2.png) |
+| 3 | ![SE-ResNeXt Grade 3 ROI and Grad-CAM](report/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/gradcam_pair_grade_3.png) |
+| 4 | ![SE-ResNeXt Grade 4 ROI and Grad-CAM](report/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/gradcam_pair_grade_4.png) |
+
+Grad-CAM indicates pixels that influenced the predicted class score; it is not an osteophyte or joint-space-narrowing segmentation. Independent normalization also makes heatmap intensity incomparable between cases. The visual review should therefore check ROI adequacy, joint-line coverage, border/shaft shortcuts, and prediction correctness together.
+
+## 5.5. Limitations
 
 - Grade 1 is the main classification weakness: precision `0.2832`, recall `0.3750`, and F1 `0.3227`.
 - Grade 2 recall is `0.4362`, showing substantial adjacent-grade confusion even though its precision is higher.
@@ -205,7 +282,7 @@ Grad-CAM indicates pixels that influenced a class score; it is not an osteophyte
 - The exact production-ROI evaluation does not include confidence intervals, and the test set has been inspected across prior development iterations.
 - The system has not undergone external prospective clinical validation and is not suitable for autonomous diagnosis.
 
-# CHAPTER 5: DEPLOYMENT
+# CHAPTER 6: DEPLOYMENT
 
 The Python FastAPI service executes this flow:
 

@@ -243,11 +243,13 @@ The next improvement should not be another uncontrolled loss change. It should u
 
 # CHAPTER 5: SOFTWARE ARCHITECTURE AND DEPLOYMENT
 
-## 5.1. Inference Flow
+## 5.1. System Architecture and Inference Flow
 
-The Python FastAPI service accepts an image, runs YOLOv8, creates one square ROI per detected knee, applies the production DenseNet preprocessing, predicts five-class probabilities, and generates Grad-CAM. If no joint is detected, the API returns an explicit no-ROI error response rather than fabricating a classifier result.
+HealthSync exposes an inference-only Python FastAPI service. The service accepts an X-ray, runs the mounted YOLOv8 joint detector, and creates one deterministic square ROI per detected knee. Each ROI is expanded by `1.15 x max(width, height)`, clipped to the source image, padded with black only when the square extends beyond the image, processed with LAB CLAHE (`1.25`), and resized to `384 x 384`.
 
-Checkpoints are mounted read-only into the Docker container. Environment configuration selects the model mode and exact YOLO and DenseNet paths. The API response schema is kept stable while model and heatmap internals evolve.
+The configured classifier mode can be DenseNet-121 or SE-ResNeXt-50. The selected checkpoint returns five KL-grade logits and probabilities; the service then computes predicted-class Grad-CAM from the model's final convolutional feature layer. In ensemble mode, the two classifiers are combined by weighted soft voting and the selected model component supplies the displayed Grad-CAM. A missing YOLO detection returns an explicit no-ROI response instead of producing a fabricated grade.
+
+Docker provides a reproducible runtime and mounts YOLO/classifier checkpoints read-only. `ai.env` contains only the runtime choices (model mode, checkpoint paths, YOLO path, and image size). The public prediction JSON remains stable; model selection and explanation details are internal implementation settings. This repository does not require AWS/S3 for inference.
 
 ## 5.2. Evidence Index
 
@@ -263,7 +265,7 @@ Checkpoints are mounted read-only into the Docker container. Environment configu
 
 ## 5.3. Conclusion
 
-The current HealthSync classifier is a standard DenseNet-121 trained with CE, mild augmentation, inverse-frequency sampling, three-stage fine-tuning, and a short paired published/production-ROI adaptation. It uses natural laterality and Grad-CAM, not canonicalization or native CAM. CE was selected by a controlled validation comparison; historical CORN results are retained as evidence but are not directly comparable to production. The locked production-ROI test confirms strong severe-grade recall and useful ordinal agreement, while also showing that Grade 1 classification and explanation validation remain open research limitations.
+HealthSync delivers a reproducible KL-grade inference prototype: YOLOv8 isolates the joint, a CNN predicts grades 0--4, and Grad-CAM provides a visual explanation. DenseNet-121 and SE-ResNeXt-50 are documented as separate supported classifier modes, with optional two-model soft voting. The production evaluation shows useful ordinal agreement and strong severe-grade recall, but Grade 1 performance, crop-domain sensitivity, and formal expert validation of heatmap localization remain limitations. The system is a decision-support prototype, not an autonomous diagnostic device.
 
 ## References
 
