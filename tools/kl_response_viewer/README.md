@@ -1,12 +1,12 @@
 # KL Response Viewer
 
-Standalone browser viewer for the existing `POST /predict` JSON response. Image
-fields are decoded in the browser and are never uploaded or sent to another server.
+The viewer is embedded in the FastAPI image at `http://localhost:8005/result-viewer`.
+It renders the existing `POST /api/v1/predict` JSON response in the browser. Image
+fields are decoded locally and are never uploaded or sent to another server.
 
 ```bash
-docker build -t kl-response-viewer:latest tools/kl_response_viewer
-docker run --rm -p 8088:8080 --name kl-response-viewer kl-response-viewer:latest
+make up
 ```
 
-Open `http://localhost:8088`, paste the complete response, and select **Render
+Open `http://localhost:8005/result-viewer`, paste the complete response, and select **Render
 response**.

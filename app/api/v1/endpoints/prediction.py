@@ -9,7 +9,11 @@ router = APIRouter()
 
 
 @router.post(
-    "", response_model=KneeOAPredictionResponse, status_code=status.HTTP_200_OK
+    "",
+    response_model=KneeOAPredictionResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Predict KL grades",
+    description="Detects knee joints, predicts KL grades 0-4, and returns probabilities, ROI images, and predicted-class Grad-CAM heatmaps.",
 )
 async def predict_knee_oa(
     file: UploadFile = File(..., description="Knee X-ray PNG or JPEG file"),
@@ -36,6 +40,8 @@ async def predict_knee_oa(
     "/detect-roi",
     response_model=KneeDetectionResponse,
     status_code=status.HTTP_200_OK,
+    summary="Detect knee ROIs",
+    description="Runs YOLOv8 and returns detected knee boxes, square ROI images, and an annotated source image.",
 )
 async def detect_knee_roi(
     file: UploadFile = File(..., description="Knee X-ray PNG or JPEG file"),
