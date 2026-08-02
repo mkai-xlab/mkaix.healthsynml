@@ -37,5 +37,6 @@ jobs:
             git checkout dev
             git pull --ff-only origin dev
             docker compose config --quiet
+            docker rm -f knee-oa-ai || true
             docker compose up -d --build ai
             docker image prune -f
