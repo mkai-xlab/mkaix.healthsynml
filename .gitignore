@@ -28,6 +28,7 @@ share/python-wheels/
 # Virtual environments
 venv/
 .venv/
+healthsync_ml/
 env/
 .env
 
@@ -62,3 +63,9 @@ test_images
 *.env
 !env/
 !env/ai.env
+
+
+
+
+# venv file
+healthsync_ml/*

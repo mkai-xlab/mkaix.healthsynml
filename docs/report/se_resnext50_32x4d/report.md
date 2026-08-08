@@ -6,6 +6,7 @@ This file records SE-ResNeXt-50 runs, their exact configurations, predictive met
 | Run Timestamp | Model Configuration / Loss | Accuracy | QWK Score | ROC AUC | Avg Precision | Macro F1 | Grade 1 Recall | CAM Joint Energy | CAM Border Energy |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 2026-08-01 07:59:46.827053 UTC | **Paired Published/YOLO-ROI Adaptation + Post-hoc Grad-CAM**<br>Cross-Entropy (CE) | 0.5894 | 0.7461 | 0.8462 | 0.6368 | 0.6002 | 0.2736 | Not measured | Not measured |
+| 2026-08-05 13:49:43.310215 UTC | **224x224 Paired Published/YOLO-ROI Adaptation + Post-hoc Grad-CAM**<br>Cross-Entropy (CE) | 0.5568 | 0.7155 | 0.8309 | 0.6008 | 0.5593 | Not measured | Not measured | Not measured |
 | 2026-07-25 01:50:53.962450 UTC | **Natural Orientation + Horizontal Flip + Mild Gamma + Final Native CAM**<br>Cross-Entropy (CE) | **0.6558** | **0.8216** | **0.8980** | **0.7299** | **0.6781** | 0.4122 | 0.8516 | 0.0990 |
 | 2026-07-23 06:57:13.378879 UTC | Multiscale 24x24 Native CAM + EMA (`0.999`)<br>Cross-Entropy (CE) | 0.5676 (95% bootstrap CI: 0.5429 - 0.5918) | 0.7651 (95% bootstrap CI: 0.7406 - 0.7887) | 0.8703 | 0.6918 | 0.6220 | **0.5507** | 0.7938 | 0.1175 |
 | 2026-07-23 01:25:36.772175 UTC | **Final Linear Native CAM (Laterality Canonicalized)**<br>Cross-Entropy (CE) | 0.6389 (95% bootstrap CI: 0.6153 - 0.6624) | 0.8194 (95% bootstrap CI: 0.7999 - 0.8384) | 0.8948 | 0.7248 | 0.6671 | 0.4155 | 0.8707 | 0.0749 |
@@ -130,6 +131,22 @@ Misclassified predicted-class versus true-class Grad-CAM pairs:
 | 2026-07-25 SE-ResNeXt, published crops | **0.6558** | **0.8216** | **0.6781** | **0.4122** | **0.7299** | **0.8980** |
 | 2026-08-01 SE-ResNeXt, production YOLO ROIs | 0.5894 | 0.7461 | 0.6002 | 0.2736 | 0.6368 | 0.8462 |
 | Current DenseNet, production YOLO ROIs | 0.5972 | 0.7702 | 0.6215 | 0.3750 | 0.6696 | 0.8611 |
+
+## 224x224 Paired-ROI Resolution Comparison
+
+Run date: `2026-08-04` to `2026-08-05 UTC`
+Archived notebooks: [01 dataset preparation](runs/2026-08-04_224_paired_view_yolo/01_prepare_original_and_yolo_roi_datasets.ipynb), [02 original-crop training](runs/2026-08-04_224_paired_view_yolo/02_train_se_resnext50_original_224.ipynb), [03 paired-view adaptation](runs/2026-08-04_224_paired_view_yolo/03_train_se_resnext50_paired_view_yolo_224.ipynb), and [04 locked ROI evaluation](runs/2026-08-04_224_paired_view_yolo/04_evaluate_se_resnext50_paired_view_yolo_gradcam_224.ipynb).
+
+Notebook 01 reused the existing derived YOLO ROI data, confirmed indirectly because Notebook 03 completed its paired-view validation. Notebook 02 trained the `224x224` CE base model and selected `2026-08-04_00-59-41_684745_UTC_original_224_ce_3stage/best_model.pth`; its published-crop test was Accuracy `0.6262`, QWK `0.7969`, macro F1 `0.6464`, AP `0.6864`, and AUC `0.8743`.
+
+Notebook 03 completed five paired-view epochs. Epoch `2` had the highest robust validation selection (`0.6751`): published QWK `0.7665`, YOLO-ROI QWK `0.6991`, published selection `0.7086`, and ROI selection `0.6416`. Its DataLoader emitted non-fatal worker-shutdown assertions, but the run completed all epochs and saved the selected checkpoint. Notebook 04 evaluated that exact checkpoint once on the locked `n=1,656` YOLO-ROI test set and exported predicted-class Grad-CAM grids plus predicted-versus-true-class CAM pairs.
+
+| Input | Accuracy | QWK | Macro F1 | Macro AP | Macro AUC | Decision |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `224 x 224` paired view | 0.5568 | 0.7155 | 0.5593 | 0.6008 | 0.8309 | rejected |
+| `384 x 384` paired view | **0.5894** | **0.7461** | **0.6002** | **0.6368** | **0.8462** | retained |
+
+The test-domain comparison favors `384 x 384` on every reported metric: QWK by `0.0306`, macro F1 by `0.0409`, AP by `0.0360`, and AUC by `0.0153`. The 224 Grad-CAM galleries include joint-line-focused examples but also obvious one-sided/border activations, including a correct Grade 0 example dominated by the lateral image edge. There is no evidence that 224 produces more anatomically faithful explanations. Keep the 384 checkpoint for this model.
 
 The first row uses a different crop domain and is not a controlled head-to-head comparison. The paired-view test row records the SE-ResNeXt result on production-style ROIs. Its Grad-CAM figures are useful qualitative evidence, but this notebook did not measure anatomy energy, border energy, or occlusion faithfulness.
 

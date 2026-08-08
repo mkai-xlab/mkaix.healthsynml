@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 import torch
@@ -25,7 +24,6 @@ async def lifespan(app: FastAPI):
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
 
-# --- Application Setup ---
 app = FastAPI(
     title="Knee Osteoarthritis KL-Grade Classification API",
     description="API for predicting Kellgren-Lawrence (KL) grade from knee X-ray images.",
@@ -33,10 +31,8 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Register API v1 routes
 app.include_router(api_router, prefix="/api/v1")
 
-# Configure CORS to allow cross-origin requests from any client
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

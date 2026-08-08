@@ -10,7 +10,7 @@ on:
       - "main.py"
       - "requirements.txt"
       - "Dockerfile"
-      - "compose.yaml"
+      - "docker-compose.yml"
       - ".github/workflows/**"
 
 permissions:

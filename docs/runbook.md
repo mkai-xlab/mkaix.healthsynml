@@ -13,7 +13,7 @@ The API runs on `http://localhost:8005`; the response viewer runs on `http://loc
 
 ## Required Local Configuration
 
-`local.env` must set `MODEL_MODE`, `MODEL_CHECKPOINT_PATH`, and `YOLO_CHECKPOINT_PATH`. Paths are relative to the repository and must resolve within the read-only `/app/checkpoints` mount.
+`local.env` must set `MODEL_MODE`, `DENSENET121_CHECKPOINT_PATH`, `SE_RESNEXT_CHECKPOINT_PATH`, and `YOLO_CHECKPOINT_PATH`. Paths are relative to the repository and must resolve within the read-only `/app/checkpoints` mount.
 
 The active local configuration is DenseNet-121 with the July 30 paired-view checkpoint and the July 26 YOLO detector. Verify the loaded architecture and epoch with `make ai-health` or the API health response.
 

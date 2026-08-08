@@ -10,8 +10,6 @@ from app.core.config import normalize_model_mode
         ("dense_net_121", "densenet121"),
         ("se_resnext", "se_resnext"),
         ("seresnext50_32x4d", "se_resnext"),
-        ("efficientnet", "efficientnet_b0"),
-        ("efficientnet_b0", "efficientnet_b0"),
         ("ensemble", "ensemble"),
     ],
 )
