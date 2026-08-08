@@ -5,13 +5,8 @@ import torch
 import torch.nn.functional as F
 
 
-MIN_HEATMAP_JOINT_ENERGY = 0.55
-MAX_HEATMAP_BORDER_ENERGY = 0.25
-MAX_HEATMAP_LOWER_TIBIA_ENERGY = 0.25
-
-
 class EnsembleService:
-    """Combine classifier probabilities and select an ensemble Grad-CAM."""
+    """Soft-vote probabilities and choose one component's Grad-CAM per case."""
 
     @staticmethod
     def weighted_soft_vote(
@@ -30,6 +25,7 @@ class EnsembleService:
         if total_weight <= 0:
             raise ValueError("At least one ensemble weight must be positive")
 
+        # Vote on calibrated class probabilities, not raw logits from different backbones.
         return sum(
             F.softmax(logits[name].float(), dim=1) * (weights[name] / total_weight)
             for name in logits
@@ -39,29 +35,12 @@ class EnsembleService:
     def select_heatmap_component(
         probabilities: Mapping[str, torch.Tensor],
         predicted_class: int,
-        anatomy_metrics: Mapping[str, Mapping[str, float]],
     ) -> str:
-        if set(probabilities) != set(anatomy_metrics):
-            raise ValueError("Heatmap probabilities and anatomy metrics must align")
-
-        def acceptable(name: str) -> bool:
-            metrics = anatomy_metrics[name]
-            return bool(
-                metrics["joint_energy"] >= MIN_HEATMAP_JOINT_ENERGY
-                and metrics["border_energy"] <= MAX_HEATMAP_BORDER_ENERGY
-                and metrics["lower_tibia_energy"] <= MAX_HEATMAP_LOWER_TIBIA_ENERGY
-                and metrics["peak_inside_joint"]
-            )
-
-        passing = [name for name in probabilities if acceptable(name)]
-        candidates = passing or list(probabilities)
+        if not probabilities:
+            raise ValueError("At least one model probability tensor is required")
         return max(
-            candidates,
-            key=lambda name: (
-                anatomy_metrics[name]["anatomy_score"]
-                * float(probabilities[name][0, predicted_class].item()),
-                anatomy_metrics[name]["anatomy_score"],
-            ),
+            probabilities,
+            key=lambda name: float(probabilities[name][0, predicted_class].item()),
         )
 
 

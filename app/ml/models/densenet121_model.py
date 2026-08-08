@@ -14,16 +14,8 @@ class DenseNet121Model(BaseModel):
         self,
         num_classes: int = 5,
         pretrained: bool = False,
-        ordinal_type: str = "ce",
-        **_: object,
     ):
         super().__init__()
-        if ordinal_type != "ce":
-            raise ValueError(
-                "timm_densenet121_linear_gradcam requires CE logits; "
-                f"received ordinal_type={ordinal_type!r}"
-            )
-
         self.num_classes = num_classes
         self.backbone = timm.create_model(
             "densenet121",

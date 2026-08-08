@@ -62,3 +62,7 @@ test_images
 *.env
 !env/
 !env/ai.env
+
+
+# venv file
+healthsync_ml/*

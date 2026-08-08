@@ -13,13 +13,20 @@ router = APIRouter()
     description="Returns the active checkpoint, preprocessing contract, and runtime Grad-CAM method.",
 )
 def get_model_info():
+    """Return a simple model info response with checkpoint and Grad-CAM information."""
+
+    # get the current model pipeline 
     pipeline = prediction_service.pipeline
+
+    # if ensemble, use dynamic per-case Grad-CAM
     if pipeline.model_mode == "ensemble":
         heatmap = {
             "method": "dynamic_per_case_gradcam",
             "source": "selected component final convolutional feature layer",
             "gradient_free": False,
         }
+
+    # else use the single model Grad-CAM
     else:
         heatmap = {
             "method": "predicted_class_gradcam",
@@ -29,13 +36,14 @@ def get_model_info():
             "gradient_free": False,
         }
 
-    # Some legacy checkpoints retain ``final_native_cam_ce`` in their metadata.
+ 
     # That is a training/checkpoint identifier; runtime explanations are Grad-CAM.
     runtime_architecture = (
         "two_model_weighted_soft_voting_gradcam_ensemble"
         if pipeline.model_mode == "ensemble"
         else f"{pipeline.model_name}_gradcam_ce"
     )
+
     return {
         "model": pipeline.model_name,
         "architecture": runtime_architecture,

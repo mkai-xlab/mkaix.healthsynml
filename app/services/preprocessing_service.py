@@ -49,12 +49,18 @@ class OpenCVCLAHE:
 def canonicalize_knee_laterality(
     image_rgb: np.ndarray, knee_side: str
 ) -> tuple[np.ndarray, bool]:
-    """Retain natural laterality for the non-canonical production checkpoint."""
+    """Compatibility hook: the deployed checkpoints preserve natural laterality.
+
+    ``knee_side`` is deliberately unused. It is retained because the prediction
+    service records laterality in its response, while the classifier was trained
+    without deterministic right-knee mirroring.
+    """
+    _ = knee_side
     return image_rgb, False
 
 
 class PreprocessingService:
-    """Decode and reproduce the checkpoint's deterministic inference transform."""
+    """Reproduce the deterministic transform expected by the deployed checkpoints."""
 
     def __init__(self):
         self.img_size = settings.IMG_SIZE
@@ -79,7 +85,7 @@ class PreprocessingService:
     def preprocess_image(
         self, image_bytes: bytes, knee_side: str = "unknown"
     ) -> tuple[torch.Tensor, np.ndarray, bool]:
-        """Return the model tensor and the exactly aligned display image."""
+        """Return the normalized tensor and an RGB image aligned with its Grad-CAM."""
         encoded = np.frombuffer(image_bytes, np.uint8)
         image_bgr = cv2.imdecode(encoded, cv2.IMREAD_COLOR)
         if image_bgr is None:
@@ -88,6 +94,7 @@ class PreprocessingService:
             )
 
         image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
+        # Keep the display image and model tensor in identical geometry.
         image_rgb, was_mirrored = canonicalize_knee_laterality(
             image_rgb, knee_side
         )
