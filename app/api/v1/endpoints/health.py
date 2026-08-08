@@ -12,6 +12,9 @@ router = APIRouter()
     description="Returns service readiness, active model mode, device, and checkpoint metadata.",
 )
 def check_health():
+    """Return a simple health check response with model and device information."""
+
+    # Get the current model pipeline and return health information
     pipeline = prediction_service.pipeline
     return {
         "status": "healthy",

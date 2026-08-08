@@ -1,95 +1,117 @@
+"""Application service that joins YOLO detection and classifier predictions."""
+
+import base64
+
+import cv2
+import numpy as np
+
 from app.ml.pipelines.knee_oa_pipeline import KneeOAPipeline
+from app.services.roi_service import NO_KNEE_ROI_MESSAGE, roi_service
+
+
+def _decode_source_image(image_bytes: bytes) -> np.ndarray:
+    """Decode the original X-ray used for the response annotation."""
+    image = cv2.imdecode(np.frombuffer(image_bytes, np.uint8), cv2.IMREAD_COLOR)
+    if image is None:
+        raise ValueError("Could not decode image. Upload a valid PNG or JPEG image.")
+    return image
+
+
+def _assign_knee_sides(knees: list[dict], image_width: int) -> tuple[list[dict], list[str]]:
+    """Infer side labels for the response without changing the natural image orientation."""
+    if len(knees) == 2:
+        ordered_knees = sorted(knees, key=lambda knee: knee["box"][0])
+        return ordered_knees, ["right", "left"]
+    if len(knees) != 1:
+        return knees, ["unknown"] * len(knees)
+
+    center_x = (knees[0]["box"][0] + knees[0]["box"][2]) / 2
+    if center_x < image_width * 0.40:
+        return knees, ["right"]
+    if center_x > image_width * 0.60:
+        return knees, ["left"]
+    return knees, ["unknown"]
+
+
+def _encode_jpeg_data_url(image: np.ndarray) -> str:
+    success, buffer = cv2.imencode(".jpg", image)
+    if not success:
+        raise RuntimeError("Could not encode annotated image")
+    encoded = base64.b64encode(buffer).decode("ascii")
+    return f"data:image/jpeg;base64,{encoded}"
+
+
+def _draw_prediction_label(image: np.ndarray, knee: dict, result: dict) -> None:
+    """Render the stable green annotation returned in the existing API contract."""
+    x1, y1, x2, y2 = knee["box"]
+    side = result["knee_side"]
+    side_prefix = f"{side.upper()} " if side != "unknown" else ""
+    label = (
+        f"{side_prefix}Grade {result['predicted_grade']} "
+        f"({result['confidence'] * 100:.1f}%)"
+    )
+    cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 3)
+    (text_width, text_height), _ = cv2.getTextSize(
+        label, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2
+    )
+    text_y = max(15, y1 - 5)
+    cv2.rectangle(
+        image,
+        (x1, text_y - 20),
+        (x1 + text_width, text_y + text_height + 5),
+        (0, 255, 0),
+        -1,
+    )
+    cv2.putText(
+        image,
+        label,
+        (x1, text_y),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.6,
+        (0, 0, 0),
+        2,
+    )
+
 
 class PredictionService:
-    """
-    Service to handle business logic for Knee Osteoarthritis predictions.
-    Orchestrates the ML prediction pipeline and structures results.
-    """
-    def __init__(self):
-        # The pipeline handles model registration, loading, and inference.
+    """Orchestrate ROI detection, KL inference, and response-image annotation."""
+
+    def __init__(self) -> None:
         self.pipeline = KneeOAPipeline()
 
     def predict_image(self, file_name: str, image_bytes: bytes) -> dict:
-        """
-        Receives raw image bytes, detects ROIs with YOLOv8, runs them through 
-        the classification pipeline, and returns a list of predictions alongside
-        an annotated original image.
-        """
-        from app.services.roi_service import NO_KNEE_ROI_MESSAGE, roi_service
-        import cv2
-        import numpy as np
-        import base64
-        
-        # 1. Detect knees and get crops and coordinates
+        """Predict every detected knee and preserve the established JSON response."""
+        source_image = _decode_source_image(image_bytes)
         knees = roi_service.detect_knees_with_coords(image_bytes)
-        
-        # 2. Decode original image to draw on
-        nparr = np.frombuffer(image_bytes, np.uint8)
-        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        
-        ai_results = []
-        
         if not knees:
-            # Defensive guard for alternate ROI service implementations.
+            # The concrete service raises this itself; retain a clear boundary guard.
             raise ValueError(NO_KNEE_ROI_MESSAGE)
-        else:
-            # Determine knee side (anatomical right/left) if exactly 2 ROIs are detected
-            if len(knees) == 2:
-                # Sort left-to-right by x coordinate (box[0])
-                knees = sorted(knees, key=lambda k: k["box"][0])
-                sides = ["right", "left"]
-            elif len(knees) == 1:
-                center_x = (knees[0]["box"][0] + knees[0]["box"][2]) / 2
-                image_width = img.shape[1]
-                if center_x < image_width * 0.40:
-                    sides = ["right"]
-                elif center_x > image_width * 0.60:
-                    sides = ["left"]
-                else:
-                    sides = ["unknown"]
-            else:
-                sides = ["unknown"] * len(knees)
-                
-            for idx, knee in enumerate(knees):
-                side = sides[idx]
-                # Canonicalize anatomical right knees before classification.
-                res = self.pipeline.predict(knee["crop_bytes"], knee_side=side)
-                res["box"] = knee["box"]
-                res["yolo_confidence"] = knee["yolo_conf"]
-                res["knee_side"] = side
-                
-                # Base64 encode the cropped ROI image
-                roi_base64 = base64.b64encode(knee["crop_bytes"]).decode("utf-8")
-                res["roi_image"] = f"data:image/png;base64,{roi_base64}"
-                
-                ai_results.append(res)
-                
-                # Draw bounding box and KL grade + side + confidence on original image
-                x1, y1, x2, y2 = knee["box"]
-                kl_grade = res.get("predicted_grade", "Unknown")
-                conf = res.get("confidence", 0.0)
-                
-                # Bounding box color (Green)
-                cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 3)
-                
-                side_str = f" {side.upper()}" if side != "unknown" else ""
-                label = f"{side_str} Grade {kl_grade} ({conf*100:.1f}%)".strip()
-                
-                # Draw text background for readability
-                (w, h), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)
-                cv2.rectangle(img, (x1, max(15, y1 - 25)), (x1 + w, max(15, y1 - 25) + h + 5), (0, 255, 0), -1)
-                cv2.putText(img, label, (x1, max(15, y1 - 5)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 2)
-                
-        # Encode annotated image back to base64
-        _, buffer = cv2.imencode(".jpg", img)
-        img_base64 = base64.b64encode(buffer).decode("utf-8")
-        annotated_image_url = f"data:image/jpeg;base64,{img_base64}"
-        
+
+        knees, sides = _assign_knee_sides(knees, source_image.shape[1])
+        predictions: list[dict] = []
+
+        for knee, side in zip(knees, sides):
+            prediction = self.pipeline.predict(knee["crop_bytes"], knee_side=side)
+            prediction.update(
+                {
+                    "box": knee["box"],
+                    "yolo_confidence": knee["yolo_conf"],
+                    "knee_side": side,
+                    "roi_image": (
+                        "data:image/png;base64,"
+                        f"{base64.b64encode(knee['crop_bytes']).decode('ascii')}"
+                    ),
+                }
+            )
+            predictions.append(prediction)
+            _draw_prediction_label(source_image, knee, prediction)
+
         return {
             "filename": file_name,
-            "predictions": ai_results,
-            "annotated_image": annotated_image_url
+            "predictions": predictions,
+            "annotated_image": _encode_jpeg_data_url(source_image),
         }
 
-# Singleton instance for the service layer
+
+# The API owns one pipeline instance so model weights are not reloaded per request.
 prediction_service = PredictionService()

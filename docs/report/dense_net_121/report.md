@@ -41,6 +41,22 @@ Locked production-style YOLO ROI test, `n=1,656`:
 | 3 | 223 | 0.7269 | 0.7399 | 0.7333 |
 | 4 | 51 | 0.7231 | 0.9216 | 0.8103 |
 
+## 224 x 224 Paired-ROI Resolution Comparison
+
+Run date: `2026-08-04` to `2026-08-05 UTC`
+Archived notebooks: [01 dataset preparation](runs/2026-08-04_224_paired_view_yolo/01_prepare_original_and_yolo_roi_datasets.ipynb), [02 original-crop training](runs/2026-08-04_224_paired_view_yolo/02_train_densenet121_original_224.ipynb), [03 paired-view adaptation](runs/2026-08-04_224_paired_view_yolo/03_train_densenet121_paired_view_yolo_224.ipynb), and [04 locked ROI evaluation](runs/2026-08-04_224_paired_view_yolo/04_evaluate_densenet121_paired_view_yolo_gradcam_224.ipynb).
+
+Notebook 01 did not need to rebuild the derived YOLO ROI images: Notebook 03 successfully consumed the existing `densenet121_yolo_square_roi_trainvaltest_v2` train/validation set. Notebook 02 trained the same five-logit CE DenseNet-121 configuration at `224 x 224`; the selected base checkpoint was from epoch `28` (validation selection `0.7193`). Its published-crop test result was Accuracy `0.6184`, QWK `0.7931`, AP `0.6796`, and AUC `0.8722`.
+
+Notebook 03 fine-tuned this checkpoint for five epochs with the same `50/50` published-crop and YOLO-square-ROI mixture. Epoch `4` was selected by the validation-only mean-domain score: published QWK `0.7778`, YOLO-ROI QWK `0.7191`, and robust selection `0.6988`. Notebook 04 then evaluated that selected checkpoint once on the locked `n=1,656` YOLO-ROI test set and generated post-hoc Grad-CAM evidence.
+
+| Input | Accuracy | QWK | Macro F1 | Macro AP | Macro AUC | Decision |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `224 x 224` paired view | 0.5743 | 0.7366 | 0.5906 | 0.6367 | 0.8479 | rejected |
+| `384 x 384` paired view | **0.5972** | **0.7702** | **0.6215** | **0.6696** | **0.8611** | retained |
+
+The two rows use the same locked production-style ROI test split, YOLO square-crop policy, CE loss, five-epoch paired-view adaptation, and predicted-class Grad-CAM procedure. `384 x 384` improved every reported locked-test metric: QWK by `0.0336`, macro F1 by `0.0309`, AP by `0.0329`, and AUC by `0.0132`. The 224 Grad-CAM grids still commonly activated near the joint line, but visible border/one-sided activations remained in both correct and failed cases; no anatomy-mask metric establishes a heatmap-localization improvement at 224. Therefore, changing to 224 does not solve the ROI/heatmap issue and must not replace the 384 production checkpoint.
+
 ### Production Grad-CAM Examples
 
 Each panel contains the ROI, predicted-class Grad-CAM, and true-class Grad-CAM. “Success” means a correct prediction with joint-related evidence. “Failure” is a misclassification and shows why a plausible heatmap does not prove a correct KL grade.

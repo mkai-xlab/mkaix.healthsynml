@@ -1,28 +1,42 @@
 import numpy as np
+import torch
+import torch.nn as nn
 
 from app.services.gradcam_service import GradCAMService
 
 
-def test_energy_metrics_reward_joint_map_and_penalize_upper_femur_map():
-    joint_cam = np.zeros((100, 100), dtype=np.float32)
-    joint_cam[42:58, 15:85] = 1.0
-    upper_cam = np.zeros((100, 100), dtype=np.float32)
-    upper_cam[5:20, 20:80] = 1.0
+class _TinyGradCAMModel(nn.Module):
+    """Small model that exercises Grad-CAM without checkpoints or timm."""
 
-    joint = GradCAMService.energy_metrics(joint_cam)
-    upper = GradCAMService.energy_metrics(upper_cam)
+    def __init__(self):
+        super().__init__()
+        self.features = nn.Conv2d(3, 4, kernel_size=3, padding=1, bias=False)
+        self.classifier = nn.Linear(4, 5, bias=False)
 
-    assert joint["peak_inside_joint"] is True
-    assert upper["peak_inside_joint"] is False
-    assert joint["joint_energy"] > upper["joint_energy"]
-    assert joint["anatomy_score"] > upper["anatomy_score"]
+    @property
+    def gradcam_target_layer(self):
+        return self.features
+
+    def forward(self, images):
+        features = torch.relu(self.features(images))
+        return self.classifier(features.mean(dim=(2, 3)))
 
 
-def test_energy_metrics_measure_lower_tibia_leakage():
-    cam = np.zeros((100, 100), dtype=np.float32)
-    cam[75:90, 15:85] = 1.0
+def test_extract_gradcam_returns_a_normalized_map_for_the_predicted_class():
+    torch.manual_seed(7)
+    model = _TinyGradCAMModel().eval()
+    image = torch.rand(1, 3, 32, 32)
 
-    metrics = GradCAMService.energy_metrics(cam)
+    with torch.no_grad():
+        predicted_class = int(model(image).argmax(dim=1).item())
 
-    assert metrics["lower_tibia_energy"] > 0.99
-    assert metrics["peak_inside_joint"] is False
+    cam = GradCAMService.extract_gradcam(
+        model,
+        image,
+        predicted_class=predicted_class,
+        output_size=(32, 32),
+    )
+
+    assert cam.shape == (32, 32)
+    assert np.isfinite(cam).all()
+    assert 0.0 <= float(cam.min()) <= float(cam.max()) <= 1.0

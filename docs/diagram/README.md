@@ -14,6 +14,11 @@ The report-facing AI figures are stored in [`ai_model/`](ai_model/). The three p
 
 Sources: [three-page overview Draw.io](ai_model/healthsync_kl_ai_architecture.drawio), [four-page detail Draw.io](ai_model/healthsync_kl_ai_details.drawio), and [tldraw whiteboard](ai_model/healthsync_kl_ai_whiteboard.tldr).
 
+## CNN Architecture Sources
+
+- [DenseNet-121 architecture](densenet121-architecture.drawio): one detailed 384 x 384 architecture page covering the backbone, dense blocks, transitions, classifier, and Grad-CAM boundary.
+- [SE-ResNeXt-50 32x4d architecture](resnext50-architecture.drawio): four tabs covering the overview, residual-stage cardinality, one 32x4d bottleneck, and the squeeze-excitation module.
+
 ## Important Technical Labels
 
 - DenseNet-121 Grad-CAM target: `backbone.features.norm5`, tensor shape `B x 1024 x 12 x 12` for a `384 x 384` input.

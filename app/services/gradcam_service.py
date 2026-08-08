@@ -7,49 +7,12 @@ import torch.nn.functional as F
 
 
 class GradCAMService:
-    """Generate, assess, and render post-hoc Grad-CAM heatmaps."""
+    """Generate, assess, and render predicted-class Grad-CAM heatmaps.
 
-    @staticmethod
-    def energy_metrics(cam: np.ndarray) -> dict[str, float]:
-        """Measure whether one case's positive evidence is anatomically plausible."""
-        height, width = cam.shape
-        joint = np.zeros_like(cam, dtype=bool)
-        joint[
-            int(0.28 * height) : int(0.72 * height),
-            int(0.06 * width) : int(0.94 * width),
-        ] = True
-        border = np.ones_like(cam, dtype=bool)
-        border[
-            int(0.08 * height) : int(0.92 * height),
-            int(0.08 * width) : int(0.92 * width),
-        ] = False
-        lower_tibia = np.zeros_like(cam, dtype=bool)
-        lower_tibia[
-            int(0.72 * height) : int(0.96 * height),
-            int(0.06 * width) : int(0.94 * width),
-        ] = True
-        total = float(cam.sum()) + 1e-8
-        joint_energy = float(cam[joint].sum() / total)
-        border_energy = float(cam[border].sum() / total)
-        lower_tibia_energy = float(cam[lower_tibia].sum() / total)
-        peak_y, peak_x = np.unravel_index(int(np.argmax(cam)), cam.shape)
-        peak_inside_joint = bool(joint[peak_y, peak_x] and total > 1e-7)
-        anatomy_score = (
-            joint_energy
-            * (1.0 - border_energy)
-            * (1.0 - lower_tibia_energy)
-        )
-        return {
-            "joint_energy": joint_energy,
-            "joint_enrichment": joint_energy / float(joint.mean()),
-            "border_energy": border_energy,
-            "border_enrichment": border_energy / float(border.mean()),
-            "lower_tibia_energy": lower_tibia_energy,
-            "peak_x": float(peak_x / max(width - 1, 1)),
-            "peak_y": float(peak_y / max(height - 1, 1)),
-            "peak_inside_joint": peak_inside_joint,
-            "anatomy_score": anatomy_score,
-        }
+    The service deliberately owns no model state. It uses each model's declared
+    ``gradcam_target_layer`` so the visualization remains aligned with the
+    checkpoint architecture selected by the pipeline.
+    """
 
     @staticmethod
     def extract_gradcam(
@@ -68,6 +31,7 @@ class GradCAMService:
         def capture_activation(_module, _inputs, output):
             captured["activation"] = output
 
+        # The hook captures the final spatial features needed for Grad-CAM.
         handle = target_layer.register_forward_hook(capture_activation)
         try:
             model.eval()

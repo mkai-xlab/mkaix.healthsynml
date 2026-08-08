@@ -235,7 +235,21 @@ A later five-epoch ROI robustness candidate improved validation accuracy (`0.588
 
 The Grad-CAM result remains a localization aid, not lesion-level ground truth. A hotspot on a marginal osteophyte can be plausible even if it is lateral to the central joint space; activation on image padding, the upper femoral shaft, or lower tibial shaft is more suspicious. Definitive explanation validation would require expert region annotations or occlusion/segmentation targets.
 
-## 4.4. Production Assessment
+## 4.4. Classification Diagnostics
+
+The final DenseNet-121 was evaluated on the locked production-style YOLO-ROI test set (`n = 1,656`). Rows in the matrix are true KL grades and columns are predicted KL grades. This shows class-specific errors that are hidden by aggregate scores, especially the difficulty distinguishing Grade 1 from neighboring grades.
+
+![DenseNet-121 confusion matrix on the locked production-ROI test set](report/dense_net_121/runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/confusion_matrix.png)
+
+| Diagnostic | Result | Meaning |
+| --- | ---: | --- |
+| Macro one-vs-rest ROC AUC | `0.8611` | Ranking quality for each KL grade against the other grades across thresholds. |
+| Macro one-vs-rest Average Precision (AP) | `0.6696` | Precision-recall performance averaged across grades, with imbalance taken into account. |
+| Macro F1 | `0.6215` | Precision-recall balance at the final predicted class. |
+
+The archived evaluation saved the aggregate AUC/AP values and the confusion-matrix image, but not the per-sample probability arrays required to reconstruct ROC and precision-recall curves. Therefore, this report does not claim to contain those two plots. They should be exported from a future locked-test run using the saved labels and five-class softmax probabilities; a plot from another model or split would be misleading.
+
+## 4.5. Production Assessment
 
 The artifact is suitable as a capstone prototype because the detector, classifier, checkpoint provenance, deterministic preprocessing, quantitative evaluation, and visual explanation audit are reproducible. It is not validated for autonomous clinical use. The main unresolved limitations are low Grade 1 performance, source/crop domain sensitivity, absence of expert lesion masks for explanation validation, and lack of confidence intervals for the exact production-ROI test result.
 
