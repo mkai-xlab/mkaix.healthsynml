@@ -18,9 +18,12 @@ The service runs on `http://localhost:8005`.
 ```bash
 make status
 make ai-logs
+make unit-test
 make test
 make down
 ```
+
+`make unit-test` runs the local unit-test suite. `make test` builds the Docker image and runs the tests inside it.
 
 ## Troubleshooting
 

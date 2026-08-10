@@ -6,8 +6,10 @@ GitHub Actions runs tests for pushes and pull requests to `dev` and `main`.
 
 ```bash
 python -m pip install -r requirements-ci.txt
-python -m pytest -q --disable-warnings --maxfail=1
+make unit-test
 ```
+
+`make unit-test` runs `python -m pytest -q --disable-warnings --maxfail=1`.
 
 CI does not store or download checkpoints. Tests that need real weights skip when checkpoints are unavailable.
 

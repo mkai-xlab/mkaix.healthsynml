@@ -49,6 +49,7 @@ Send PNG or JPEG files as the `file` form field.
 - [Architecture](docs/architecture.md)
 - [Local runbook](docs/runbook.md)
 - [CI and deployment](docs/ci_cd.md)
+- [Unit tests](docs/testing.md)
 - [Experiment notebooks](notebooks/experiments/README.md)
 - [Paper reproduction notebooks](notebooks/paper/README.md)
 
