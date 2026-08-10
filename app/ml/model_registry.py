@@ -15,7 +15,18 @@ MODEL_REGISTRY: dict[str, Type[BaseModel]] = {
 
 
 def get_model(model_name: str, **kwargs) -> BaseModel:
-    """Construct a classifier by its checkpoint-compatible registry key."""
+    """Construct a classifier by its checkpoint-compatible registry key.
+
+    ARGS:
+        model_name: str, registry key for the desired model architecture.
+        **kwargs: keyword arguments to pass to the model constructor.
+    RETURNS:
+        An instance of the requested model architecture.
+    RAISES:
+        ValueError: if the requested model_name is not found in the registry.
+    """
+
+    # get model class
     model_class = MODEL_REGISTRY.get(model_name)
     if model_class is None:
         raise ValueError(

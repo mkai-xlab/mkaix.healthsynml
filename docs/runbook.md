@@ -1,32 +1,34 @@
-# Local Operations Runbook
+# Local Runbook
 
-## Start and Stop
+## Start
+
+1. Create `../env/ai.env` from `.env.example`.
+2. Put the required checkpoints under `checkpoints/`.
+3. Run:
 
 ```bash
 make up
-make status
 make ai-health
+```
+
+The service runs on `http://localhost:8005`.
+
+## Common Commands
+
+```bash
+make status
+make ai-logs
+make test
 make down
 ```
 
-The API runs on `http://localhost:8005`; the response viewer runs on `http://localhost:8088`.
-
-## Required Local Configuration
-
-`local.env` must set `MODEL_MODE`, `DENSENET121_CHECKPOINT_PATH`, `SE_RESNEXT_CHECKPOINT_PATH`, and `YOLO_CHECKPOINT_PATH`. Paths are relative to the repository and must resolve within the read-only `/app/checkpoints` mount.
-
-The active local configuration is DenseNet-121 with the July 30 paired-view checkpoint and the July 26 YOLO detector. Verify the loaded architecture and epoch with `make ai-health` or the API health response.
-
 ## Troubleshooting
 
-| Symptom | Check |
+| Problem | Check |
 | --- | --- |
-| API does not start | `make ai-logs`; confirm both checkpoint paths in `local.env` exist. |
-| Port is occupied | Stop the existing service with `make ai-down`, then run `make ai-up`. |
-| No knee ROI | Upload a frontal knee radiograph with the complete tibiofemoral joint visible; the API returns a validation error when YOLO finds no joint. |
-| Heatmap at ROI edge | Verify the app uses the 1.15 square ROI build. A heatmap is evidence visualization, not a diagnosis. |
-| Viewer does not load | Run `make viewer-up`, then open `http://localhost:8088`. |
+| API will not start | Check `make ai-logs` and checkpoint paths in `../env/ai.env`. |
+| Port 8005 is busy | Stop the existing container with `make down`. |
+| No knee is found | Use a frontal knee X-ray with the tibiofemoral joint visible. |
+| Prediction looks wrong | Inspect the returned ROI and Grad-CAM. They are evidence, not a diagnosis. |
 
-## Maintenance
-
-Run `make experiments` only after archived report artifacts are updated. This refreshes the workbook and CSV inventory without training models or changing checkpoints.
+The container mounts `checkpoints/` as read-only. Do not place secrets or checkpoint files in Git.

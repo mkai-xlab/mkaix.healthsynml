@@ -10,12 +10,17 @@ class SquarePadOpenCV:
     """Pad a rectangular ROI to square without changing its aspect ratio."""
 
     def __call__(self, image: np.ndarray) -> np.ndarray:
+
+        # get the height and width of the image (3rd dimension is the number of channels)
         height, width = image.shape[:2]
+
+        # find the maximum dimension and calculate padding for each side
         maximum = max(height, width)
         pad_top = (maximum - height) // 2
         pad_bottom = maximum - height - pad_top
         pad_left = (maximum - width) // 2
         pad_right = maximum - width - pad_left
+
         return cv2.copyMakeBorder(
             image,
             pad_top,
@@ -38,25 +43,16 @@ class OpenCVCLAHE:
         clahe = cv2.createCLAHE(
             clipLimit=self.clip_limit, tileGridSize=self.tile_grid_size
         )
+
+        # Convert to LAB (L: lightness, A: green-red, B: blue-yellow) color space
         image_lab = cv2.cvtColor(image_rgb, cv2.COLOR_RGB2LAB)
         lightness, channel_a, channel_b = cv2.split(image_lab)
+
+        # Apply CLAHE only to the lightness channel
         enhanced = clahe.apply(lightness)
         return cv2.cvtColor(
             cv2.merge((enhanced, channel_a, channel_b)), cv2.COLOR_LAB2RGB
         )
-
-
-def canonicalize_knee_laterality(
-    image_rgb: np.ndarray, knee_side: str
-) -> tuple[np.ndarray, bool]:
-    """Compatibility hook: the deployed checkpoints preserve natural laterality.
-
-    ``knee_side`` is deliberately unused. It is retained because the prediction
-    service records laterality in its response, while the classifier was trained
-    without deterministic right-knee mirroring.
-    """
-    _ = knee_side
-    return image_rgb, False
 
 
 class PreprocessingService:
@@ -64,6 +60,8 @@ class PreprocessingService:
 
     def __init__(self):
         self.img_size = settings.IMG_SIZE
+
+        # CLAHE -> SquarePad -> Resize -> ToTensor -> Normalize
         self.spatial_transform = transforms.Compose(
             [
                 OpenCVCLAHE(clip_limit=1.25),
@@ -82,27 +80,27 @@ class PreprocessingService:
             ]
         )
 
-    def preprocess_image(
-        self, image_bytes: bytes, knee_side: str = "unknown"
-    ) -> tuple[torch.Tensor, np.ndarray, bool]:
+    def preprocess_image(self, image_bytes: bytes) -> tuple[torch.Tensor, np.ndarray]:
         """Return the normalized tensor and an RGB image aligned with its Grad-CAM."""
+
+
+        # Read image bytes to a numpy array 
         encoded = np.frombuffer(image_bytes, np.uint8)
         image_bgr = cv2.imdecode(encoded, cv2.IMREAD_COLOR)
         if image_bgr is None:
             raise ValueError(
                 "Could not decode image. Upload a valid PNG or JPEG image."
             )
-
         image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
         # Keep the display image and model tensor in identical geometry.
-        image_rgb, was_mirrored = canonicalize_knee_laterality(
-            image_rgb, knee_side
-        )
         processed_image = np.array(
             self.spatial_transform(image_rgb), dtype=np.uint8, copy=True
         )
+
+
+        # add a batch dimension to the tensor for model inference (3,a,a) -> (1,3,a,a)
         tensor = self.tensor_transform(processed_image).unsqueeze(0)
-        return tensor, processed_image, was_mirrored
+        return tensor, processed_image
 
 
 preprocessing_service = PreprocessingService()

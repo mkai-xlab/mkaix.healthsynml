@@ -1,12 +1,9 @@
 # KL Response Viewer
 
-The viewer is embedded in the FastAPI image at `http://localhost:8005/result-viewer`.
-It renders the existing `POST /api/v1/predict` JSON response in the browser. Image
-fields are decoded locally and are never uploaded or sent to another server.
+The viewer is served with the API at `http://localhost:8005/result-viewer`.
 
 ```bash
 make up
 ```
 
-Open `http://localhost:8005/result-viewer`, paste the complete response, and select **Render
-response**.
+Open the page, paste a complete response from `POST /api/v1/predict`, and render it. Image data stays in the browser and is not uploaded to another service.

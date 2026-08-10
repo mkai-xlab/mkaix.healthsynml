@@ -4,7 +4,6 @@ import numpy as np
 from app.services.preprocessing_service import (
     OpenCVCLAHE,
     SquarePadOpenCV,
-    canonicalize_knee_laterality,
     preprocessing_service,
 )
 
@@ -18,25 +17,13 @@ def _encoded_asymmetric_image() -> bytes:
     return buffer.tobytes()
 
 
-def test_natural_orientation_is_retained_for_both_knee_sides():
-    image = np.arange(4 * 6 * 3, dtype=np.uint8).reshape(4, 6, 3)
-    left, left_was_mirrored = canonicalize_knee_laterality(image, "left")
-    right, right_was_mirrored = canonicalize_knee_laterality(image, "right")
-
-    assert not left_was_mirrored
-    assert not right_was_mirrored
-    assert np.array_equal(left, image)
-    assert np.array_equal(right, image)
-
-
 def test_inference_preprocessing_matches_checkpoint_dimensions():
-    tensor, processed, was_mirrored = preprocessing_service.preprocess_image(
-        _encoded_asymmetric_image(), knee_side="right"
+    tensor, processed = preprocessing_service.preprocess_image(
+        _encoded_asymmetric_image()
     )
 
     assert tensor.shape == (1, 3, 384, 384)
     assert processed.shape == (384, 384, 3)
-    assert not was_mirrored
     assert np.isfinite(tensor.numpy()).all()
 
 

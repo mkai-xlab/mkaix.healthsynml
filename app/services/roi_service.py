@@ -3,37 +3,66 @@
 import base64
 import math
 import os
-
 import cv2
 import numpy as np
-
 from app.core.config import settings
 
 
 NO_KNEE_ROI_MESSAGE = (
     "No knee joint ROI was detected. Please upload a frontal knee X-ray "
-    "with the complete tibiofemoral joint visible."
-)
+    "with the complete tibiofemoral joint visible." )
 YOLO_ROI_EXPANSION = 1.15
 YOLO_CONFIDENCE_THRESHOLD = 0.45
 
 
-def make_square_roi(
-    image: np.ndarray, box: list[float] | tuple[float, float, float, float]
-) -> np.ndarray:
-    """Expand a YOLO box to a square and pad only where it reaches an image edge."""
+def assign_knee_sides(
+    knees: list[dict], image_width: int
+) -> tuple[list[dict], list[str]]:
+    """Order detected knees and infer side labels for the API response."""
+    if len(knees) == 2:
+        ordered_knees = sorted(knees, key=lambda knee: knee["box"][0])
+        return ordered_knees, ["right", "left"]
+    if len(knees) != 1:
+        return knees, ["unknown"] * len(knees)
+
+    center_x = (knees[0]["box"][0] + knees[0]["box"][2]) / 2
+    if center_x < image_width * 0.40:
+        return knees, ["right"]
+    if center_x > image_width * 0.60:
+        return knees, ["left"]
+    return knees, ["unknown"]
+
+
+def make_square_roi( image: np.ndarray, box: list[float] | tuple[float, float, float, float]) -> np.ndarray:
+    """Expand a YOLO box to a square and pad only where it reaches an image edge.
+    
+    Args:
+        image: The original image as a NumPy array.
+        box: A YOLO bounding box in the format [x1, y1, x2, y2] where (x1, y1) is the top-left corner and (x2, y2) is the bottom-right corner.
+
+    Returns:
+        A square crop of the image as a NumPy array, padded with black pixels if necessary
+
+    """
+    
+
+    # Calculate the target x1,y1,x2,y2 point
+
     height, width = image.shape[:2]
     x1, y1, x2, y2 = map(float, box)
     box_width, box_height = x2 - x1, y2 - y1
     if box_width <= 0 or box_height <= 0:
         raise ValueError(f"Invalid YOLO box: {box}")
 
+    
     center_x, center_y = (x1 + x2) / 2, (y1 + y2) / 2
     side = int(math.ceil(max(box_width, box_height) * YOLO_ROI_EXPANSION))
     wanted_x1 = int(math.floor(center_x - side / 2))
     wanted_y1 = int(math.floor(center_y - side / 2))
     wanted_x2, wanted_y2 = wanted_x1 + side, wanted_y1 + side
 
+
+    # crop the image [y1:y2, x1:x2] and pad with black if the box is outside the image
     crop = image[
         max(0, wanted_y1) : min(height, wanted_y2),
         max(0, wanted_x1) : min(width, wanted_x2),
@@ -80,6 +109,8 @@ class ROIService:
 
     @staticmethod
     def _decode_image(image_bytes: bytes) -> np.ndarray:
+        """ Decode bytes to a NumPy array suitable for OpenCV processing"""
+
         image = cv2.imdecode(np.frombuffer(image_bytes, np.uint8), cv2.IMREAD_COLOR)
         if image is None:
             raise ValueError("Could not decode image. Upload a valid PNG or JPEG image.")
@@ -96,20 +127,23 @@ class ROIService:
             save=False,
             verbose=False,
         )
+
+
+        # results[0]: first input image, results[0].boxes: detected boxes for that image
+        # box.xyxy -> [x1,y1,x2,y2]
         return sorted(results[0].boxes, key=lambda box: float(box.xyxy[0][0]))
 
     @staticmethod
-    def _knee_sides(box_count: int) -> list[str]:
-        # In a frontal bilateral radiograph, image-left is the patient's right knee.
-        return ["right", "left"] if box_count == 2 else ["unknown"] * box_count
-
-    @staticmethod
     def _box_values(box) -> tuple[list[int], float, int]:
+
+        # box.xyxy -> [x1,y1,x2,y2]
         coordinates = [int(value) for value in box.xyxy[0].tolist()]
         return coordinates, float(box.conf[0]), int(box.cls[0])
 
     @staticmethod
     def _encode_data_url(image: np.ndarray, extension: str, mime_type: str) -> str:
+        """ convert to encode-64 format """
+
         success, buffer = cv2.imencode(extension, image)
         if not success:
             raise RuntimeError(f"Could not encode {mime_type} image")
@@ -118,14 +152,20 @@ class ROIService:
 
     def detect_and_draw_boxes(self, image_bytes: bytes) -> tuple[str, list[dict]]:
         """Return an annotated source image and display-ready square crops."""
+
         source_image = self._decode_image(image_bytes)
         annotated_image = source_image.copy()
+
+
         boxes = self._detect_sorted_boxes(source_image)
-        sides = self._knee_sides(len(boxes))
+        box_data = [self._box_values(box) for box in boxes]
+        _, sides = assign_knee_sides(
+            [{"box": coordinates} for coordinates, _, _ in box_data],
+            source_image.shape[1],
+        )
         detections: list[dict] = []
 
-        for box, side in zip(boxes, sides):
-            coordinates, confidence, class_id = self._box_values(box)
+        for (coordinates, confidence, class_id), side in zip(box_data, sides):
             x1, y1, x2, y2 = coordinates
             class_name = self.model.names.get(class_id, "knee")
             label = (

@@ -6,7 +6,11 @@ import cv2
 import numpy as np
 
 from app.ml.pipelines.knee_oa_pipeline import KneeOAPipeline
-from app.services.roi_service import NO_KNEE_ROI_MESSAGE, roi_service
+from app.services.roi_service import (
+    NO_KNEE_ROI_MESSAGE,
+    assign_knee_sides,
+    roi_service,
+)
 
 
 def _decode_source_image(image_bytes: bytes) -> np.ndarray:
@@ -15,22 +19,6 @@ def _decode_source_image(image_bytes: bytes) -> np.ndarray:
     if image is None:
         raise ValueError("Could not decode image. Upload a valid PNG or JPEG image.")
     return image
-
-
-def _assign_knee_sides(knees: list[dict], image_width: int) -> tuple[list[dict], list[str]]:
-    """Infer side labels for the response without changing the natural image orientation."""
-    if len(knees) == 2:
-        ordered_knees = sorted(knees, key=lambda knee: knee["box"][0])
-        return ordered_knees, ["right", "left"]
-    if len(knees) != 1:
-        return knees, ["unknown"] * len(knees)
-
-    center_x = (knees[0]["box"][0] + knees[0]["box"][2]) / 2
-    if center_x < image_width * 0.40:
-        return knees, ["right"]
-    if center_x > image_width * 0.60:
-        return knees, ["left"]
-    return knees, ["unknown"]
 
 
 def _encode_jpeg_data_url(image: np.ndarray) -> str:
@@ -87,7 +75,7 @@ class PredictionService:
             # The concrete service raises this itself; retain a clear boundary guard.
             raise ValueError(NO_KNEE_ROI_MESSAGE)
 
-        knees, sides = _assign_knee_sides(knees, source_image.shape[1])
+        knees, sides = assign_knee_sides(knees, source_image.shape[1])
         predictions: list[dict] = []
 
         for knee, side in zip(knees, sides):
