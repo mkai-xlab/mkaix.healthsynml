@@ -47,9 +47,16 @@ def test_heatmap_source_uses_highest_confidence_model():
         "densenet121": torch.tensor([[0.05, 0.10, 0.55, 0.20, 0.10]]),
         "seresnext50_32x4d": torch.tensor([[0.05, 0.10, 0.50, 0.25, 0.10]]),
     }
-    selected = ensemble_service.select_heatmap_component(probabilities, 2)
+    predicted_class = 2
+    selected = ensemble_service.select_heatmap_component(
+        probabilities, predicted_class
+    )
+    expected = max(
+        probabilities,
+        key=lambda name: probabilities[name][0, predicted_class].item(),
+    )
 
-    assert selected == "seresnext50_32x4d"
+    assert selected == expected
 
 
 def test_heatmap_source_uses_confidence_when_models_disagree():

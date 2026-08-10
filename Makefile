@@ -4,10 +4,13 @@ AI_IMAGE := knee-oa-ai:local
 AI_CONTAINER := knee-oa-ai
 AI_PORT ?= 8005
 
-.PHONY: help ai-build ai-up ai-down ai-logs ai-health up down status test experiments
+.PHONY: help ai-build ai-up ai-down ai-logs ai-health up down status test unit-test experiments run
 
 help:
-	@printf '%s\n' 'make ai-up       Build and start the API and embedded result viewer on port $(AI_PORT)' 'make up          Start the API' 'make down        Stop the API container' 'make status      Show service state' 'make test        Run pytest in the API image' 'make experiments Regenerate experiment summaries'
+	@printf '%s\n' 'make ai-up       Build and start the API and embedded result viewer on port $(AI_PORT)' 'make up          Start the API' 'make down        Stop the API container' 'make status      Show service state' 'make test        Run pytest in the API image' 'make unit-test   Run the local unit-test suite' 'make experiments Regenerate experiment summaries'
+
+run:
+	uvicorn main:app --host 0.0.0.0 --port ${AI_PORT} --reload
 
 ai-build:
 	docker build -t $(AI_IMAGE) .
@@ -34,6 +37,9 @@ status:
 
 test: ai-build
 	docker run --rm -v $(CURDIR)/tests:/app/tests:ro $(AI_IMAGE) python -m pytest -q
+
+unit-test:
+	python -m pytest -q --disable-warnings --maxfail=1
 
 experiments:
 	python3 scripts/build_experiment_summary.py

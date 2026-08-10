@@ -6,6 +6,7 @@ from app.services.roi_service import (
     NO_KNEE_ROI_MESSAGE,
     YOLO_ROI_EXPANSION,
     ROIService,
+    assign_knee_sides,
     make_square_roi,
 )
 
@@ -30,6 +31,23 @@ def _service() -> ROIService:
     service = ROIService.__new__(ROIService)
     service.model = _EmptyDetector()
     return service
+
+
+def test_assign_knee_sides_orders_two_knees_left_to_right():
+    knees = [{"box": [600, 20, 800, 220]}, {"box": [50, 20, 250, 220]}]
+
+    ordered_knees, sides = assign_knee_sides(knees, image_width=1000)
+
+    assert ordered_knees == [knees[1], knees[0]]
+    assert sides == ["right", "left"]
+
+
+def test_assign_knee_sides_uses_position_for_one_knee():
+    knees = [{"box": [50, 20, 250, 220]}]
+
+    _, sides = assign_knee_sides(knees, image_width=1000)
+
+    assert sides == ["right"]
 
 
 @pytest.mark.parametrize(

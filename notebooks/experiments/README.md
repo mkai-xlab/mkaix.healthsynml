@@ -1,21 +1,17 @@
 # Experiment Notebooks
 
-Use this directory for controlled research only. The production-ready DenseNet
-training notebook remains at `notebooks/production/dense_net_121_production.ipynb`.
+Use these notebooks for controlled research, not routine API operation.
 
-| Directory | Contents |
+| Directory | Focus |
 | --- | --- |
-| `densenet121/augmentation` | Cutout and orientation augmentation studies. |
-| `densenet121/loss` | CE, CORN, and ordinal-loss comparisons. |
-| `densenet121/preprocessing` | CLAHE, padding, and image-quality studies. |
-| `densenet121/roi` | YOLO crop size, paired-view, and published-versus-YOLO workflows. Version 2 supersedes version 1. |
-| `densenet121/heatmaps` | Grad-CAM/native-CAM localization experiments. |
-| `seresnext50_32x4d` | Sampling, loss, and heatmap studies for SE-ResNeXt-50. |
-| `efficientnet` | EfficientNet scale and CAM candidates. |
-| `data_pipeline` | KneeXrayData download, audit, and YOLO ROI construction. |
-| `model_comparison` | Cross-model comparisons such as Grad-CAM versus native CAM. |
+| `densenet121/augmentation` | Augmentation experiments. |
+| `densenet121/loss` | Loss-function comparisons. |
+| `densenet121/preprocessing` | Image processing experiments. |
+| `densenet121/roi` | ROI and detector-crop experiments. |
+| `densenet121/heatmaps` | Heatmap experiments. |
+| `seresnext50_32x4d` | SE-ResNeXt-50 experiments. |
+| `efficientnet` | EfficientNet experiments. |
+| `data_pipeline` | Dataset and ROI preparation. |
+| `model_comparison` | Cross-model comparisons. |
 
-Completed evidence belongs in `docs/report/<model>/`; do not overwrite a
-completed notebook. Give new experimental notebooks a descriptive name ending
-in `_ablation.ipynb` or `_comparison.ipynb`, and archive its timestamped
-run directory and metrics with the report.
+Keep completed results in `docs/report/<model>/`. Record the run timestamp, configuration, metrics, and generated figures. Do not use the test set repeatedly to choose a configuration.

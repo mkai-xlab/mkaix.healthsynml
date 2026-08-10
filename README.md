@@ -1,62 +1,56 @@
 # Knee Osteoarthritis AI
 
-FastAPI inference service for Kellgren-Lawrence grades 0-4. The current local production mode combines YOLOv8 knee-joint detection with a DenseNet-121 classifier and Grad-CAM explanation.
+FastAPI service that detects knee joints in an X-ray and predicts a Kellgren-Lawrence (KL) grade from 0 to 4 for each detected knee.
 
-## Current Production Setup
+It is a research and capstone project. Predictions and Grad-CAM images are not clinical diagnoses.
 
-- Model mode: `densenet121`
-- Classifier: `timm_densenet121_linear_gradcam`, CE, epoch 4
-- Classifier checkpoint: `checkpoints/densenet121/2026-07-30_09-03-29_850983_UTC_paired_view_yolo_roi/best_model.pth`
-- YOLO checkpoint: `checkpoints/yolov8/2026-07-26_20-49-25_joint_detection/best.pt`
-- ROI: YOLO box expanded by `1.15 x` its largest dimension, centered square, black padding only outside the source image
-- Preprocessing: LAB CLAHE 1.25, square pad, resize `384 x 384`, ImageNet normalization
-- Explanation: predicted-class Grad-CAM from DenseNet `features.norm5`
+## What It Does
 
-The API returns the historical `gradcam_image` field. It is a Grad-CAM overlay when `MODEL_MODE=densenet121`.
+1. YOLOv8 finds one or two knee joints.
+2. Each joint is expanded into a square ROI so the joint margins remain visible.
+3. A classifier predicts KL grades 0 to 4.
+4. The API returns probabilities, the ROI, and a Grad-CAM heatmap.
 
-## Start Locally
+The default model is DenseNet-121 with cross-entropy loss. Set `MODEL_MODE` to `densenet121`, `se_resnext`, or `ensemble` in the environment file.
 
-`local.env` selects the local model and detector paths. Do not commit checkpoint files or private environment files.
+## Run Locally
+
+Create `../env/ai.env` from `.env.example`, then make sure the checkpoint paths exist.
 
 ```bash
 make up
 make ai-health
 ```
 
-Open API documentation at `http://localhost:8005/docs`. Open the prediction-response viewer at `http://localhost:8088` and paste a complete `/api/v1/predict` response.
+The API is available at `http://localhost:8005`. Interactive API docs are at `http://localhost:8005/docs`.
 
-Useful targets:
+Useful commands:
 
 ```bash
 make status
 make ai-logs
-make viewer-logs
 make test
-make experiments
 make down
 ```
 
-`make experiments` rebuilds [all_experiments.xlsx](docs/report/all_experiments.xlsx) and the CSV tabs in `docs/report/summary/` from archived report artifacts.
+## API
 
-## API Contract
+| Endpoint | Purpose |
+| --- | --- |
+| `GET /api/v1/health` | Check that the service is running. |
+| `GET /api/v1/models` | Show the active model and loss function. |
+| `POST /api/v1/predict` | Detect knees and predict KL grades. |
+| `POST /api/v1/predict/detect-roi` | Inspect detected knee ROIs without classification. |
 
-- `GET /api/v1/health`
-- `GET /api/v1/models`
-- `POST /api/v1/predict` with form field `file`
-- `POST /api/v1/predict/detect-roi` with form field `file`
+Send PNG or JPEG files as the `file` form field.
 
-Each detected knee contains the raw YOLO box, side, detector confidence, grade probabilities, ROI image, and heatmap. The output schema is stable; do not add model-specific fields to it without a compatibility decision.
+## Project Docs
 
-## Training and Reports
+- [Architecture](docs/architecture.md)
+- [Local runbook](docs/runbook.md)
+- [CI and deployment](docs/ci_cd.md)
+- [Unit tests](docs/testing.md)
+- [Experiment notebooks](notebooks/experiments/README.md)
+- [Paper reproduction notebooks](notebooks/paper/README.md)
 
-- Controlled notebooks: [notebooks/experiments](notebooks/experiments/README.md)
-- DenseNet history: [report.md](docs/report/dense_net_121/report.md)
-- Current production record: [AI_REPORT.md](docs/AI_REPORT.md)
-- Current runtime architecture: [architecture.md](docs/architecture.md)
-- Experiment inventory: [all_experiments.xlsx](docs/report/all_experiments.xlsx)
-
-Historical notebooks are retained for provenance. Completed runs must have an exact timestamp, checkpoint path, metrics, and visual evidence before being considered for promotion.
-
-## Limitations
-
-KL grade is a whole-knee label. Grad-CAM is not a segmentation mask and cannot prove that a prediction is clinically correct. The system is for research and capstone demonstration, not independent clinical diagnosis.
+Do not commit checkpoints, patient data, or environment files. Training records and figures belong in `docs/report/`.

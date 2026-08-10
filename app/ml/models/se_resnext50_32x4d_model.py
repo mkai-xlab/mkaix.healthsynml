@@ -1,7 +1,6 @@
 import timm
 import torch
 import torch.nn as nn
-
 from app.ml.models.base_model import BaseModel
 
 
@@ -20,9 +19,15 @@ class SEResNeXt50Model(BaseModel):
         self.backbone = timm.create_model(
             "seresnext50_32x4d",
             pretrained=pretrained,
+
+            # do not include the final classification head
             features_only=True,
+
+            # use the final spatial block (layer4) for Grad-CAM
             out_indices=(4,),
         )
+
+        # use the final feature map channels to create a new classification head
         final_channels = self.backbone.feature_info.channels()[0]
         self.classifier = nn.Linear(final_channels, num_classes)
 
