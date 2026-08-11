@@ -98,7 +98,7 @@ True Grade 3      3      19      32     155      14
 True Grade 4      0       0       1       5      45
 ```
 
-![Locked SE-ResNeXt paired-view YOLO-ROI confusion matrix](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/test_confusion_matrix.png)
+![Locked SE-ResNeXt paired-view YOLO-ROI confusion matrix](../archive/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/test_confusion_matrix.png)
 
 ### Grad-CAM Figures
 
@@ -106,21 +106,21 @@ Correct cases, five per true grade:
 
 | True grade | Correct-case gallery |
 | ---: | --- |
-| 0 | [Grade 0 correct Grad-CAM](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_00.png) |
-| 1 | [Grade 1 correct Grad-CAM](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_06.png) |
-| 2 | [Grade 2 correct Grad-CAM](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_12.png) |
-| 3 | [Grade 3 correct Grad-CAM](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_18.png) |
-| 4 | [Grade 4 correct Grad-CAM](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_24.png) |
+| 0 | [Grade 0 correct Grad-CAM](../archive/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_00.png) |
+| 1 | [Grade 1 correct Grad-CAM](../archive/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_06.png) |
+| 2 | [Grade 2 correct Grad-CAM](../archive/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_12.png) |
+| 3 | [Grade 3 correct Grad-CAM](../archive/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_18.png) |
+| 4 | [Grade 4 correct Grad-CAM](../archive/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_24.png) |
 
 Misclassified predicted-class versus true-class Grad-CAM pairs:
 
 | True grade | Five failure panels |
 | ---: | --- |
-| 0 | [1](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_01.png), [2](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_02.png), [3](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_03.png), [4](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_04.png), [5](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_05.png) |
-| 1 | [1](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_07.png), [2](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_08.png), [3](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_09.png), [4](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_10.png), [5](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_11.png) |
-| 2 | [1](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_13.png), [2](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_14.png), [3](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_15.png), [4](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_16.png), [5](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_17.png) |
-| 3 | [1](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_19.png), [2](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_20.png), [3](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_21.png), [4](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_22.png), [5](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_23.png) |
-| 4 | [1](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_25.png), [2](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_26.png), [3](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_27.png), [4](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_28.png), [5](runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_29.png) |
+| 0 | [1](../archive/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_01.png), [2](../archive/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_02.png), [3](../archive/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_03.png), [4](../archive/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_04.png), [5](../archive/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_05.png) |
+| 1 | [1](../archive/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_07.png), [2](../archive/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_08.png), [3](../archive/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_09.png), [4](../archive/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_10.png), [5](../archive/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_11.png) |
+| 2 | [1](../archive/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_13.png), [2](../archive/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_14.png), [3](../archive/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_15.png), [4](../archive/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_16.png), [5](../archive/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_17.png) |
+| 3 | [1](../archive/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_19.png), [2](../archive/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_20.png), [3](../archive/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_21.png), [4](../archive/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_22.png), [5](../archive/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_23.png) |
+| 4 | [1](../archive/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_25.png), [2](../archive/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_26.png), [3](../archive/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_27.png), [4](../archive/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_28.png), [5](../archive/se_resnext50_32x4d/runs/2026-08-01_07-59-46_paired_view_yolo_gradcam_evaluation/assets/output_29.png) |
 
 ### Comparison and Decision
 
@@ -133,7 +133,7 @@ Misclassified predicted-class versus true-class Grad-CAM pairs:
 ## 224x224 Paired-ROI Resolution Comparison
 
 Run date: `2026-08-04` to `2026-08-05 UTC`
-Archived notebooks: [01 dataset preparation](../../../notebooks/datasets/kneexraydata_yolo_roi/01_prepare_original_and_yolo_roi_datasets.ipynb), [02 original-crop training](../../../notebooks/seresnext50_32x4d/runs/2026-08-04_02_train_se_resnext50_original_224.ipynb), [03 paired-view adaptation](../../../notebooks/seresnext50_32x4d/runs/2026-08-04_03_train_se_resnext50_paired_view_yolo_224.ipynb), and [04 locked ROI evaluation](../../../notebooks/seresnext50_32x4d/runs/2026-08-04_04_evaluate_se_resnext50_paired_view_yolo_gradcam_224.ipynb).
+Archived notebooks: [01 dataset preparation](../../../notebooks/datasets/01_prepare_original_and_yolo_roi_datasets.ipynb), [02 original-crop training](../../../notebooks/seresnext50_32x4d/runs/2026-08-04_02_train_se_resnext50_original_224.ipynb), [03 paired-view adaptation](../../../notebooks/seresnext50_32x4d/runs/2026-08-04_03_train_se_resnext50_paired_view_yolo_224.ipynb), and [04 locked ROI evaluation](../../../notebooks/seresnext50_32x4d/runs/2026-08-04_04_evaluate_se_resnext50_paired_view_yolo_gradcam_224.ipynb).
 
 Notebook 01 reused the existing derived YOLO ROI data, confirmed indirectly because Notebook 03 completed its paired-view validation. Notebook 02 trained the `224x224` CE base model and selected `2026-08-04_00-59-41_684745_UTC_original_224_ce_3stage/best_model.pth`; its published-crop test was Accuracy `0.6262`, QWK `0.7969`, macro F1 `0.6464`, AP `0.6864`, and AUC `0.8743`.
 
@@ -296,11 +296,11 @@ Warm-up ended at epoch 5 with QWK `0.4611`. Coarse training reached QWK `0.7859`
 
 #### Test Confusion Matrix
 
-![SE-ResNeXt natural-orientation test confusion matrix, run 2026-07-25 01:50:53.962450 UTC](runs/2026-07-25_01-50-53_natural_orientation_flip_gamma_native_cam_ce/assets/2026-07-25_01-50-53_test_confusion_matrix.png)
+![SE-ResNeXt natural-orientation test confusion matrix, run 2026-07-25 01:50:53.962450 UTC](../archive/se_resnext50_32x4d/runs/2026-07-25_01-50-53_natural_orientation_flip_gamma_native_cam_ce/assets/2026-07-25_01-50-53_test_confusion_matrix.png)
 
 #### Native-CAM Audit Gallery
 
-![SE-ResNeXt natural-orientation native-CAM audit, run 2026-07-25 01:50:53.962450 UTC](runs/2026-07-25_01-50-53_natural_orientation_flip_gamma_native_cam_ce/assets/2026-07-25_01-50-53_native_cam_audit.png)
+![SE-ResNeXt natural-orientation native-CAM audit, run 2026-07-25 01:50:53.962450 UTC](../archive/se_resnext50_32x4d/runs/2026-07-25_01-50-53_natural_orientation_flip_gamma_native_cam_ce/assets/2026-07-25_01-50-53_native_cam_audit.png)
 
 ### Native-CAM Evaluation
 
