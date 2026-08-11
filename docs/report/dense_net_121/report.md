@@ -2,9 +2,17 @@
 
 This is the single human-readable index for DenseNet-121. It records configuration and results only. Complete notebooks and figures are stored under [`runs/`](runs/); the single machine-readable index is [`experiment_summary.csv`](experiment_summary.csv). Metrics from validation, published-crop test, and production-YOLO-ROI test are labeled separately and must not be compared as if they used the same image domain.
 
-## Current Production Configuration
+## 384 x 384 Paired-View Production Run
 
-The former `2026-07-30_09-03-29_paired_view_yolo_roi` run and its report artifacts were removed with the delete-tagged notebooks. The remaining sections document retained experiments and the later 224x224 evaluation.
+This sequence uses a 224x224 base model, then resizes both published and YOLO ROI views to 384x384 during paired-view adaptation and evaluation. Therefore, Notebook 02 is the 224x224 base-training step; Notebooks 03 and 04 are the 384x384 production-domain steps.
+
+| Notebook | Purpose | Input | Output |
+| --- | --- | --- | --- |
+| [02 original base training](../../../notebooks/densenet121/runs/2026-07-30_07-08-32_original_224_ce_3stage.ipynb) | Train the CE base model | 224x224 | Initialization checkpoint |
+| [03 paired-view adaptation](../../../notebooks/densenet121/runs/2026-07-30_03_train_densenet121_paired_view_yolo_384.ipynb) | Fine-tune on published crops + YOLO ROIs | 384x384 | Paired-view checkpoint |
+| [04 locked Grad-CAM evaluation](../../../notebooks/densenet121/runs/2026-07-30_04_evaluate_densenet121_paired_view_yolo_gradcam_384.ipynb) | Evaluate the locked YOLO-ROI test set | 384x384 | Metrics and Grad-CAM galleries |
+
+The locked 384x384 production-ROI test result was Accuracy `0.5972`, QWK `0.7702`, macro F1 `0.6215`, AP `0.6696`, and AUC `0.8611`.
 
 ## 224 x 224 Paired-ROI Resolution Comparison
 
@@ -24,7 +32,15 @@ The two rows use the same locked production-style ROI test split, YOLO square-cr
 
 ### Production Grad-CAM Examples
 
-The Grad-CAM gallery belonged to the removed 2026-07-30 production run and is no longer retained here.
+The locked 384x384 evaluation exported predicted-class and true-class Grad-CAM galleries:
+
+| KL grade | Correct examples | Failure examples |
+| ---: | --- | --- |
+| 0 | [success gallery](runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/gradcam_success_grade_0.png) | [failure gallery](runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/gradcam_failure_grade_0.png) |
+| 1 | [success gallery](runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/gradcam_success_grade_1.png) | [failure gallery](runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/gradcam_failure_grade_1.png) |
+| 2 | [success gallery](runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/gradcam_success_grade_2.png) | [failure gallery](runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/gradcam_failure_grade_2.png) |
+| 3 | [success gallery](runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/gradcam_success_grade_3.png) | [failure gallery](runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/gradcam_failure_grade_3.png) |
+| 4 | [success gallery](runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/gradcam_success_grade_4.png) | [failure gallery](runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/gradcam_failure_grade_4.png) |
 
 ## Base Production Training
 
