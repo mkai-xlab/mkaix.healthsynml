@@ -28,7 +28,7 @@
 
 ## Files
 
-- Notebook: [`executed_notebook.ipynb`](executed_notebook.ipynb), [`notebook.ipynb`](notebook.ipynb)
+- Notebook: [`executed_notebook.ipynb`](../../../../../notebooks/densenet121/archive/2026-07-25_densenet201_noncanonical_loss_ablation_executed.ipynb), [`notebook.ipynb`](../../../../../notebooks/densenet121/experiments/2026-07-25_densenet121_natural_orientation_loss_ablation.ipynb)
 - Figures: `2` file(s) in [`assets/`](assets/)
 - Consolidated model report: [DenseNet-121 report](../../report.md)
 - Structured run index: [experiment_summary.csv](../../experiment_summary.csv)

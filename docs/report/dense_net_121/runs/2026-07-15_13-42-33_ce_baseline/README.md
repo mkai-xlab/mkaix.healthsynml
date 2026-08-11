@@ -28,7 +28,7 @@
 
 ## Files
 
-- Notebook: [`notebook.ipynb`](notebook.ipynb)
+- Notebook: [`notebook.ipynb`](../../../../../notebooks/densenet121/runs/2026-07-15_13-42-33_ce_baseline.ipynb)
 - Figures: `7` file(s) in [`assets/`](assets/)
 - Consolidated model report: [DenseNet-121 report](../../report.md)
 - Structured run index: [experiment_summary.csv](../../experiment_summary.csv)

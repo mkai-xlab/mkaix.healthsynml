@@ -4,47 +4,12 @@ This is the single human-readable index for DenseNet-121. It records configurati
 
 ## Current Production Configuration
 
-Run: `2026-07-30 09:03:29 UTC`
-Artifact: [`2026-07-30_09-03-29_paired_view_yolo_roi`](runs/2026-07-30_09-03-29_paired_view_yolo_roi/)
-Checkpoint: `checkpoints/densenet121/2026-07-30_09-03-29_850983_UTC_paired_view_yolo_roi/best_model.pth`
-SHA-256: `c9561cb4a76b64b11b5f4848036e3553f65aae3cc310099dbe638077c92578ca`
-
-| Item | Production value |
-| --- | --- |
-| Architecture | ImageNet-initialized `timm` DenseNet-121; global average pooling; dropout `0.20`; linear `1024 -> 5` head |
-| Output/loss | Five KL logits; cross-entropy |
-| Input | `384 x 384` RGB |
-| YOLO ROI | Centered square with side `1.15 * max(box width, box height)`; black padding only outside source image |
-| Deterministic preprocessing | LAB CLAHE `clipLimit=1.25`, grid `8x8` -> square pad -> resize -> tensor -> ImageNet normalization |
-| Laterality | Natural left/right orientation; no deterministic canonicalization |
-| Training augmentation | horizontal flip `p=0.50`; rotation `+/-5 degrees`; brightness/contrast `0.08`; erasing `p=0.10`, area `0.02-0.05` |
-| Balancing | Full inverse-frequency `WeightedRandomSampler`, replacement enabled |
-| Base training | 5 head-only epochs at `3e-4`; 15 coarse epochs at backbone/head `3e-5/3e-4`; 10 full epochs at `1e-5` |
-| Base optimization | AdamW; weight decay `1e-4` then `1e-3`; cosine schedules; AMP; gradient clipping `1.0`; batch `48`; seed `42` |
-| Adaptation | Five full-network epochs at `1e-5`; each item is published crop or production YOLO ROI with probability `0.50`; selected epoch `4` |
-| Checkpoint selection | Validation only: `0.55 QWK + 0.30 macro F1 + 0.15 macro AP`; adaptation averages this score across published and YOLO domains |
-| Explanation | Predicted-class Grad-CAM from `backbone.features.norm5`; no native-CAM head |
-
-### Production Result
-
-Locked production-style YOLO ROI test, `n=1,656`:
-
-| Accuracy | QWK | Macro precision | Macro recall | Macro F1 | Macro AP | Macro AUC |
-| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 0.5972 | 0.7702 | 0.6177 | 0.6420 | 0.6215 | 0.6696 | 0.8611 |
-
-| KL grade | Support | Precision | Recall | F1 |
-| ---: | ---: | ---: | ---: | ---: |
-| 0 | 639 | 0.6967 | 0.7371 | 0.7163 |
-| 1 | 296 | 0.2832 | 0.3750 | 0.3227 |
-| 2 | 447 | 0.6588 | 0.4362 | 0.5249 |
-| 3 | 223 | 0.7269 | 0.7399 | 0.7333 |
-| 4 | 51 | 0.7231 | 0.9216 | 0.8103 |
+The former `2026-07-30_09-03-29_paired_view_yolo_roi` run and its report artifacts were removed with the delete-tagged notebooks. The remaining sections document retained experiments and the later 224x224 evaluation.
 
 ## 224 x 224 Paired-ROI Resolution Comparison
 
 Run date: `2026-08-04` to `2026-08-05 UTC`
-Archived notebooks: [01 dataset preparation](runs/2026-08-04_224_paired_view_yolo/01_prepare_original_and_yolo_roi_datasets.ipynb), [02 original-crop training](runs/2026-08-04_224_paired_view_yolo/02_train_densenet121_original_224.ipynb), [03 paired-view adaptation](runs/2026-08-04_224_paired_view_yolo/03_train_densenet121_paired_view_yolo_224.ipynb), and [04 locked ROI evaluation](runs/2026-08-04_224_paired_view_yolo/04_evaluate_densenet121_paired_view_yolo_gradcam_224.ipynb).
+Archived notebooks: [01 dataset preparation](../../../notebooks/datasets/kneexraydata_yolo_roi/01_prepare_original_and_yolo_roi_datasets.ipynb), [02 original-crop training](../../../notebooks/densenet121/runs/2026-08-04_02_train_densenet121_original_224.ipynb), [03 paired-view adaptation](../../../notebooks/densenet121/runs/2026-08-04_03_train_densenet121_paired_view_yolo_224.ipynb), and [04 locked ROI evaluation](../../../notebooks/densenet121/runs/2026-08-04_04_evaluate_densenet121_paired_view_yolo_gradcam_224.ipynb).
 
 Notebook 01 did not need to rebuild the derived YOLO ROI images: Notebook 03 successfully consumed the existing `densenet121_yolo_square_roi_trainvaltest_v2` train/validation set. Notebook 02 trained the same five-logit CE DenseNet-121 configuration at `224 x 224`; the selected base checkpoint was from epoch `28` (validation selection `0.7193`). Its published-crop test result was Accuracy `0.6184`, QWK `0.7931`, AP `0.6796`, and AUC `0.8722`.
 
@@ -59,15 +24,7 @@ The two rows use the same locked production-style ROI test split, YOLO square-cr
 
 ### Production Grad-CAM Examples
 
-Each panel contains the ROI, predicted-class Grad-CAM, and true-class Grad-CAM. “Success” means a correct prediction with joint-related evidence. “Failure” is a misclassification and shows why a plausible heatmap does not prove a correct KL grade.
-
-| True grade | Successful prediction | Failed prediction |
-| ---: | --- | --- |
-| 0 | ![Grade 0 success](runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/gradcam_success_grade_0.png) | ![Grade 0 failure](runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/gradcam_failure_grade_0.png) |
-| 1 | ![Grade 1 success](runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/gradcam_success_grade_1.png) | ![Grade 1 failure](runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/gradcam_failure_grade_1.png) |
-| 2 | ![Grade 2 success](runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/gradcam_success_grade_2.png) | ![Grade 2 failure](runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/gradcam_failure_grade_2.png) |
-| 3 | ![Grade 3 success](runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/gradcam_success_grade_3.png) | ![Grade 3 failure](runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/gradcam_failure_grade_3.png) |
-| 4 | ![Grade 4 success](runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/gradcam_success_grade_4.png) | ![Grade 4 failure](runs/2026-07-30_09-03-29_paired_view_yolo_roi/assets/gradcam_failure_grade_4.png) |
+The Grad-CAM gallery belonged to the removed 2026-07-30 production run and is no longer retained here.
 
 ## Base Production Training
 
@@ -134,19 +91,6 @@ Artifact: [`2026-07-25_00-34-38_orientation_augmentation_ablation`](runs/2026-07
 | Natural orientation + flip | 0.8053 | 0.6820 | 0.3987 | 0.7119 | selected non-canonical arm; test QWK `0.8224` |
 | Natural orientation + flip + mild affine | 0.8011 | 0.6800 | 0.3072 | 0.7067 | rejected |
 
-## Joint-Guidance Comparison
-
-Run: `2026-07-22 11:52:13 UTC`
-Artifact: [`2026-07-22_11-52-13_joint_guided_cam_ablation`](runs/2026-07-22_11-52-13_joint_guided_cam_ablation/)
-
-| Arm | QWK | Macro F1 | Grade 1 recall | Result |
-| --- | ---: | ---: | ---: | --- |
-| CE control | 0.8054 | **0.6927** | **0.3987** | retained |
-| Joint guidance 0.02 | 0.8047 | 0.6919 | 0.3922 | rejected |
-| Joint guidance 0.05 | **0.8082** | 0.6832 | 0.3856 | rejected; small QWK gain with F1/recall loss |
-
-The hand-defined joint band was not a lesion annotation, so this comparison did not justify production localization supervision.
-
 ## ROI Robustness Comparison
 
 Run: `2026-07-28 04:58:51 UTC`
@@ -208,12 +152,9 @@ These use older published-crop protocols and remain historical evidence, not pro
 | 2026-07-20 12:36:36 | CORN, three-stage | 0.6715 | 0.8246 | 0.7337 | [completed](runs/2026-07-20_12-36-36_corn/) |
 | 2026-07-20 17:09:20 | final-layer Grad-CAM checkpoint | 0.6685 | 0.8223 | 0.7345 | [provenance incomplete](runs/2026-07-20_17-09-20_final_layer_gradcam/) |
 | 2026-07-21 15:07:17 | canonical CE + native-CAM head | 0.6534 | 0.8238 | 0.7311 | [completed](runs/2026-07-21_15-07-17_canonical_final_linear_cam/) |
-| 2026-07-23 01:31:37 | canonical CE + native-CAM head | 0.6612 | 0.8178 | 0.7334 | [historical production](runs/2026-07-23_01-31-37_canonical_production_native_cam/) |
-| 2026-07-25 04:34:08 | natural orientation + flip/gamma + EMA | 0.4553 | 0.7248 | 0.6663 | [rejected](runs/2026-07-25_04-34-08_natural_orientation_flip_gamma_ema/) |
 
 ## Archive Notes
 
 - [`2026-07-25_15-32-33_api_cam_localization_audit`](runs/2026-07-25_15-32-33_api_cam_localization_audit/) and [`2026-07-27_gradcam_test_images_audit`](runs/2026-07-27_gradcam_test_images_audit/) retain one representative montage each; unlabeled API images cannot establish accuracy.
-- [`2026-07-28_cutout_ablation_notebook`](runs/2026-07-28_cutout_ablation_notebook/) retains the notebook source, but no executed output was present locally; it is not treated as result evidence.
 - [`2026-07-29_roi_annotation_reference`](runs/2026-07-29_roi_annotation_reference/) contains ROI examples, not a training run.
 - A proposed unexecuted `512 x 512` notebook was removed because it had no result and was superseded by the production `384 x 384` configuration.

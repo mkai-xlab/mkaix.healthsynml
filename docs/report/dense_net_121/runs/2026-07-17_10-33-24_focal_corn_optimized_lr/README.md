@@ -28,7 +28,7 @@
 
 ## Files
 
-- Notebook: [`notebook.ipynb`](notebook.ipynb)
+- Notebook: [`notebook.ipynb`](../../../../../notebooks/densenet121/runs/2026-07-17_10-33-24_focal_corn_optimized_lr.ipynb)
 - Figures: `6` file(s) in [`assets/`](assets/)
 - Consolidated model report: [DenseNet-121 report](../../report.md)
 - Structured run index: [experiment_summary.csv](../../experiment_summary.csv)

@@ -28,7 +28,7 @@
 
 ## Files
 
-- Notebook: [`notebook.ipynb`](notebook.ipynb)
+- Notebook: [`notebook.ipynb`](../../../../../notebooks/densenet121/experiments/2026-07-29_densenet121_yolo_crop_expansion_ablation.ipynb)
 - Figures: `3` file(s) in [`assets/`](assets/)
 - Consolidated model report: [DenseNet-121 report](../../report.md)
 - Structured run index: [experiment_summary.csv](../../experiment_summary.csv)

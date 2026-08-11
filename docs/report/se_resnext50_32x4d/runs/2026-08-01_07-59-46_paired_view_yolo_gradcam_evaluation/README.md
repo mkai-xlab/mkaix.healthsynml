@@ -28,7 +28,7 @@
 
 ## Files
 
-- Notebook: [`2026-08-01_07-59-46_seresnext50_32x4d_paired_view_yolo_gradcam_evaluation.ipynb`](2026-08-01_07-59-46_seresnext50_32x4d_paired_view_yolo_gradcam_evaluation.ipynb)
+- Notebook: [`2026-08-01_07-59-46_seresnext50_32x4d_paired_view_yolo_gradcam_evaluation.ipynb`](../../../../../notebooks/seresnext50_32x4d/archive/linear_gradcam/04_evaluate_se_resnext50_paired_view_yolo_gradcam.ipynb)
 - Figures: `31` file(s) in [`assets/`](assets/)
 - Consolidated model report: [SE-ResNeXt-50 32x4d report](../../report.md)
 - Structured run index: [experiment_summary.csv](../../experiment_summary.csv)

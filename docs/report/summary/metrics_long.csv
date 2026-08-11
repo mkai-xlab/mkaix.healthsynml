@@ -67,67 +67,6 @@ DenseNet-121,2026-07-21 15:07:17.633270,DENSENET121 - Canonical Final Linear CAM
 DenseNet-121,2026-07-21 15:07:17.633270,DENSENET121 - Canonical Final Linear CAM (CE + Laterality Canonicalization + Native CAM),test,grade1_recall,0.49,docs/report/dense_net_121/experiment_summary.csv
 DenseNet-121,2026-07-21 15:07:17.633270,DENSENET121 - Canonical Final Linear CAM (CE + Laterality Canonicalization + Native CAM),test,average_precision,0.7311,docs/report/dense_net_121/experiment_summary.csv
 DenseNet-121,2026-07-21 15:07:17.633270,DENSENET121 - Canonical Final Linear CAM (CE + Laterality Canonicalization + Native CAM),test,roc_auc,0.8978,docs/report/dense_net_121/experiment_summary.csv
-SE-ResNeXt-50 32x4d,2026-07-23 01:25:36.772175,SE-RESNEXT50-32X4D - Final Linear Native CAM,test,accuracy,0.6389,docs/report/se_resnext50_32x4d/experiment_summary.csv
-SE-ResNeXt-50 32x4d,2026-07-23 01:25:36.772175,SE-RESNEXT50-32X4D - Final Linear Native CAM,test,qwk,0.8194,docs/report/se_resnext50_32x4d/experiment_summary.csv
-SE-ResNeXt-50 32x4d,2026-07-23 01:25:36.772175,SE-RESNEXT50-32X4D - Final Linear Native CAM,test,macro_f1,0.6671,docs/report/se_resnext50_32x4d/experiment_summary.csv
-SE-ResNeXt-50 32x4d,2026-07-23 01:25:36.772175,SE-RESNEXT50-32X4D - Final Linear Native CAM,test,grade1_recall,0.4155,docs/report/se_resnext50_32x4d/experiment_summary.csv
-SE-ResNeXt-50 32x4d,2026-07-23 01:25:36.772175,SE-RESNEXT50-32X4D - Final Linear Native CAM,test,average_precision,0.7248,docs/report/se_resnext50_32x4d/experiment_summary.csv
-SE-ResNeXt-50 32x4d,2026-07-23 01:25:36.772175,SE-RESNEXT50-32X4D - Final Linear Native CAM,test,roc_auc,0.8948,docs/report/se_resnext50_32x4d/experiment_summary.csv
-SE-ResNeXt-50 32x4d,2026-07-23 01:25:36.772175,SE-RESNEXT50-32X4D - Final Linear Native CAM,validation,qwk,0.7873,docs/report/se_resnext50_32x4d/experiment_summary.csv
-SE-ResNeXt-50 32x4d,2026-07-23 01:25:36.772175,SE-RESNEXT50-32X4D - Final Linear Native CAM,validation,macro_f1,0.6498,docs/report/se_resnext50_32x4d/experiment_summary.csv
-SE-ResNeXt-50 32x4d,2026-07-23 01:25:36.772175,SE-RESNEXT50-32X4D - Final Linear Native CAM,validation,grade1_recall,0.4183,docs/report/se_resnext50_32x4d/experiment_summary.csv
-SE-ResNeXt-50 32x4d,2026-07-23 01:25:36.772175,SE-RESNEXT50-32X4D - Final Linear Native CAM,validation,average_precision,0.6915,docs/report/se_resnext50_32x4d/experiment_summary.csv
-SE-ResNeXt-50 32x4d,2026-07-23 01:25:36.772175,SE-RESNEXT50-32X4D - Final Linear Native CAM,validation,selection_score,0.7003,docs/report/se_resnext50_32x4d/experiment_summary.csv
-SE-ResNeXt-50 32x4d,2026-07-23 01:25:36.772175,SE-RESNEXT50-32X4D - Final Linear Native CAM,cam,joint_energy,0.8707,docs/report/se_resnext50_32x4d/experiment_summary.csv
-SE-ResNeXt-50 32x4d,2026-07-23 01:25:36.772175,SE-RESNEXT50-32X4D - Final Linear Native CAM,cam,border_energy,0.0749,docs/report/se_resnext50_32x4d/experiment_summary.csv
-SE-ResNeXt-50 32x4d,2026-07-23 01:25:36.772175,SE-RESNEXT50-32X4D - Final Linear Native CAM,cam,lower_tibia_energy,0.0880,docs/report/se_resnext50_32x4d/experiment_summary.csv
-SE-ResNeXt-50 32x4d,2026-07-23 01:25:36.772175,SE-RESNEXT50-32X4D - Final Linear Native CAM,cam,peak_inside_rate,0.9956,docs/report/se_resnext50_32x4d/experiment_summary.csv
-DenseNet-121,2026-07-23 01:31:37.184239,DENSENET121 - Canonical Final Linear CAM (CE + Laterality Canonicalization + Native CAM),test,accuracy,0.6612,docs/report/dense_net_121/experiment_summary.csv
-DenseNet-121,2026-07-23 01:31:37.184239,DENSENET121 - Canonical Final Linear CAM (CE + Laterality Canonicalization + Native CAM),test,qwk,0.8178,docs/report/dense_net_121/experiment_summary.csv
-DenseNet-121,2026-07-23 01:31:37.184239,DENSENET121 - Canonical Final Linear CAM (CE + Laterality Canonicalization + Native CAM),test,macro_f1,0.6811,docs/report/dense_net_121/experiment_summary.csv
-DenseNet-121,2026-07-23 01:31:37.184239,DENSENET121 - Canonical Final Linear CAM (CE + Laterality Canonicalization + Native CAM),test,grade1_recall,0.4493,docs/report/dense_net_121/experiment_summary.csv
-DenseNet-121,2026-07-23 01:31:37.184239,DENSENET121 - Canonical Final Linear CAM (CE + Laterality Canonicalization + Native CAM),test,average_precision,0.7334,docs/report/dense_net_121/experiment_summary.csv
-DenseNet-121,2026-07-23 01:31:37.184239,DENSENET121 - Canonical Final Linear CAM (CE + Laterality Canonicalization + Native CAM),test,roc_auc,0.8987,docs/report/dense_net_121/experiment_summary.csv
-DenseNet-121,2026-07-23 01:31:37.184239,DENSENET121 - Canonical Final Linear CAM (CE + Laterality Canonicalization + Native CAM),validation,accuracy,0.6683,docs/report/dense_net_121/experiment_summary.csv
-DenseNet-121,2026-07-23 01:31:37.184239,DENSENET121 - Canonical Final Linear CAM (CE + Laterality Canonicalization + Native CAM),validation,qwk,0.8139,docs/report/dense_net_121/experiment_summary.csv
-DenseNet-121,2026-07-23 01:31:37.184239,DENSENET121 - Canonical Final Linear CAM (CE + Laterality Canonicalization + Native CAM),validation,grade1_recall,0.4052,docs/report/dense_net_121/experiment_summary.csv
-DenseNet-121,2026-07-23 01:31:37.184239,DENSENET121 - Canonical Final Linear CAM (CE + Laterality Canonicalization + Native CAM),validation,average_precision,0.7198,docs/report/dense_net_121/experiment_summary.csv
-DenseNet-121,2026-07-23 01:31:37.184239,DENSENET121 - Canonical Final Linear CAM (CE + Laterality Canonicalization + Native CAM),validation,roc_auc,0.8877,docs/report/dense_net_121/experiment_summary.csv
-DenseNet-121,2026-07-23 01:31:37.184239,DENSENET121 - Canonical Final Linear CAM (CE + Laterality Canonicalization + Native CAM),validation,selection_score,0.7276,docs/report/dense_net_121/experiment_summary.csv
-SE-ResNeXt-50 32x4d,2026-07-23 06:57:13.378879,SE-RESNEXT50-32X4D - Multiscale 24x24 Native CAM + EMA,test,accuracy,0.5676,docs/report/se_resnext50_32x4d/experiment_summary.csv
-SE-ResNeXt-50 32x4d,2026-07-23 06:57:13.378879,SE-RESNEXT50-32X4D - Multiscale 24x24 Native CAM + EMA,test,qwk,0.7651,docs/report/se_resnext50_32x4d/experiment_summary.csv
-SE-ResNeXt-50 32x4d,2026-07-23 06:57:13.378879,SE-RESNEXT50-32X4D - Multiscale 24x24 Native CAM + EMA,test,macro_f1,0.6220,docs/report/se_resnext50_32x4d/experiment_summary.csv
-SE-ResNeXt-50 32x4d,2026-07-23 06:57:13.378879,SE-RESNEXT50-32X4D - Multiscale 24x24 Native CAM + EMA,test,grade1_recall,0.5507,docs/report/se_resnext50_32x4d/experiment_summary.csv
-SE-ResNeXt-50 32x4d,2026-07-23 06:57:13.378879,SE-RESNEXT50-32X4D - Multiscale 24x24 Native CAM + EMA,test,average_precision,0.6918,docs/report/se_resnext50_32x4d/experiment_summary.csv
-SE-ResNeXt-50 32x4d,2026-07-23 06:57:13.378879,SE-RESNEXT50-32X4D - Multiscale 24x24 Native CAM + EMA,test,roc_auc,0.8703,docs/report/se_resnext50_32x4d/experiment_summary.csv
-SE-ResNeXt-50 32x4d,2026-07-23 06:57:13.378879,SE-RESNEXT50-32X4D - Multiscale 24x24 Native CAM + EMA,validation,accuracy,0.5424,docs/report/se_resnext50_32x4d/experiment_summary.csv
-SE-ResNeXt-50 32x4d,2026-07-23 06:57:13.378879,SE-RESNEXT50-32X4D - Multiscale 24x24 Native CAM + EMA,validation,qwk,0.7150,docs/report/se_resnext50_32x4d/experiment_summary.csv
-SE-ResNeXt-50 32x4d,2026-07-23 06:57:13.378879,SE-RESNEXT50-32X4D - Multiscale 24x24 Native CAM + EMA,validation,macro_f1,0.6028,docs/report/se_resnext50_32x4d/experiment_summary.csv
-SE-ResNeXt-50 32x4d,2026-07-23 06:57:13.378879,SE-RESNEXT50-32X4D - Multiscale 24x24 Native CAM + EMA,validation,grade1_recall,0.6078,docs/report/se_resnext50_32x4d/experiment_summary.csv
-SE-ResNeXt-50 32x4d,2026-07-23 06:57:13.378879,SE-RESNEXT50-32X4D - Multiscale 24x24 Native CAM + EMA,validation,average_precision,0.6573,docs/report/se_resnext50_32x4d/experiment_summary.csv
-SE-ResNeXt-50 32x4d,2026-07-23 06:57:13.378879,SE-RESNEXT50-32X4D - Multiscale 24x24 Native CAM + EMA,validation,selection_score,0.6728,docs/report/se_resnext50_32x4d/experiment_summary.csv
-SE-ResNeXt-50 32x4d,2026-07-23 06:57:13.378879,SE-RESNEXT50-32X4D - Multiscale 24x24 Native CAM + EMA,cam,joint_energy,0.7938,docs/report/se_resnext50_32x4d/experiment_summary.csv
-SE-ResNeXt-50 32x4d,2026-07-23 06:57:13.378879,SE-RESNEXT50-32X4D - Multiscale 24x24 Native CAM + EMA,cam,border_energy,0.1175,docs/report/se_resnext50_32x4d/experiment_summary.csv
-SE-ResNeXt-50 32x4d,2026-07-23 06:57:13.378879,SE-RESNEXT50-32X4D - Multiscale 24x24 Native CAM + EMA,cam,lower_tibia_energy,0.1149,docs/report/se_resnext50_32x4d/experiment_summary.csv
-SE-ResNeXt-50 32x4d,2026-07-23 06:57:13.378879,SE-RESNEXT50-32X4D - Multiscale 24x24 Native CAM + EMA,cam,peak_inside_rate,0.9912,docs/report/se_resnext50_32x4d/experiment_summary.csv
-EfficientNet-B0,2026-07-24 04:45:25.604705,EfficientNet-B0 final 12x12 native-CAM CE,test,accuracy,0.6051,docs/report/efficientnet_b0/report.md
-EfficientNet-B0,2026-07-24 04:45:25.604705,EfficientNet-B0 final 12x12 native-CAM CE,test,qwk,0.7992,docs/report/efficientnet_b0/report.md
-EfficientNet-B0,2026-07-24 04:45:25.604705,EfficientNet-B0 final 12x12 native-CAM CE,test,macro_f1,0.6258,docs/report/efficientnet_b0/report.md
-EfficientNet-B0,2026-07-24 04:45:25.604705,EfficientNet-B0 final 12x12 native-CAM CE,test,grade1_recall,0.3986,docs/report/efficientnet_b0/report.md
-EfficientNet-B0,2026-07-24 04:45:25.604705,EfficientNet-B0 final 12x12 native-CAM CE,test,average_precision,0.6817,docs/report/efficientnet_b0/report.md
-EfficientNet-B0,2026-07-24 04:45:25.604705,EfficientNet-B0 final 12x12 native-CAM CE,test,roc_auc,0.8723,docs/report/efficientnet_b0/report.md
-EfficientNet-B0,2026-07-24 04:45:25.604705,EfficientNet-B0 final 12x12 native-CAM CE,validation,accuracy,0.6150,docs/report/efficientnet_b0/report.md
-EfficientNet-B0,2026-07-24 04:45:25.604705,EfficientNet-B0 final 12x12 native-CAM CE,validation,qwk,0.7743,docs/report/efficientnet_b0/report.md
-EfficientNet-B0,2026-07-24 04:45:25.604705,EfficientNet-B0 final 12x12 native-CAM CE,validation,macro_f1,0.6317,docs/report/efficientnet_b0/report.md
-EfficientNet-B0,2026-07-24 04:45:25.604705,EfficientNet-B0 final 12x12 native-CAM CE,validation,grade1_recall,0.4771,docs/report/efficientnet_b0/report.md
-EfficientNet-B0,2026-07-24 04:45:25.604705,EfficientNet-B0 final 12x12 native-CAM CE,validation,average_precision,0.6690,docs/report/efficientnet_b0/report.md
-EfficientNet-B0,2026-07-24 04:45:25.604705,EfficientNet-B0 final 12x12 native-CAM CE,validation,roc_auc,0.8660,docs/report/efficientnet_b0/report.md
-EfficientNet-B0,2026-07-24 04:45:25.604705,EfficientNet-B0 final 12x12 native-CAM CE,validation,selection_score,0.6936,docs/report/efficientnet_b0/report.md
-EfficientNet-B0,2026-07-24 04:45:25.604705,EfficientNet-B0 final 12x12 native-CAM CE,cam,joint_energy,0.8280,docs/report/efficientnet_b0/report.md
-EfficientNet-B0,2026-07-24 04:45:25.604705,EfficientNet-B0 final 12x12 native-CAM CE,cam,border_energy,0.1080,docs/report/efficientnet_b0/report.md
-EfficientNet-B0,2026-07-24 04:45:25.604705,EfficientNet-B0 final 12x12 native-CAM CE,cam,lower_tibia_energy,0.0797,docs/report/efficientnet_b0/report.md
-EfficientNet-B0,2026-07-24 04:45:25.604705,EfficientNet-B0 final 12x12 native-CAM CE,cam,peak_inside_rate,0.9956,docs/report/efficientnet_b0/report.md
-EfficientNet-B0,2026-07-24 04:45:25.604705,EfficientNet-B0 final 12x12 native-CAM CE,cam,occlusion_metric,0.6172,docs/report/efficientnet_b0/report.md
 SE-ResNeXt-50 32x4d,2026-07-25 01:50:53.962450,SE-RESNEXT50-32X4D - NATURAL ORIENTATION + FLIP + GAMMA + FINAL NATIVE CAM,test,accuracy,0.6558,docs/report/se_resnext50_32x4d/experiment_summary.csv
 SE-ResNeXt-50 32x4d,2026-07-25 01:50:53.962450,SE-RESNEXT50-32X4D - NATURAL ORIENTATION + FLIP + GAMMA + FINAL NATIVE CAM,test,qwk,0.8216,docs/report/se_resnext50_32x4d/experiment_summary.csv
 SE-ResNeXt-50 32x4d,2026-07-25 01:50:53.962450,SE-RESNEXT50-32X4D - NATURAL ORIENTATION + FLIP + GAMMA + FINAL NATIVE CAM,test,macro_f1,0.6781,docs/report/se_resnext50_32x4d/experiment_summary.csv
@@ -143,18 +82,6 @@ SE-ResNeXt-50 32x4d,2026-07-25 01:50:53.962450,SE-RESNEXT50-32X4D - NATURAL ORIE
 SE-ResNeXt-50 32x4d,2026-07-25 01:50:53.962450,SE-RESNEXT50-32X4D - NATURAL ORIENTATION + FLIP + GAMMA + FINAL NATIVE CAM,cam,border_energy,0.0990,docs/report/se_resnext50_32x4d/experiment_summary.csv
 SE-ResNeXt-50 32x4d,2026-07-25 01:50:53.962450,SE-RESNEXT50-32X4D - NATURAL ORIENTATION + FLIP + GAMMA + FINAL NATIVE CAM,cam,lower_tibia_energy,0.0878,docs/report/se_resnext50_32x4d/experiment_summary.csv
 SE-ResNeXt-50 32x4d,2026-07-25 01:50:53.962450,SE-RESNEXT50-32X4D - NATURAL ORIENTATION + FLIP + GAMMA + FINAL NATIVE CAM,cam,peak_inside_rate,0.9912,docs/report/se_resnext50_32x4d/experiment_summary.csv
-DenseNet-121,2026-07-25 04:34:08.758611,DENSENET121 - Natural Orientation + Flip + Gamma + EMA Native CAM,test,accuracy,0.4553,docs/report/dense_net_121/experiment_summary.csv
-DenseNet-121,2026-07-25 04:34:08.758611,DENSENET121 - Natural Orientation + Flip + Gamma + EMA Native CAM,test,qwk,0.7248,docs/report/dense_net_121/experiment_summary.csv
-DenseNet-121,2026-07-25 04:34:08.758611,DENSENET121 - Natural Orientation + Flip + Gamma + EMA Native CAM,test,macro_f1,0.5334,docs/report/dense_net_121/experiment_summary.csv
-DenseNet-121,2026-07-25 04:34:08.758611,DENSENET121 - Natural Orientation + Flip + Gamma + EMA Native CAM,test,average_precision,0.6663,docs/report/dense_net_121/experiment_summary.csv
-DenseNet-121,2026-07-25 04:34:08.758611,DENSENET121 - Natural Orientation + Flip + Gamma + EMA Native CAM,test,roc_auc,0.8619,docs/report/dense_net_121/experiment_summary.csv
-DenseNet-121,2026-07-25 04:34:08.758611,DENSENET121 - Natural Orientation + Flip + Gamma + EMA Native CAM,validation,accuracy,0.4431,docs/report/dense_net_121/experiment_summary.csv
-DenseNet-121,2026-07-25 04:34:08.758611,DENSENET121 - Natural Orientation + Flip + Gamma + EMA Native CAM,validation,qwk,0.7090,docs/report/dense_net_121/experiment_summary.csv
-DenseNet-121,2026-07-25 04:34:08.758611,DENSENET121 - Natural Orientation + Flip + Gamma + EMA Native CAM,validation,macro_f1,0.6043,docs/report/dense_net_121/experiment_summary.csv
-DenseNet-121,2026-07-25 04:34:08.758611,DENSENET121 - Natural Orientation + Flip + Gamma + EMA Native CAM,validation,grade1_recall,0.8170,docs/report/dense_net_121/experiment_summary.csv
-DenseNet-121,2026-07-25 04:34:08.758611,DENSENET121 - Natural Orientation + Flip + Gamma + EMA Native CAM,validation,average_precision,0.6485,docs/report/dense_net_121/experiment_summary.csv
-DenseNet-121,2026-07-25 04:34:08.758611,DENSENET121 - Natural Orientation + Flip + Gamma + EMA Native CAM,validation,roc_auc,0.8549,docs/report/dense_net_121/experiment_summary.csv
-DenseNet-121,2026-07-25 04:34:08.758611,DENSENET121 - Natural Orientation + Flip + Gamma + EMA Native CAM,validation,selection_score,0.6693,docs/report/dense_net_121/experiment_summary.csv
 DenseNet-121,2026-07-25 06:30:25.175448,DENSENET121 - Final Natural-Orientation Loss Ablation,test,accuracy,0.6504,docs/report/dense_net_121/experiment_summary.csv
 DenseNet-121,2026-07-25 06:30:25.175448,DENSENET121 - Final Natural-Orientation Loss Ablation,test,qwk,0.8197,docs/report/dense_net_121/experiment_summary.csv
 DenseNet-121,2026-07-25 06:30:25.175448,DENSENET121 - Final Natural-Orientation Loss Ablation,test,macro_f1,0.6823,docs/report/dense_net_121/experiment_summary.csv
@@ -232,8 +159,3 @@ DenseNet-121,2026-07-30 15:45:03.830205,Production YOLO ROI robustness fine-tune
 DenseNet-121,2026-07-30 15:45:03.830205,Production YOLO ROI robustness fine-tune,cam,joint_energy,0.8505,notebook inline outputs
 DenseNet-121,2026-07-30 15:45:03.830205,Production YOLO ROI robustness fine-tune,cam,border_energy,0.0844,notebook inline outputs
 DenseNet-121,2026-07-30 15:45:03.830205,Production YOLO ROI robustness fine-tune,cam,peak_inside_rate,1.0000,notebook inline outputs
-DenseNet-201,not recorded,Optimized multi-scale DenseNet-201,test,accuracy,0.6624,docs/report/dense_net_201/dense_net_201_test_results.md
-DenseNet-201,not recorded,Optimized multi-scale DenseNet-201,test,qwk,0.7763,docs/report/dense_net_201/dense_net_201_test_results.md
-DenseNet-201,not recorded,Optimized multi-scale DenseNet-201,test,macro_f1,0.63,docs/report/dense_net_201/dense_net_201_test_results.md
-DenseNet-201,not recorded,Optimized multi-scale DenseNet-201,test,average_precision,0.6948,docs/report/dense_net_201/dense_net_201_test_results.md
-DenseNet-201,not recorded,Optimized multi-scale DenseNet-201,test,roc_auc,0.8812,docs/report/dense_net_201/dense_net_201_test_results.md

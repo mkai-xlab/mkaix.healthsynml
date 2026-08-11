@@ -28,7 +28,7 @@
 
 ## Files
 
-- Notebook: [`2026-07-23_15-13-05_seresnext50_sampler_ablation.ipynb`](2026-07-23_15-13-05_seresnext50_sampler_ablation.ipynb)
+- Notebook: [`2026-07-23_15-13-05_seresnext50_sampler_ablation.ipynb`](../../../../../notebooks/seresnext50_32x4d/experiments/se_resnext50_32x4d_native_cam_sampler_strength_ablation.ipynb)
 - Figures: none stored in this folder
 - Consolidated model report: [SE-ResNeXt-50 32x4d report](../../report.md)
 - Structured run index: [experiment_summary.csv](../../experiment_summary.csv)

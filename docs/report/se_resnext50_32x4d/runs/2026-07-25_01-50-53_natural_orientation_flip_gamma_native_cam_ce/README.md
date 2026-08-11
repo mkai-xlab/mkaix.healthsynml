@@ -28,7 +28,7 @@
 
 ## Files
 
-- Notebook: [`2026-07-25_01-50-53_seresnext50_32x4d_natural_orientation_flip_gamma_native_cam_ce.ipynb`](2026-07-25_01-50-53_seresnext50_32x4d_natural_orientation_flip_gamma_native_cam_ce.ipynb)
+- Notebook: [`2026-07-25_01-50-53_seresnext50_32x4d_natural_orientation_flip_gamma_native_cam_ce.ipynb`](../../../../../notebooks/seresnext50_32x4d/runs/2026-07-25_se_resnext50_native_cam_orientation_gamma.ipynb)
 - Figures: `2` file(s) in [`assets/`](assets/)
 - Consolidated model report: [SE-ResNeXt-50 32x4d report](../../report.md)
 - Structured run index: [experiment_summary.csv](../../experiment_summary.csv)

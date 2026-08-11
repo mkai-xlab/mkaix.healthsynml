@@ -50,7 +50,7 @@ Send PNG or JPEG files as the `file` form field.
 - [Local runbook](docs/runbook.md)
 - [CI and deployment](docs/ci_cd.md)
 - [Unit tests](docs/testing.md)
-- [Experiment notebooks](notebooks/experiments/README.md)
+- [Notebook index](notebooks/README.md)
 - [Paper reproduction notebooks](notebooks/paper/README.md)
 
 Do not commit checkpoints, patient data, or environment files. Training records and figures belong in `docs/report/`.

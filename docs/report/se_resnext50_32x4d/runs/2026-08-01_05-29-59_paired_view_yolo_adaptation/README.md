@@ -28,7 +28,7 @@
 
 ## Files
 
-- Notebook: [`2026-08-01_05-29-59_seresnext50_32x4d_paired_view_yolo_adaptation.ipynb`](2026-08-01_05-29-59_seresnext50_32x4d_paired_view_yolo_adaptation.ipynb)
+- Notebook: [`2026-08-01_05-29-59_seresnext50_32x4d_paired_view_yolo_adaptation.ipynb`](../../../../../notebooks/seresnext50_32x4d/archive/linear_gradcam/03_train_se_resnext50_paired_view_yolo_adaptation.ipynb)
 - Figures: none stored in this folder
 - Consolidated model report: [SE-ResNeXt-50 32x4d report](../../report.md)
 - Structured run index: [experiment_summary.csv](../../experiment_summary.csv)

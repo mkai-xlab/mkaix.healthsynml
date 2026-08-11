@@ -28,7 +28,7 @@
 
 ## Files
 
-- Notebook: [`notebook.ipynb`](notebook.ipynb)
+- Notebook: [`notebook.ipynb`](../../../../../notebooks/densenet121/experiments/2026-07-31_densenet121_glcm_feature_fusion_comparison.ipynb)
 - Figures: none stored in this folder
 - Consolidated model report: [DenseNet-121 report](../../report.md)
 - Structured run index: [experiment_summary.csv](../../experiment_summary.csv)
