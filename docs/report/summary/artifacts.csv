@@ -1,26 +1,7 @@
 artifact,artifact_type,status,run_timestamp
-notebooks/densenet121/runs/2026-07-15_13-42-33_ce_baseline.ipynb,notebook,matched to completed row,2026-07-15_13-42-33_
-notebooks/densenet121/runs/2026-07-15_17-30-22_ce_regularized.ipynb,notebook,matched to completed row,2026-07-15_17-30-22_
-notebooks/densenet121/runs/2026-07-16_20-45-12_focal_corn_underfit.ipynb,notebook,matched to completed row,2026-07-16_20-45-12_
-notebooks/densenet121/runs/2026-07-17_10-33-24_focal_corn_optimized_lr.ipynb,notebook,matched to completed row,2026-07-17_10-33-24_
 notebooks/densenet121/runs/2026-07-17_16-06-42_focal_corn_optimized_lr_patience.ipynb,notebook,matched to completed row,2026-07-17_16-06-42_
-not_retained,notebook,matched to completed row,2026-07-17_22-15-13_
-not_retained,notebook,matched to completed row,2026-07-18_20-27-46_
-not_retained,notebook,matched to completed row,2026-07-18_22-03-35_
 notebooks/densenet121/runs/2026-07-20_12-36-36_corn.ipynb,notebook,matched to completed row,2026-07-20_12-36-36_
-notebooks/densenet121/experiments/2026-07-25_23-48-22_preprocessing_quality_ablation.ipynb,notebook,matched to completed row,2026-07-25_23-48-22_
-notebooks/seresnext50_32x4d/experiments/se_resnext50_32x4d_sampler_ablation.ipynb,notebook,matched to completed row,2026-07-23_15-13-05_
 notebooks/seresnext50_32x4d/runs/se_resnext50_32x4d.ipynb,notebook,matched to completed row,2026-07-25_01-50-53_
-docs/report/dense_net_121/2026-07-25_15-32-33_UTC_api_cam_localization_audit.md,report markdown,source report,
-docs/report/dense_net_121/2026-07-25_23-48-22_preprocessing_quality_ablation.md,report markdown,source report,
-docs/report/dense_net_121/2026-07-29_dataset_paper_lineage_summary.md,report markdown,source report,
-docs/report/dense_net_121/2026-07-29_densenet121_metric_gradcam_design_review.md,report markdown,source report,
-docs/report/dense_net_121/2026-07-30_glcm_experiment_plan.md,report markdown,source report,
-docs/report/dense_net_121/assets/2026-07-25_15-32-33_UTC_api_cam_localization_audit/report.md,report markdown,source report,
-docs/report/dense_net_121/joint_guided_cam_run_2026-07-22.md,report markdown,source report,
-docs/report/dense_net_121/localization_strategy_proposal.md,report markdown,source report,
-docs/report/dense_net_121/native_cam_method_and_references.md,report markdown,source report,
 docs/report/dense_net_121/report.md,report markdown,source report,
 docs/report/se_resnext50_32x4d/report.md,report markdown,source report,
-notebooks/seresnext50_32x4d/archive/native_cam_history/03_train_se_resnext50_paired_view_yolo_adaptation_native_cam.ipynb,notebook,matched to completed row,2026-08-01_05-29-59_
-notebooks/seresnext50_32x4d/archive/native_cam_history/04_evaluate_se_resnext50_paired_view_yolo_gradcam_native_cam.ipynb,notebook,matched to completed row,2026-08-01_07-59-46_
+docs/AI_REPORT.md,report markdown,source report,

@@ -1,0 +1,70 @@
+<mxfile host="Electron">
+  <diagram name="Pipeline" id="0">
+    <mxGraphModel dx="1571" dy="858" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="400" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="img" parent="1" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;strokeWidth=1.5;fontColor=#1a1a2e;fontSize=12;fontStyle=1;align=center;verticalAlign=middle;" value="Input&#xa;Knee X-Ray&#xa;384×384×3" vertex="1">
+          <mxGeometry height="70" width="120" x="40" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="yolo" parent="1" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;strokeWidth=1.5;fontSize=11;fontStyle=1;align=center;verticalAlign=middle;" value="YOLOv8&#xa;ROI Detection" vertex="1">
+          <mxGeometry height="70" width="120" x="220" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="yolo_out" parent="1" style="rounded=1;arcSize=50;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=none;strokeWidth=0;fontColor=#666666;fontSize=9;align=center;verticalAlign=middle;" value="ROI bbox" vertex="1">
+          <mxGeometry height="20" width="70" x="245" y="200" as="geometry" />
+        </mxCell>
+        <mxCell id="roi" parent="1" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;strokeWidth=1.5;fontSize=11;fontStyle=1;align=center;verticalAlign=middle;" value="ROI Crop&#xa;&amp; Resize&#xa;384×384×3" vertex="1">
+          <mxGeometry height="70" width="120" x="400" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="prep" parent="1" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;strokeWidth=1.5;fontSize=11;fontStyle=1;align=center;verticalAlign=middle;" value="Preprocessing&#xa;Norm + CLAHE&#xa;+ Augment" vertex="1">
+          <mxGeometry height="70" width="120" x="590" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="models_bg" parent="1" style="rounded=1;arcSize=15;whiteSpace=wrap;html=1;strokeWidth=1.5;fontSize=11;align=center;verticalAlign=top;" value="" vertex="1">
+          <mxGeometry height="150" width="110" x="810" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="densenet" parent="1" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;strokeWidth=1.5;fontSize=11;fontStyle=1;align=center;verticalAlign=middle;" value="DenseNet-121&#xa;KneeNet-A" vertex="1">
+          <mxGeometry height="50" width="90" x="820" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="seresnext" parent="1" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;strokeWidth=1.5;fontSize=11;fontStyle=1;align=center;verticalAlign=middle;" value="SE-ResNeXt-50&#xa;KneeNet-B" vertex="1">
+          <mxGeometry height="50" width="90" x="820" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="models_label" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontSize=9;fontColor=#888888;" value="Parallel Models" vertex="1">
+          <mxGeometry height="16" width="80" x="820" y="240" as="geometry" />
+        </mxCell>
+        <mxCell id="ensemble" parent="1" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;strokeWidth=1.5;fontSize=11;fontStyle=1;align=center;verticalAlign=middle;" value="Ensemble&#xa;Avg/FC&#xa;Confidence" vertex="1">
+          <mxGeometry height="70" width="120" x="1020" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="gradcam" parent="1" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;strokeWidth=1.5;fontSize=11;fontStyle=1;align=center;verticalAlign=middle;" value="GradCAM&#xa;Visualization" vertex="1">
+          <mxGeometry height="70" width="120" x="1220" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="output" parent="1" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;strokeWidth=1.5;fontColor=#1a1a2e;fontSize=11;fontStyle=1;align=center;verticalAlign=middle;" value="Output&#xa;KL Grade&#xa;0-4" vertex="1">
+          <mxGeometry height="70" width="100" x="1220" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="a1" edge="1" parent="1" source="img" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#333333;strokeWidth=1.5;endArrow=blockThin;endFill=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="yolo" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a2" edge="1" parent="1" source="yolo" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#333333;strokeWidth=1.5;endArrow=blockThin;endFill=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="roi" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a3" edge="1" parent="1" source="roi" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#333333;strokeWidth=1.5;endArrow=blockThin;endFill=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="prep" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a4" edge="1" parent="1" source="prep" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#333333;strokeWidth=1.5;endArrow=blockThin;endFill=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="models_bg" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a5" edge="1" parent="1" source="models_bg" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#333333;strokeWidth=1.5;endArrow=blockThin;endFill=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="ensemble" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a6" edge="1" parent="1" source="ensemble" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#333333;strokeWidth=1.5;endArrow=blockThin;endFill=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="gradcam" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a7" edge="1" parent="1" source="ensemble" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#333333;strokeWidth=1.5;endArrow=blockThin;endFill=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="output" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="page" parent="1" style="text;html=1;align=right;verticalAlign=middle;fontSize=10;fontColor=#999999;" value="Pipeline v1" vertex="1">
+          <mxGeometry height="20" width="80" x="1480" y="360" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
