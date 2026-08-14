@@ -1,6 +1,0 @@
-item,value,notes
-generated_at_utc,2026-08-01T14:52:49Z,Updated after SE-ResNeXt report-folder organization and live Grad-CAM smoke test; no training was started.
-row_counts,all_runs=25; DenseNet-121=19; SE-ResNeXt=4; YOLOv8=2; deployment=3,Rows are historical records plus the current local smoke-test record.
-metric_warning,Historical test metrics are retained for provenance only.,The repeatedly evaluated test set must not be used to choose new configurations; future claims require a locked patient-level holdout.
-cam_warning,CAM numbers are not proof of clinical causality.,Review per-case maps and use joint/border/occlusion audits; unlabeled API smoke tests cannot measure accuracy.
-source_priority,model-specific experiment_summary.csv before global model_experiment_summary.csv,Duplicate rows are de-duplicated by model timestamp and short description.

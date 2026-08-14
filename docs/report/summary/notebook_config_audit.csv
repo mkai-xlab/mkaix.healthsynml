@@ -1,6 +1,0 @@
-source_notebook,run_timestamp,model_family,configuration,status,validation_qwk,validation_macro_f1,validation_macro_ap,validation_selection_score,report_mapping,notes
-notebooks/seresnext50_32x4d/experiments/se_resnext50_32x4d_ce_vs_ordinal_loss.ipynb,2026-07-25 04:35:15,SE-ResNeXt-50 32x4d,final_native_cam_ordinal_soft_label,completed,0.803113,0.657431,0.700162,0.711211,docs/report/se_resnext50_32x4d/report.md,Selected arm
-notebooks/seresnext50_32x4d/experiments/se_resnext50_32x4d_ce_vs_ordinal_loss.ipynb,2026-07-25 04:35:15,SE-ResNeXt-50 32x4d,final_native_cam_ce,completed,0.793681,0.658106,0.708756,0.703364,docs/report/se_resnext50_32x4d/report.md,Not selected
-notebooks/seresnext50_32x4d/experiments/se_resnext50_32x4d_sampler_ablation.ipynb,2026-07-23 15:13:05,SE-ResNeXt-50 32x4d,full_inverse,completed,0.7948,0.6446,,0.6984,docs/report/se_resnext50_32x4d/report.md,Selected validation arm
-notebooks/seresnext50_32x4d/experiments/se_resnext50_32x4d_sampler_ablation.ipynb,2026-07-23 15:13:05,SE-ResNeXt-50 32x4d,sqrt_inverse,completed,0.7895,0.6496,,0.6875,docs/report/se_resnext50_32x4d/report.md,Not selected
-notebooks/seresnext50_32x4d/experiments/se_resnext50_32x4d_sampler_ablation.ipynb,2026-07-23 15:13:05,SE-ResNeXt-50 32x4d,no_sampler,completed,0.7737,0.6348,,0.6650,docs/report/se_resnext50_32x4d/report.md,Not selected

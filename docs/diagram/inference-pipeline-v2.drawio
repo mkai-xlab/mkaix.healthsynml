@@ -1,0 +1,139 @@
+<mxfile host="Electron">
+  <diagram name="Inference Pipeline" id="0">
+    <mxGraphModel dx="2175" dy="1188" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2000" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontSize=24;fontStyle=1;fontColor=#1a1a2e;" value="KL Grade Inference Pipeline" vertex="1">
+          <mxGeometry height="40" width="600" x="520" y="17.5" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontSize=14;fontColor=#666666;" value="Deep Learning Ensemble for Knee Osteoarthritis Assessment" vertex="1">
+          <mxGeometry height="25" width="600" x="520" y="52.5" as="geometry" />
+        </mxCell>
+        <mxCell id="input_bg" parent="1" style="rounded=1;arcSize=15;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1976d2;strokeWidth=2;" value="" vertex="1">
+          <mxGeometry height="300" width="200" x="30" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="input_label" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;fontColor=#1976d2;" value="INPUT" vertex="1">
+          <mxGeometry height="25" width="200" x="30" y="125" as="geometry" />
+        </mxCell>
+        <mxCell id="xray" parent="1" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#1976d2;strokeWidth=2;fontSize=12;fontColor=#1a1a2e;align=center;verticalAlign=middle;" value="Knee X-Ray&lt;br&gt;&lt;br&gt;&lt;div&gt;&lt;br/&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="230" width="140" x="60" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="arr1" edge="1" parent="1" source="input_bg" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#1976d2;strokeWidth=3;endArrow=blockThin;endFill=1;flowAnimation=1;" target="yolo_bg">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="yolo_bg" parent="1" style="rounded=1;arcSize=15;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#388e3c;strokeWidth=2;" value="" vertex="1">
+          <mxGeometry height="300" width="200" x="280" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="yolo_label" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;fontColor=#388e3c;" value="STAGE 1: ROI DETECTION" vertex="1">
+          <mxGeometry height="25" width="200" x="280" y="125" as="geometry" />
+        </mxCell>
+        <mxCell id="yolo_model" parent="1" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#4caf50;strokeColor=#2e7d32;strokeWidth=2;fontSize=14;fontColor=#ffffff;align=center;verticalAlign=middle;fontStyle=1;" value="YOLOv8n&#xa;Joint Detector" vertex="1">
+          <mxGeometry height="60" width="140" x="310" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="yolo_out" parent="1" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#4caf50;strokeWidth=1;fontSize=10;fontColor=#1b5e20;align=left;verticalAlign=top;" value="Detection Output&#xa;━━━━━━━━━━━━━━━━&#xa;• Joint BBox: [x,y,w,h]&#xa;• Confidence: 0.92&#xa;• Class: knee_joint" vertex="1">
+          <mxGeometry height="90" width="140" x="310" y="240" as="geometry" />
+        </mxCell>
+        <mxCell id="arr2" edge="1" parent="1" source="yolo_bg" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#388e3c;strokeWidth=3;endArrow=blockThin;endFill=1;flowAnimation=1;" target="roi_bg">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="roi_bg" parent="1" style="rounded=1;arcSize=15;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#f57c00;strokeWidth=2;" value="" vertex="1">
+          <mxGeometry height="300" width="200" x="530" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="roi_label" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;fontColor=#f57c00;" value="STAGE 2: ROI PROCESSING" vertex="1">
+          <mxGeometry height="25" width="200" x="530" y="125" as="geometry" />
+        </mxCell>
+        <mxCell id="crop" parent="1" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#ffcc80;strokeColor=#f57c00;strokeWidth=1;fontSize=10;fontColor=#e65100;align=left;verticalAlign=top;" value="Crop &amp; Resize&#xa;━━━━━━━━━━━━━━━━&#xa;• BBox expand: 1.15×&#xa;• Output: 384×384×3&#xa;• Padding: black" vertex="1">
+          <mxGeometry height="80" width="140" x="560" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="prep" parent="1" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#ffe0b2;strokeColor=#ff9800;strokeWidth=1;fontSize=10;fontColor=#bf360c;align=left;verticalAlign=top;" value="Preprocessing&#xa;━━━━━━━━━━━━━━━━&#xa;• LAB CLAHE (α=1.25)&#xa;• ToTensor&#xa;• ImageNet Norm&#xa;• Square Pad" vertex="1">
+          <mxGeometry height="90" width="140" x="560" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="arr3" edge="1" parent="1" source="roi_bg" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#f57c00;strokeWidth=3;endArrow=blockThin;endFill=1;flowAnimation=1;" target="models_bg">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="models_bg" parent="1" style="rounded=1;arcSize=15;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#7b1fa2;strokeWidth=2;" value="" vertex="1">
+          <mxGeometry height="340" width="400" x="780" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="models_label" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;fontColor=#7b1fa2;" value="STAGE 3: ENSEMBLE CLASSIFICATION" vertex="1">
+          <mxGeometry height="25" width="360" x="780" y="105" as="geometry" />
+        </mxCell>
+        <mxCell id="densenet_bg" parent="1" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#ce93d8;strokeColor=#8e24aa;strokeWidth=2;" value="" vertex="1">
+          <mxGeometry height="160" width="160" x="800" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="densenet" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontSize=14;fontStyle=1;fontColor=#4a148c;" value="DenseNet-121" vertex="1">
+          <mxGeometry height="30" width="160" x="800" y="145" as="geometry" />
+        </mxCell>
+        <mxCell id="densenet_arch" parent="1" style="rounded=1;arcSize=5;whiteSpace=wrap;html=1;fillColor=#e1bee7;strokeColor=#9c27b0;strokeWidth=1;fontSize=9;fontColor=#4a148c;align=left;verticalAlign=top;" value="Architecture:&#xa;• Dense Blocks (4)&#xa;• Growth Rate: 32&#xa;• Transition Layers&#xa;• Global Avg Pool&#xa;• FC(1024→5)" vertex="1">
+          <mxGeometry height="110" width="140" x="810" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="seresnext_bg" parent="1" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#90caf9;strokeColor=#1565c0;strokeWidth=2;" value="" vertex="1">
+          <mxGeometry height="160" width="160" x="980" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="seresnext" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontSize=14;fontStyle=1;fontColor=#0d47a1;" value="SE-ResNeXt-50 32×4d" vertex="1">
+          <mxGeometry height="30" width="160" x="980" y="145" as="geometry" />
+        </mxCell>
+        <mxCell id="seresnext_arch" parent="1" style="rounded=1;arcSize=5;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1976d2;strokeWidth=1;fontSize=9;fontColor=#0d47a1;align=left;verticalAlign=top;" value="Architecture:&#xa;• SE Modules&#xa;• ResNeXt Blocks&#xa;• Cardinality: 32&#xa;• Width: 4&#xa;• FC(2048→5)" vertex="1">
+          <mxGeometry height="110" width="140" x="990" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="pred_dn" parent="1" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#7b1fa2;strokeWidth=1;fontSize=10;fontColor=#4a148c;align=center;verticalAlign=middle;" value="DenseNet Prediction:&#xa;Grade 2 (0.72)" vertex="1">
+          <mxGeometry height="40" width="160" x="800" y="310" as="geometry" />
+        </mxCell>
+        <mxCell id="pred_sn" parent="1" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1565c0;strokeWidth=1;fontSize=10;fontColor=#0d47a1;align=center;verticalAlign=middle;" value="SE-ResNeXt Prediction:&#xa;Grade 2 (0.78)" vertex="1">
+          <mxGeometry height="40" width="160" x="980" y="310" as="geometry" />
+        </mxCell>
+        <mxCell id="arr4" edge="1" parent="1" source="pred_dn" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#7b1fa2;strokeWidth=2;endArrow=blockThin;endFill=1;" target="ensemble">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arr5" edge="1" parent="1" source="pred_sn" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#1565c0;strokeWidth=2;endArrow=blockThin;endFill=1;" target="ensemble">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ensemble_bg" parent="1" style="rounded=1;arcSize=15;whiteSpace=wrap;html=1;fillColor=#e0f2f1;strokeColor=#00695c;strokeWidth=2;" value="" vertex="1">
+          <mxGeometry height="120" width="360" x="780" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="ensemble" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontSize=14;fontStyle=1;fontColor=#004d40;" value="Ensemble Voting" vertex="1">
+          <mxGeometry height="30" width="360" x="780" y="465" as="geometry" />
+        </mxCell>
+        <mxCell id="voting1" parent="1" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#b2dfdb;strokeColor=#00897b;strokeWidth=1;fontSize=11;fontColor=#004d40;align=center;verticalAlign=middle;" value="Soft Voting&#xa;Avg Probability" vertex="1">
+          <mxGeometry height="60" width="100" x="800" y="500" as="geometry" />
+        </mxCell>
+        <mxCell id="voting2" parent="1" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#b2dfdb;strokeColor=#00897b;strokeWidth=1;fontSize=11;fontColor=#004d40;align=center;verticalAlign=middle;" value="Weighted Avg&#xa;(QWK-based)" vertex="1">
+          <mxGeometry height="60" width="100" x="920" y="500" as="geometry" />
+        </mxCell>
+        <mxCell id="voting3" parent="1" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#b2dfdb;strokeColor=#00897b;strokeWidth=1;fontSize=11;fontColor=#004d40;align=center;verticalAlign=middle;" value="Max Confidence&#xa;Selection" vertex="1">
+          <mxGeometry height="60" width="90" x="1040" y="500" as="geometry" />
+        </mxCell>
+        <mxCell id="arr6" edge="1" parent="1" source="ensemble_bg" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#00695c;strokeWidth=3;endArrow=blockThin;endFill=1;flowAnimation=1;" target="output_bg">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="cam_bg" parent="1" style="rounded=1;arcSize=15;whiteSpace=wrap;html=1;fillColor=#ffebee;strokeColor=#c62828;strokeWidth=2;" value="" vertex="1">
+          <mxGeometry height="200" width="180" x="1400" y="17.5" as="geometry" />
+        </mxCell>
+        <mxCell id="cam_label" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;fontColor=#c62828;" value="GRAD-CAM" vertex="1">
+          <mxGeometry height="25" width="180" x="1400" y="22.5" as="geometry" />
+        </mxCell>
+        <mxCell id="heatmap" parent="1" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#ffcdd2;strokeColor=#e53935;strokeWidth=1;fontSize=11;fontColor=#b71c1c;align=center;verticalAlign=middle;" value="Heatmap&lt;br&gt;━━━━━━━━━━━━━━━━&lt;br&gt;Overlay&lt;br&gt;&lt;div&gt;&lt;br/&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="110" width="140" x="1420" y="57.5" as="geometry" />
+        </mxCell>
+        <mxCell id="arr8" edge="1" parent="1" source="models_bg" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#c62828;strokeWidth=2;endArrow=blockThin;endFill=1;dashed=1;" target="cam_bg">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="output_bg" parent="1" style="rounded=1;arcSize=15;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#2e7d32;strokeWidth=3;" value="" vertex="1">
+          <mxGeometry height="380" width="250" x="1370" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="output_label" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontSize=14;fontStyle=1;fontColor=#1b5e20;" value="FINAL OUTPUT" vertex="1">
+          <mxGeometry height="30" width="250" x="1370" y="335" as="geometry" />
+        </mxCell>
+        <mxCell id="grade_main" parent="1" style="rounded=1;arcSize=15;whiteSpace=wrap;html=1;fillColor=#4caf50;strokeColor=#2e7d32;strokeWidth=3;fontSize=28;fontStyle=1;fontColor=#ffffff;align=center;verticalAlign=middle;" value="KL GRADE 2" vertex="1">
+          <mxGeometry height="70" width="190" x="1400" y="380" as="geometry" />
+        </mxCell>
+        <mxCell id="conf_score" parent="1" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#a5d6a7;strokeColor=#4caf50;strokeWidth=2;fontSize=16;fontStyle=1;fontColor=#1b5e20;align=center;verticalAlign=middle;" value="Confidence: 0.83" vertex="1">
+          <mxGeometry height="40" width="190" x="1400" y="465" as="geometry" />
+        </mxCell>
+        <mxCell id="probs" parent="1" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#66bb6a;strokeWidth=1;fontSize=11;fontColor=#1b5e20;align=left;verticalAlign=top;" value="Grade Probabilities:&lt;br&gt;━━━━━━━━━━━━━━━━&lt;br&gt;Grade 0:&amp;nbsp; 0.02&lt;br&gt;Grade 1:&amp;nbsp; 0.08&lt;br&gt;Grade 2:&amp;nbsp; 0.83&lt;br&gt;Grade 3:&amp;nbsp; 0.05&lt;br&gt;Grade 4:&amp;nbsp; 0.02" vertex="1">
+          <mxGeometry height="120" width="190" x="1400" y="515" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

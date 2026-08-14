@@ -4,7 +4,7 @@
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="img" parent="1" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;strokeWidth=1;fontColor=#1a1a2e;fontSize=12;fontStyle=0;align=center;verticalAlign=middle;" value="Input&#xa;Knee X-Ray&#xa;384×384×3" vertex="1">
+        <mxCell id="img" parent="1" style="rounded=1;arcSize=14;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;strokeWidth=1;fontColor=#1a1a2e;fontSize=12;fontStyle=0;align=center;verticalAlign=middle;" value="Input&lt;br&gt;Knee X-Ray" vertex="1">
           <mxGeometry height="70" width="120" x="40" y="120" as="geometry" />
         </mxCell>
         <mxCell id="yolo" parent="1" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;strokeWidth=1;fontSize=11;fontStyle=0;align=center;verticalAlign=middle;" value="YOLOv8&#xa;ROI Detection" vertex="1">
@@ -22,10 +22,10 @@
         <mxCell id="models_bg" parent="1" style="rounded=1;arcSize=15;whiteSpace=wrap;html=1;strokeWidth=1;fontSize=11;align=center;verticalAlign=top;fontStyle=0" value="" vertex="1">
           <mxGeometry height="150" width="110" x="810" y="80" as="geometry" />
         </mxCell>
-        <mxCell id="densenet" parent="1" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;strokeWidth=1;fontSize=11;fontStyle=0;align=center;verticalAlign=middle;" value="DenseNet-121&#xa;KneeNet-A" vertex="1">
+        <mxCell id="densenet" parent="1" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;strokeWidth=1;fontSize=11;fontStyle=0;align=center;verticalAlign=middle;" value="DenseNet-121" vertex="1">
           <mxGeometry height="50" width="90" x="820" y="90" as="geometry" />
         </mxCell>
-        <mxCell id="seresnext" parent="1" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;strokeWidth=1;fontSize=11;fontStyle=0;align=center;verticalAlign=middle;" value="SE-ResNeXt-50&#xa;KneeNet-B" vertex="1">
+        <mxCell id="seresnext" parent="1" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;strokeWidth=1;fontSize=11;fontStyle=0;align=center;verticalAlign=middle;" value="SE-ResNeXt-50" vertex="1">
           <mxGeometry height="50" width="90" x="820" y="160" as="geometry" />
         </mxCell>
         <mxCell id="models_label" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontSize=9;fontColor=#888888;strokeWidth=1;fontStyle=0" value="Parallel Models" vertex="1">

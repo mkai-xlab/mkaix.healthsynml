@@ -1,7 +1,0 @@
-artifact,artifact_type,status,run_timestamp
-notebooks/densenet121/runs/2026-07-17_16-06-42_focal_corn_optimized_lr_patience.ipynb,notebook,matched to completed row,2026-07-17_16-06-42_
-notebooks/densenet121/runs/2026-07-20_12-36-36_corn.ipynb,notebook,matched to completed row,2026-07-20_12-36-36_
-notebooks/seresnext50_32x4d/runs/se_resnext50_32x4d.ipynb,notebook,matched to completed row,2026-07-25_01-50-53_
-docs/report/dense_net_121/report.md,report markdown,source report,
-docs/report/se_resnext50_32x4d/report.md,report markdown,source report,
-docs/AI_REPORT.md,report markdown,source report,
