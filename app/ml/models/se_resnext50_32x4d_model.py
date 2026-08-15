@@ -38,5 +38,10 @@ class SEResNeXt50Model(BaseModel):
 
     def forward(self, images: torch.Tensor) -> torch.Tensor:
         features = self.backbone(images)[0]
+
+        # average the features over the spatial dimensions to get a single vector
+        # because the features are 3D (B, C, H, W)
         pooled_features = features.mean(dim=(2, 3))
+
+    
         return self.classifier(pooled_features)
