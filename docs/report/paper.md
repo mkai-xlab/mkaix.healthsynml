@@ -89,12 +89,39 @@ This study presents an ensemble of convolutional neural networks (CNNs) for auto
 | Grade 3 | 223 | 0.71 | 0.70 | 0.70 |
 | Grade 4 | 51 | 0.78 | 0.67 | 0.72 |
 
-### 4.3 Ensemble Performance
+### 4.3 Ensemble Strategy
 
-The final ensemble combines DenseNet-121 and SE-ResNeXt-50 using soft voting on predicted probabilities, achieving:
+The final ensemble combines DenseNet-121 and SE-ResNeXt-50 using **soft voting on raw logits**.
 
-- **Ensemble QWK**: ~0.84
-- **Grade 1 (Doubtful)**: Primary challenge class with lowest recall (0.31-0.44)
+**How it works:**
+
+1. **Logit extraction** — both models output a raw logits vector `z ∈ ℝ⁵` (one value per KL grade), without applying softmax individually
+2. **Element-wise average** — `z_final = 0.5 × z_DN121 + 0.5 × z_SEResNeXt`
+3. **Softmax** — `p_k = exp(z_k) / Σⱼ exp(z_j)` converts averaged logits to probabilities
+4. **Argmax** — `class = argmax(p_k)` selects the predicted KL grade
+
+**Why soft voting on logits works better than on probabilities:**
+
+| Aspect | Soft voting on probabilities | Soft voting on logits (ours) |
+|---|---|---|
+| Temperature | Sensitive to calibration | Temperature-independent |
+| Ordinal information | Preserved but diluted by softmax | Preserved — logits encode ordinal spacing |
+| Robustness | Sensitive to individual model calibration | More robust — averaging before softmax |
+
+**Why these two models complement each other:**
+
+| Factor | DenseNet-121 | SE-ResNeXt-50 |
+|---|---|---|
+| Architecture | Dense connections (feature reuse) | ResNeXt bottlenecks + SE gating |
+| Cardinality | — | 32×4d (groups) |
+| Loss | Focal CORN (ordinal) | Cross-Entropy |
+| Input size | 224×224 | 384×384 |
+| Sampler | WeightedRandomSampler (balanced) | Full inverse-frequency |
+| Inductive bias | Dense feature concatenation | Aggregated residual paths |
+
+The **Focal CORN loss** in DenseNet-121 penalises adjacent-grade errors more heavily than distant errors, while SE-ResNeXt-50 with CE learns discriminative class boundaries independently. Averaging their logits combines these complementary decision boundaries.
+
+**Result:** Ensemble QWK ~0.84 vs individual best 0.8394
 
 ## 5. Explainability
 
@@ -136,4 +163,5 @@ Full experiment data available in: `report/report.csv`
 - [Inference Pipeline Diagram](../diagram/inference-pipeline-v2.drawio) - Open in draw.io desktop
 - [DenseNet-121 Architecture](../diagram/densenet121.drawio)
 - [SE-ResNeXt-50 Architecture](../diagram/resnext50.drawio)
-- [Ensemble Architecture](../diagram/ensemble-v3.drawio)
+- [Ensemble Architecture v4](../diagram/ensemble-v4.drawio) — **Pipeline** (page 1) + **Mechanism** (page 2)
+  - PNG preview: [pipeline](../diagram/ensemble_pipeline.png) · [mechanism](../diagram/ensemble_mechanism.png)
