@@ -1,10 +1,20 @@
 # Diagrams
 
-This directory contains editable Draw.io diagrams and exported PNG images for the report.
+Editable Draw.io source files for architecture documentation.
 
-- `densenet121-architecture.drawio`: DenseNet-121 detail.
-- `resnext50-architecture.drawio`: SE-ResNeXt-50 detail.
-- `knee_oa_ensemble_system.drawio`: ensemble overview.
-- `Architecture-clear.drawio`: simplified system view.
+## Source Files
 
-The ensemble diagrams describe an available runtime mode. Check `MODEL_MODE` before treating one as the active deployment.
+| File | Description |
+|------|-------------|
+| `inference-pipeline.drawio` | End-to-end inference pipeline |
+| `densenet121.drawio` | DenseNet-121 architecture (4 pages) |
+| `resnext50.drawio` | SE-ResNeXt-50 architecture (4 pages) |
+| `ensemble-v3.drawio` | Ensemble architecture |
+
+## Exported Images
+
+Exported PNG images are in `ai_model/` folder.
+
+## Documentation
+
+See [ai-architecture.md](../ai-architecture.md) for the complete architecture documentation with embedded diagrams and descriptions.

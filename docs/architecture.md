@@ -1,5 +1,7 @@
 # Inference Architecture
 
+**Architecture Diagrams:** See [ai-architecture.md](ai-architecture.md) for visual diagrams.
+
 ```text
 X-ray upload
   -> YOLOv8 knee detection

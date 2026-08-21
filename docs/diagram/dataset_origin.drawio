@@ -1,0 +1,55 @@
+<mxfile host="Electron">
+  <diagram name="Origin Chain" id="0">
+    <mxGraphModel dx="1414" dy="1472" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="900" pageHeight="700" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="n" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;strokeWidth=1.5;fontSize=12;fontColor=#000000;align=center;" value="NIH / NIAMS + NIA" vertex="1">
+          <mxGeometry height="30" width="180" x="410" y="-80" as="geometry" />
+        </mxCell>
+        <mxCell id="oai" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;strokeWidth=1.5;fontSize=12;fontColor=#000000;align=center;" value="OAI (nda.nih.gov/oai)&lt;div&gt;&lt;pre data-pm-slice=&quot;1 1 []&quot;&gt;&lt;code&gt;Longitudinal cohort, 2004–2014&lt;br/&gt;  ~4,796 participants, 45–79 yrs, US&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="80" width="260" x="370" as="geometry" />
+        </mxCell>
+        <mxCell id="mend" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;strokeWidth=1.5;fontSize=12;fontColor=#000000;align=center;" value="Mendeley KneeXrayData (doi:10.17632/56rmx5bjcr.1)&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;pre data-pm-slice=&quot;1 1 []&quot;&gt;&lt;code&gt;YOLOv2 detection → 224×224 single-knee crops&lt;br/&gt;  ~9,786 crops from MULTIPLE OAI visits&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="100" width="320" x="340" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="fork" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;strokeWidth=1.5;fontSize=12;fontColor=#000000;align=center;" value="" vertex="1">
+          <mxGeometry x="420" y="210" as="geometry" />
+        </mxCell>
+        <mxCell id="kaggle" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;strokeWidth=1.5;fontSize=12;fontColor=#000000;align=center;" value="Kaggle re-upload&lt;div&gt;&lt;pre data-pm-slice=&quot;1 1 []&quot;&gt;&lt;code&gt;9,786 files&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="80" width="190" x="150" y="305" as="geometry" />
+        </mxCell>
+        <mxCell id="v1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;strokeWidth=1.5;fontSize=12;fontColor=#000000;align=center;" value="KneeXrayData_Mendeley&lt;div&gt;&lt;pre data-pm-slice=&quot;1 1 []&quot;&gt;&lt;code&gt;Single-visit subset: 8,260 crops&lt;br&gt;&lt;pre data-pm-slice=&quot;1 1 []&quot;&gt;&lt;code&gt;4,130 bilateral H5&lt;/code&gt;&lt;/pre&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="90" width="290" x="610" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="fork2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;strokeWidth=1.5;fontSize=12;fontColor=#000000;align=center;" value="" vertex="1">
+          <mxGeometry x="590" y="295" as="geometry" />
+        </mxCell>
+        <mxCell id="yolo" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;strokeWidth=1.5;fontSize=12;fontColor=#000000;align=center;" value="Dataset 1 — YOLO Detection" vertex="1">
+          <mxGeometry height="30" width="220" x="830" y="440" as="geometry" />
+        </mxCell>
+        <mxCell id="cnn" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;strokeWidth=1.5;fontSize=12;fontColor=#000000;align=center;" value="Dataset 2 — CNN Classification" vertex="1">
+          <mxGeometry height="30" width="220" x="480" y="450" as="geometry" />
+        </mxCell>
+        <mxCell id="a1" edge="1" parent="1" source="n" style="endArrow=classic;html=1;strokeColor=#333333;strokeWidth=1.5;" target="oai" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a2" edge="1" parent="1" source="oai" style="endArrow=classic;html=1;strokeColor=#333333;strokeWidth=1.5;" target="mend" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a4" edge="1" parent="1" source="mend" style="endArrow=classic;html=1;strokeColor=#333333;strokeWidth=1.5;" target="kaggle" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a5" edge="1" parent="1" source="mend" style="endArrow=classic;html=1;strokeColor=#333333;strokeWidth=1.5;" target="v1" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a7" edge="1" parent="1" source="v1" style="endArrow=classic;html=1;strokeColor=#333333;strokeWidth=1.5;" target="yolo" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a8" edge="1" parent="1" source="v1" style="endArrow=classic;html=1;strokeColor=#333333;strokeWidth=1.5;" target="cnn" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

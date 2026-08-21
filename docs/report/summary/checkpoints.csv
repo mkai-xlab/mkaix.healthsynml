@@ -1,7 +1,0 @@
-model_family,path,exists,sha256,size_bytes,role
-DenseNet-121,checkpoints/densenet121/best_model.pth,true,d8d35f1c854356d46aeb3a332d73e323df15d02285a4a0a39546c3a80f8c96cf,84602655,DenseNet-121 checkpoint record
-DenseNet-201,checkpoints/densenet201/best_model.pth,true,a8107b9cc7cc9242385f1facfcfc69c251f88697ed2df4dae8a43c1d66729b76,84477919,available checkpoint; not current app mode
-EfficientNet-B0,checkpoints/efficientnet_b0/best_model.pth,true,47238a3ee5350b6521e3f292d30493e7a7e37d0c7aee748b46424c0859fe60ff,16358137,standalone candidate
-SE-ResNeXt-50 32x4d,checkpoints/se_resnext50_32x4d/2026-08-01_05-29-59_660657_UTC_paired_view_yolo_roi/best_model.pth,true,4b47dbe8439cc67e814b6237a380dd1152241068700b1a1f6da2714cbe277f7b,102497041,SE-ResNeXt local Grad-CAM runtime checkpoint
-YOLOv8,checkpoints/yolov8/best.pt,true,443003a317ca71f3f63e0f5ac145a0eafa431053a998dbb4c60c65b5c5e7fef7,6253418,current detector
-YOLOv8,checkpoints/yolov8/archive/best.pt,true,3e18a09e58df0ae1f8e3102d5e63893c72d2508bba5ffd80c84dac8356161d2b,24496935,archived detector
