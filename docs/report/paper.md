@@ -79,6 +79,7 @@ This study presents an ensemble of convolutional neural networks (CNNs) for auto
 | DenseNet-121 (CORN) | CORN | 384×384 | 0.6715 | 0.8246 | 0.6800 | 0.31 | 0.8963 |
 | DenseNet-121 (Single-Stage YOLO-ROI Adaptation) | CE | 384×384 | 0.5876 | 0.7372 | 0.5909 | 0.2297 | 0.8479 |
 | **SE-ResNeXt-50 (Native CAM)** | CE | 384×384 | **0.6558** | **0.8216** | 0.6781 | 0.41 | 0.8980 |
+| SE-ResNeXt-50 (YOLO-ROI evaluation) | CE | 384×384 | 0.5507 | 0.6824 | 0.5526 | 0.2500 | 0.8219 |
 
 ### 4.2 Per-Grade Performance (DenseNet-121 Focal CORN)
 
