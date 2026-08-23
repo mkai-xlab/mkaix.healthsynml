@@ -1,19 +1,4 @@
 """
-Tests for app.ml.models.densenet121_model and
-app.ml.models.se_resnext50_32x4d_model.
-
-Purpose
--------
-These tests load real trained checkpoints (when available) and verify:
-  1. The checkpoint metadata (architecture key) matches expectations.
-  2. The model can be restored from the saved state_dict.
-  3. The restored model can do a forward pass.
-  4. Grad-CAM activation maps can be extracted for the model.
-
-These are integration tests — they require actual checkpoint files to be
-present in the ml/checkpoints/ directory (typically mounted from Google Drive).
-If a checkpoint is missing, pytest.skip() is called so the test does not fail.
-
 Input
 -----
   - Checkpoint file path, e.g. checkpoints/densenet121/best_model.pth
@@ -22,14 +7,6 @@ Input
         "architecture": str,          # e.g. "timm_densenet121_linear_gradcam"
         "model_state_dict": dict,    # torch state_dict of the model
       }
-
-Expected output
----------------
-  - checkpoint["architecture"] == expected architecture string
-  - model.load_state_dict(...) succeeds with strict=True
-  - model forward pass on a zero tensor of shape (1, 3, 384, 384) succeeds
-  - GradCAMService.extract_gradcam(model, ...) returns a (384, 384) map
-    with all values in [0.0, 1.0]
 """
 from pathlib import Path
 

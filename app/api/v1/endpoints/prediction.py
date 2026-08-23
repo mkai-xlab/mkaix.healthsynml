@@ -31,6 +31,7 @@ async def predict_knee_oa(
 
 
     try:
+        # read the uploaded image and validate it -> file name + image bytes
         filename, image_bytes = await read_uploaded_image(file)
 
         # call the prediction service to get the results

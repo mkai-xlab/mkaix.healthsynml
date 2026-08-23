@@ -17,6 +17,8 @@ class DenseNet121Model(BaseModel):
     ):
         super().__init__()
         self.num_classes = num_classes
+
+        # backbone = real backend + classifier 
         self.backbone = timm.create_model(
             "densenet121",
             pretrained=pretrained,

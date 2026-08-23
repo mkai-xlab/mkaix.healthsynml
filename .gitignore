@@ -69,3 +69,6 @@ test_images
 
 # venv file
 healthsync_ml/*
+# draw.io auto-generated backups
+.$*.drawio.bkp
+*.drawio.bkp

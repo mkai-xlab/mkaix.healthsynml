@@ -1,12 +1,6 @@
 """
 Tests for app.services.preprocessing_service.
 
-Purpose
--------
-The preprocessing pipeline converts a raw X-ray PNG (any aspect ratio,
-any original size) into a fixed-size (3, 384, 384) tensor that a trained
-classification model expects as input.
-
 The pipeline (in order) is:
   1. CLAHE with clip_limit=1.25  — enhances contrast locally on each tile
   2. SquarePad                  — pads the image to a square with black pixels

@@ -2,6 +2,10 @@
 
 **Architecture Diagrams:** See [ai-architecture.md](ai-architecture.md) for visual diagrams.
 
+![End-to-end inference pipeline](diagram/inference-pipeline-v2.drawio.png)
+
+*Source: [`diagram/inference-pipeline-v2.drawio`](diagram/inference-pipeline-v2.drawio)*
+
 ```text
 X-ray upload
   -> YOLOv8 knee detection
