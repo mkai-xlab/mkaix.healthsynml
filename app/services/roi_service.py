@@ -19,12 +19,17 @@ def assign_knee_sides(
     knees: list[dict], image_width: int
 ) -> tuple[list[dict], list[str]]:
     """Order detected knees and infer side labels for the API response."""
+
+    # if there are 2 knees, sort them from left to right
     if len(knees) == 2:
         ordered_knees = sorted(knees, key=lambda knee: knee["box"][0])
         return ordered_knees, ["right", "left"]
+
+    # if there are not 2 knees, return the knees with the unknown side
     if len(knees) != 1:
         return knees, ["unknown"] * len(knees)
 
+    # if there is only one knee, determine the side based on the center x-coordinate
     center_x = (knees[0]["box"][0] + knees[0]["box"][2]) / 2
     if center_x < image_width * 0.40:
         return knees, ["right"]
@@ -118,9 +123,12 @@ class ROIService:
 
     def _detect_sorted_boxes(self, image: np.ndarray) -> list:
         """Run a single YOLO pass and sort a bilateral study from image-left to image-right."""
+
+        # if the model is not loaded, raise an error
         if self.model is None:
             raise RuntimeError("YOLO ROI detector is unavailable.")
 
+        # run a single YOLO pass and sort a bilateral study from image-left to image-right
         results = self.model.predict(
             source=image,
             conf=YOLO_CONFIDENCE_THRESHOLD,
@@ -206,13 +214,22 @@ class ROIService:
 
     def detect_knees_with_coords(self, image_bytes: bytes) -> list[dict]:
         """Return classifier-ready PNG crops and their original YOLO box metadata."""
+
+        # decode the image bytes to a numpy array
         source_image = self._decode_image(image_bytes)
+
+        # detect the knees with their coordinates
         boxes = self._detect_sorted_boxes(source_image)
+
+        # create a list to store the knees with their coordinates and the confidence
         knees: list[dict] = []
 
         for box in boxes:
             coordinates, confidence, _ = self._box_values(box)
+
+            # make a square ROI of the knee
             crop = make_square_roi(source_image, coordinates)
+            # encode the ROI to a PNG image
             success, buffer = cv2.imencode(".png", crop)
             if not success:
                 raise RuntimeError("Could not encode knee ROI")

@@ -20,7 +20,7 @@ class SEResNeXt50Model(BaseModel):
             "seresnext50_32x4d",
             pretrained=pretrained,
 
-            # do not include the final classification head
+            # do not include the final classification head, because we want to use the features for Grad-CAM
             features_only=True,
 
             # use the final spatial block (layer4) for Grad-CAM
@@ -34,14 +34,15 @@ class SEResNeXt50Model(BaseModel):
     @property
     def gradcam_target_layer(self) -> nn.Module:
         """Final spatial block used to generate post-hoc Grad-CAM."""
+
+        # model has 4 stage -> choose the last stage for Grad-CAM
         return self.backbone.layer4
 
     def forward(self, images: torch.Tensor) -> torch.Tensor:
         features = self.backbone(images)[0]
 
-        # average the features over the spatial dimensions to get a single vector
-        # because the features are 3D (B, C, H, W)
+        # average the features over the spatial dimensions to get a single vector -> Global Average Pooling
+        # because the features are 3D (B, C, H, W) -> (B, C, 1, 1)
         pooled_features = features.mean(dim=(2, 3))
 
-    
         return self.classifier(pooled_features)

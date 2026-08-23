@@ -14,7 +14,7 @@ from app.services.roi_service import (
 
 
 def _decode_source_image(image_bytes: bytes) -> np.ndarray:
-    """Decode the original X-ray used for the response annotation."""
+    """Decode the original X-ray used for the response annotation. -> Convert the image bytes to a numpy array"""
     image = cv2.imdecode(np.frombuffer(image_bytes, np.uint8), cv2.IMREAD_COLOR)
     if image is None:
         raise ValueError("Could not decode image. Upload a valid PNG or JPEG image.")
@@ -22,7 +22,8 @@ def _decode_source_image(image_bytes: bytes) -> np.ndarray:
 
 
 def _encode_jpeg_data_url(image: np.ndarray) -> str:
-    success, buffer = cv2.imencode(".jpg", image)
+    """Encode the annotated image to a JPEG data URL. -> Convert the numpy array to a JPEG image"""
+    success, buffer = cv2.imencode(".jpg", image) # -> Convert the numpy array to a JPEG image
     if not success:
         raise RuntimeError("Could not encode annotated image")
     encoded = base64.b64encode(buffer).decode("ascii")
@@ -31,7 +32,7 @@ def _encode_jpeg_data_url(image: np.ndarray) -> str:
 
 def _draw_prediction_label(image: np.ndarray, knee: dict, result: dict) -> None:
     """Render the stable green annotation returned in the existing API contract."""
-    x1, y1, x2, y2 = knee["box"]
+    x1, y1, x2, y2 = knee["box"] 
     side = result["knee_side"]
     side_prefix = f"{side.upper()} " if side != "unknown" else ""
     label = (
@@ -69,19 +70,30 @@ class PredictionService:
 
     def predict_image(self, file_name: str, image_bytes: bytes) -> dict:
         """Predict every detected knee and preserve the established JSON response."""
+
+
         source_image = _decode_source_image(image_bytes)
 
         
+        # detect the knees with their coordinates
+        # return the knees with their coordinates (example: [{'box': (100, 100, 200, 200), 'yolo_conf': 0.9}, ...])
         knees = roi_service.detect_knees_with_coords(image_bytes)
+
+        # if no knees are detected, raise an error
         if not knees:
             # The concrete service raises this itself; retain a clear boundary guard.
             raise ValueError(NO_KNEE_ROI_MESSAGE)
 
+        # assign the knee side to the knees
         knees, sides = assign_knee_sides(knees, source_image.shape[1])
         predictions: list[dict] = []
 
         for knee, side in zip(knees, sides):
+
+            # predict the grade of the knee
             prediction = self.pipeline.predict(knee["crop_bytes"], knee_side=side)
+
+            # update the prediction with the knee coordinates, confidence, side, and ROI image
             prediction.update(
                 {
                     "box": knee["box"],

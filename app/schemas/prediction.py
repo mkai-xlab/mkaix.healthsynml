@@ -1,7 +1,6 @@
 """Stable public response schemas for the inference API."""
 
 from typing import Optional
-
 from pydantic import BaseModel, Field
 
 

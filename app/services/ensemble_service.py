@@ -66,6 +66,8 @@ class EnsembleService:
         """
         if not probabilities:
             raise ValueError("At least one model probability tensor is required")
+
+        # return the model with the highest probability for the predicted class
         return max(
             probabilities,
             key=lambda name: float(probabilities[name][0, predicted_class].item()),

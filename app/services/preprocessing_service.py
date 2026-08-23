@@ -81,7 +81,10 @@ class PreprocessingService:
         )
 
     def preprocess_image(self, image_bytes: bytes) -> tuple[torch.Tensor, np.ndarray]:
-        """Return the normalized tensor and an RGB image aligned with its Grad-CAM."""
+        """Return the normalized tensor and an RGB image aligned with its Grad-CAM.
+        This is the same transform used during training to ensure consistency.
+        CLAHE -> SquarePad -> Resize -> ToTensor -> Normalize
+        """
 
 
         # Read image bytes to a numpy array 
