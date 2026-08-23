@@ -1,30 +1,39 @@
 # Diagrams
 
-Editable Draw.io source files for architecture documentation.
+Editable draw.io sources and their exported previews. Open a `.drawio` at
+[app.diagrams.net](https://app.diagrams.net) or in the desktop app; the `.png` beside it renders
+anywhere with no tooling.
 
-## Source Files
+## Architecture
 
-| File | Description |
-|------|-------------|
-| `inference-pipeline.drawio` | End-to-end inference pipeline |
-| `densenet121.drawio` | DenseNet-121 architecture (4 pages) |
-| `resnext50.drawio` | SE-ResNeXt-50 architecture (4 pages) |
-| `ensemble-v3.drawio` | Ensemble architecture |
+| Source | Preview | Used in |
+| --- | --- | --- |
+| [`inference-pipeline.drawio`](inference-pipeline.drawio) | [`inference-pipeline.png`](inference-pipeline.png) | — (superseded by v2) |
+| [`inference-pipeline-v2.drawio`](inference-pipeline-v2.drawio) | [`inference-pipeline-v2.drawio.png`](inference-pipeline-v2.drawio.png) | [`architecture.md`](../architecture.md) |
+| [`densenet121.drawio`](densenet121.drawio) | `ai_model/densenet121-0{1..4}.png` | [`ai-architecture.md`](../ai-architecture.md) |
+| [`resnext50.drawio`](resnext50.drawio) | `ai_model/resnext50-0{1..4}.png` | [`ai-architecture.md`](../ai-architecture.md) |
+| [`ensemble-v3.drawio`](ensemble-v3.drawio) | — | [`paper.md`](../report/paper.md#diagrams) |
 
-## Exported Images
+`densenet121.drawio` and `resnext50.drawio` are four-page files; each page exports to one numbered
+PNG in [`ai_model/`](ai_model/) — overall, stage/block, bottleneck/layer, and transition/SE module.
 
-Exported PNG images are in `ai_model/` folder.
+## Dataset
 
-## Documentation
+| Source | Preview | Used in |
+| --- | --- | --- |
+| [`dataset_origin.drawio`](dataset_origin.drawio) | [`dataset_origin.png`](dataset_origin.png) | [`dataset.md` §1 Origin](../dataset.md#1-origin) |
+| [`dataset_folder_architecture.drawio`](dataset_folder_architecture.drawio) | [`dataset_origin.drawio.png`](dataset_origin.drawio.png) | [`dataset.md` §4 Folder Architecture](../dataset.md#4-folder-architecture) |
 
-See [ai-architecture.md](../ai-architecture.md) for the complete architecture documentation with embedded diagrams and descriptions.
+The two `_url.txt` files hold shareable viewer links for the diagram of the same name.
 
-## Training Configuration
+## Training
 
-The training folder intentionally contains only two editable multi-page files:
+| Source | Tabs |
+| --- | --- |
+| [`training/densenet121_training.drawio`](training/densenet121_training.drawio) | Original Training · YOLO Paired-View Adaptation · Evaluation · Overall |
+| [`training/seresnext50_training.drawio`](training/seresnext50_training.drawio) | Original Training · YOLO Paired-View Adaptation · Evaluation · Overall |
 
-- [DenseNet-121 training](training/densenet121_training.drawio)
-- [SE-ResNeXt-50 training](training/seresnext50_training.drawio)
+## Editing
 
-Each file has four tabs: `Original Training`, `YOLO Paired-View Adaptation`,
-`Evaluation`, and `Overall`.
+draw.io writes a `.$name.drawio.bkp` backup beside each file while you edit. Those are ignored by
+git — do not commit them.

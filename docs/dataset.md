@@ -8,6 +8,10 @@
 
 ## 1. Origin
 
+![Dataset provenance: from the OAI cohort to the two datasets used here](diagram/dataset_origin.png)
+
+*Source: [`diagram/dataset_origin.drawio`](diagram/dataset_origin.drawio)*
+
 ```
 NIH / NIAMS + NIA
         │
@@ -129,7 +133,9 @@ Class proportions are consistent across train/val/test — confirms a proper str
 
 ## 4. Folder Architecture
 
+![Dataset folder architecture](diagram/dataset_origin.drawio.png)
 
+*Source: [`diagram/dataset_folder_architecture.drawio`](diagram/dataset_folder_architecture.drawio)*
 
 ### YOLO Detection Dataset (Dataset 1)
 

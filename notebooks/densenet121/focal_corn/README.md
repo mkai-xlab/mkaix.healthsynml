@@ -16,7 +16,7 @@ modulation).
 | Checkpoint `loss_type` | `ce` | `focal_corn` |
 
 The shared loss/probability helpers live in
-[`notebooks/_focal_corn_helpers.py`](../_focal_corn_helpers.py) and are pasted
+[`notebooks/_focal_corn_helpers.py`](../../_focal_corn_helpers.py) and are pasted
 into the relevant cells so the notebooks stay self-contained.
 
 ## Why this is research, not a deploy candidate
