@@ -44,9 +44,33 @@ matter most:
 |---|---|---|---|
 | `INPUT_SIZE` | all | 384 | Must match `IMG_SIZE` in the API `.env` |
 | `EPOCHS` | 01 / 02 | 12 / 5 | |
+| `CORN_TASK_WEIGHTS` | 01 / 02 | `[2.0, 1.8, 1.2, 1.0]` | Per-threshold weight in the CORN loss |
 | `LEARNING_RATE` | 01 / 02 | 1e-4 / 1e-5 | Stage 2 is a fine-tune, hence the smaller value |
 | `ALTERNATE_VIEW_PROBABILITY` | 02 | 0.50 | P(draw the YOLO ROI instead of the published crop) |
 | `CHECKPOINT_OVERRIDE` | 03 | `None` | Set to a path to evaluate a specific checkpoint |
+
+## Loss function: Focal CORN (ordinal)
+
+All three notebooks train and decode with **Focal CORN**, not cross-entropy. The head emits
+`NUM_ORDINAL_LOGITS = 4` conditional logits `P(y>0) … P(y>3)` instead of 5 class logits, and
+`corn_probabilities()` turns them back into a 5-class distribution with a cumulative product, so
+every downstream metric (QWK, macro F1, macro AP, Grad-CAM) is computed on a proper distribution.
+
+| Constant | Default | Effect |
+| --- | --- | --- |
+| `CORN_GAMMA` | 2.0 | Focal exponent — down-weights thresholds the model already gets right |
+| `CORN_ALPHA` | 0.25 | Focal scale |
+| `CORN_LABEL_SMOOTHING` | 0.1 | Softens the binary threshold targets |
+| `CORN_TASK_WEIGHTS` | `[2.0, 1.8, 1.2, 1.0]` | Emphasises the 0\|1 and 1\|2 boundaries, where Grade 1 is lost |
+
+Two consequences worth knowing before you read the results:
+
+- **These checkpoints cannot be served by the current API.** `_load_component` builds a 5-logit head
+  and applies softmax; a CORN checkpoint has a 4-logit head. Promoting one means changing the head,
+  the decode step, and the Grad-CAM path together.
+- **Grad-CAM targets a threshold, not a class.** There is no "grade k" logit, so the CAM for grade k
+  backpropagates through threshold `k-1` (and through `-threshold 0` for grade 0). Read a grade-2 CAM
+  as "what made this look worse than grade 1".
 
 ## Test split discipline
 
