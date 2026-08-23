@@ -70,6 +70,8 @@ class PredictionService:
     def predict_image(self, file_name: str, image_bytes: bytes) -> dict:
         """Predict every detected knee and preserve the established JSON response."""
         source_image = _decode_source_image(image_bytes)
+
+        
         knees = roi_service.detect_knees_with_coords(image_bytes)
         if not knees:
             # The concrete service raises this itself; retain a clear boundary guard.

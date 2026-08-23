@@ -1,24 +1,4 @@
 """
-Tests for app.services.ensemble_service.
-
-Purpose
--------
-The ensemble service combines the predictions of multiple classification models
-(DenseNet121 + SE-ResNeXt50) into a single output using a weighted soft-vote
-scheme.  Additionally, when Grad-CAM visualisations are requested, it selects
-the model whose confidence for the predicted class is highest so that the
-CAM heatmap comes from the most decisive model.
-
-Key concepts
-------------
-  - Logits vs probabilities: logits are raw model outputs (can be any real number);
-    probabilities are the softmax of logits and always sum to 1.0.
-  - Weighted soft vote: each model's softmax probabilities are multiplied by its
-    weight, then the results are summed.  The weights should sum to 1.0.
-  - Heatmap component selection: whichever model gives the highest probability
-    for the predicted class is used as the CAM source, because a higher
-    confidence means the model is more certain about that region.
-
 Input
 -----
   For weighted_soft_vote:
@@ -54,11 +34,6 @@ def test_weighted_soft_vote_combines_probabilities_not_logits():
       se_resnext logits : [[-1.0, 0.0, 3.0, 0.5, -0.5]]
       weights           : {densenet: 0.55, se_resnext: 0.45}
 
-    How weighted_soft_vote should work (the correct way):
-      1. Apply softmax to each model's logits → probabilities
-      2. Multiply each model's probabilities by its weight
-      3. Sum the weighted probabilities across models
-
     Expected output
       actual == expected (weighted average of softmax outputs)
       actual.sum(dim=1) == 1.0 (probabilities still sum to 1)
@@ -77,6 +52,7 @@ def test_weighted_soft_vote_combines_probabilities_not_logits():
     actual = ensemble_service.weighted_soft_vote(logits, weights)
 
     # Compute expected: softmax then weighted average (the correct method)
+    # actual.shape = [1,5] -> dim = 1 
     expected = (
         F.softmax(densenet_logits, dim=1) * 0.55
         + F.softmax(se_resnext_logits, dim=1) * 0.45

@@ -1,0 +1,474 @@
+<mxfile host="Electron" pages="4">
+  <diagram name="Original Training" id="0">
+    <mxGraphModel dx="2357" dy="1287" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1350" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="originaltrai_title" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#17324d;strokeColor=#0f2438;fontColor=#ffffff;fontSize=22;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" value="Original Training" vertex="1">
+          <mxGeometry height="70" width="900" x="40" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_b1" parent="1" style="swimlane;startSize=34;rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#1f2937;fontSize=16;fontStyle=1;horizontal=1;container=1;collapsible=0;pointerEvents=0;" value="DATASET + SPLITS" vertex="1">
+          <mxGeometry height="210" width="1720" x="40" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_d1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#1f2937;fontSize=14;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" value="Mendeley / kneeKL224&#xa;5 KL grades (0-4)&#xa;original published 224x224 crops" vertex="1">
+          <mxGeometry height="105" width="300" x="80" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_d2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8e8;strokeColor=#5b9bd5;fontColor=#1f2937;fontSize=14;fontStyle=0;align=center;verticalAlign=middle;spacing=8;" value="TRAIN&#xa;5,778 unique images&#xa;WeightedRandomSampler" vertex="1">
+          <mxGeometry height="105" width="270" x="450" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_d3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#1f2937;fontSize=14;fontStyle=0;align=center;verticalAlign=middle;spacing=8;" value="VALIDATION&#xa;826 images&#xa;checkpoint selection only" vertex="1">
+          <mxGeometry height="105" width="280" x="790" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_d4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#1f2937;fontSize=14;fontStyle=0;align=center;verticalAlign=middle;spacing=8;" value="TEST&#xa;1,656 unique images&#xa;locked until final evaluation" vertex="1">
+          <mxGeometry height="105" width="320" x="1140" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_e1" edge="1" parent="1" source="originaltrai_d1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" target="originaltrai_d2" value="train">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_e2" edge="1" parent="1" source="originaltrai_d1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" target="originaltrai_d3" value="val">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="230" y="160" />
+              <mxPoint x="930" y="160" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="originaltrai_e3" edge="1" parent="1" source="originaltrai_d1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" target="originaltrai_d4" value="test">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="230" y="320" />
+              <mxPoint x="1300" y="320" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="originaltrai_b2" parent="1" style="swimlane;startSize=34;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8e8;strokeColor=#5b9bd5;fontColor=#1f2937;fontSize=16;fontStyle=1;horizontal=1;container=1;collapsible=0;pointerEvents=0;" value="DETERMINISTIC INPUT + TRAIN-ONLY AUGMENTATION" vertex="1">
+          <mxGeometry height="250" width="1720" x="40" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_p1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#1f2937;fontSize=14;fontStyle=0;align=center;verticalAlign=middle;spacing=8;" value="Read RGB&#xa;OpenCV image" vertex="1">
+          <mxGeometry height="105" width="220" x="80" y="430" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_p2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8e8;strokeColor=#5b9bd5;fontColor=#1f2937;fontSize=14;fontStyle=0;align=center;verticalAlign=middle;spacing=8;" value="LAB CLAHE&#xa;L-channel, clip=1.25&#xa;grid=8x8" vertex="1">
+          <mxGeometry height="105" width="250" x="350" y="430" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_p3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8e8;strokeColor=#5b9bd5;fontColor=#1f2937;fontSize=14;fontStyle=0;align=center;verticalAlign=middle;spacing=8;" value="SquarePad&#xa;zero padding&#xa;no center crop" vertex="1">
+          <mxGeometry height="105" width="250" x="650" y="430" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_p4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#1f2937;fontSize=14;fontStyle=0;align=center;verticalAlign=middle;spacing=8;" value="Resize&#xa;384x384" vertex="1">
+          <mxGeometry height="105" width="220" x="950" y="430" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_p5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#1f2937;fontSize=14;fontStyle=0;align=center;verticalAlign=middle;spacing=8;" value="ImageNet tensor&#xa;mean/std normalization" vertex="1">
+          <mxGeometry height="105" width="270" x="1220" y="430" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_p6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#1f2937;fontSize=12;fontStyle=0;align=center;verticalAlign=middle;spacing=8;" value="TRAIN ONLY&#xa;HFlip p=.50 | Rot +/-5&#xa;ColorJitter .08 | Erase .10" vertex="1">
+          <mxGeometry height="135" width="180" x="1530" y="415" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_e4" edge="1" parent="1" source="originaltrai_p1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" target="originaltrai_p2" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_e5" edge="1" parent="1" source="originaltrai_p2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" target="originaltrai_p3" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_e6" edge="1" parent="1" source="originaltrai_p3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" target="originaltrai_p4" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_e7" edge="1" parent="1" source="originaltrai_p4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" target="originaltrai_p5" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_e8" edge="1" parent="1" source="originaltrai_p5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" target="originaltrai_p6" value="train branch">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_b3" parent="1" style="swimlane;startSize=34;rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#1f2937;fontSize=16;fontStyle=1;horizontal=1;container=1;collapsible=0;pointerEvents=0;" value="DENSENET-121 3-STAGE TRAINING" vertex="1">
+          <mxGeometry height="390" width="1740" x="10" y="650" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_r2" parent="originaltrai_b3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#1f2937;fontSize=12;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" value="BEST CHECKPOINT&#xa;validation composite = .55 QWK + .30 macro F1 + .15 macro AP&#xa;best_model.pth + last_model.pth + history/config" vertex="1">
+          <mxGeometry height="85" width="440" x="1300" y="305" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_m1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#1f2937;fontSize=14;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" value="MODEL&#xa;timm densenet121&#xa;ImageNet pretrained&#xa;standard Linear -&gt; 5 logits" vertex="1">
+          <mxGeometry height="170" width="300" x="80" y="730" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_m2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#1f2937;fontSize=14;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" value="STAGE 1 | WARM-UP&#xa;5 epochs&#xa;backbone frozen&#xa;head LR=3e-4" vertex="1">
+          <mxGeometry height="170" width="280" x="460" y="730" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_m3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#1f2937;fontSize=13;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" value="STAGE 2 | COARSE&#xa;15 epochs&#xa;denseblock3 + denseblock4 + norm5&#xa;head=3e-4 | backbone=3e-5" vertex="1">
+          <mxGeometry height="210" width="360" x="810" y="710" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_m4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#1f2937;fontSize=14;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" value="STAGE 3 | FINE-TUNE&#xa;10 epochs&#xa;all layers unfrozen&#xa;LR=1e-5" vertex="1">
+          <mxGeometry height="170" width="300" x="1250" y="730" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_r1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#1f2937;fontSize=12;fontStyle=0;align=center;verticalAlign=middle;spacing=8;" value="CE loss | AdamW | weight decay=1e-4&#xa;Weighted sampler power=1.0&#xa;CosineAnnealingLR per stage&#xa;CUDA AMP | gradient clip=1.0&#xa;EMA=False | TTA=False | early stopping=False" vertex="1">
+          <mxGeometry height="85" width="700" x="460" y="955" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_e9" edge="1" parent="1" source="originaltrai_m1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" target="originaltrai_m2" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_e10" edge="1" parent="1" source="originaltrai_m2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" target="originaltrai_m3" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_e11" edge="1" parent="1" source="originaltrai_m3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" target="originaltrai_m4" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_e12" edge="1" parent="1" source="originaltrai_m4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" target="originaltrai_r1" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1210" y="815" />
+              <mxPoint x="1210" y="987.5" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="originaltrai_e13" edge="1" parent="1" source="originaltrai_r1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" target="originaltrai_r2" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_b4" parent="1" style="swimlane;startSize=34;rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#1f2937;fontSize=16;fontStyle=1;horizontal=1;container=1;collapsible=0;pointerEvents=0;" value="EXPLAINABILITY (POST-HOC ONLY)" vertex="1">
+          <mxGeometry height="190" width="1720" x="40" y="1080" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_x1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#1f2937;fontSize=14;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" value="Target layer&#xa;backbone.features.norm5" vertex="1">
+          <mxGeometry height="90" width="300" x="80" y="1145" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_x2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#1f2937;fontSize=14;fontStyle=0;align=center;verticalAlign=middle;spacing=8;" value="Grad-CAM&#xa;selected/predicted class logit&#xa;no effect on loss or checkpoint choice" vertex="1">
+          <mxGeometry height="110" width="390" x="470" y="1135" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_x3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#1f2937;fontSize=14;fontStyle=0;align=center;verticalAlign=middle;spacing=8;" value="Evidence&#xa;5 validation examples per grade&#xa;original + heatmap + failure review" vertex="1">
+          <mxGeometry height="110" width="390" x="950" y="1135" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_x4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#1f2937;fontSize=14;fontStyle=0;align=center;verticalAlign=middle;spacing=8;" value="Next tab: adaptation&#xa;use selected CE checkpoint" vertex="1">
+          <mxGeometry height="90" width="250" x="1430" y="1145" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_e14" edge="1" parent="1" source="originaltrai_x1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" target="originaltrai_x2" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_e15" edge="1" parent="1" source="originaltrai_x2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" target="originaltrai_x3" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="originaltrai_e16" edge="1" parent="1" source="originaltrai_x3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" target="originaltrai_x4" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="YOLO Paired-View Adaptation" id="1">
+    <mxGraphModel dx="2357" dy="1287" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1350" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="yolopairedvi_title" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#17324d;strokeColor=#0f2438;fontColor=#ffffff;fontSize=22;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" value="YOLO Paired-View Adaptation" vertex="1">
+          <mxGeometry height="70" width="900" x="40" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="yolopairedvi_b1" parent="1" style="swimlane;startSize=34;rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#1f2937;fontSize=16;fontStyle=1;horizontal=1;container=1;collapsible=0;pointerEvents=0;" value="PAIRED VIEW DATASET" vertex="1">
+          <mxGeometry height="220" width="1720" x="40" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="yolopairedvi_d2" parent="yolopairedvi_b1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8e8;strokeColor=#5b9bd5;fontColor=#1f2937;fontSize=13;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" value="YOLO ROI VIEW&#xa;production detector crop&#xa;expand=1.15 x max(box side)&#xa;center square + external black pad" vertex="1">
+          <mxGeometry height="135" width="360" x="350" y="45" as="geometry" />
+        </mxCell>
+        <mxCell id="yolopairedvi_d1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#1f2937;fontSize=14;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" value="PUBLISHED VIEW&#xa;train/val only&#xa;original 224 crop" vertex="1">
+          <mxGeometry height="105" width="280" x="80" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="yolopairedvi_d3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#1f2937;fontSize=14;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" value="PAIR RECORD&#xa;same filename + grade&#xa;choose published or ROI&#xa;p(view)=.50 / .50" vertex="1">
+          <mxGeometry height="105" width="320" x="860" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="yolopairedvi_d4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#1f2937;fontSize=13;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" value="TEST EXCLUDED&#xa;YOLO test split never enters&#xa;adaptation or checkpoint selection" vertex="1">
+          <mxGeometry height="105" width="350" x="1250" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="yolopairedvi_e1" edge="1" parent="1" source="yolopairedvi_d1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" target="yolopairedvi_d3" value="same label">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="220" y="320" />
+              <mxPoint x="1020" y="320" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="yolopairedvi_e2" edge="1" parent="1" source="yolopairedvi_d2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" target="yolopairedvi_d3" value="same label">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="yolopairedvi_e3" edge="1" parent="1" source="yolopairedvi_d3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" target="yolopairedvi_d4" value="hold out">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="yolopairedvi_b2" parent="1" style="swimlane;startSize=34;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8e8;strokeColor=#5b9bd5;fontColor=#1f2937;fontSize=16;fontStyle=1;horizontal=1;container=1;collapsible=0;pointerEvents=0;" value="SHARED PREPROCESSING + TRAINING AUGMENTATION" vertex="1">
+          <mxGeometry height="240" width="1720" x="40" y="390" as="geometry" />
+        </mxCell>
+        <mxCell id="yolopairedvi_p1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8e8;strokeColor=#5b9bd5;fontColor=#1f2937;fontSize=14;fontStyle=0;align=center;verticalAlign=middle;spacing=8;" value="LAB CLAHE&#xa;L-channel clip=1.25&#xa;grid=8x8" vertex="1">
+          <mxGeometry height="105" width="260" x="80" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="yolopairedvi_p2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8e8;strokeColor=#5b9bd5;fontColor=#1f2937;fontSize=14;fontStyle=0;align=center;verticalAlign=middle;spacing=8;" value="SquarePad&#xa;external zero padding&#xa;Resize 384x384" vertex="1">
+          <mxGeometry height="105" width="280" x="410" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="yolopairedvi_p3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#1f2937;fontSize=13;fontStyle=0;align=center;verticalAlign=middle;spacing=8;" value="TRAIN AUGMENT&#xa;HFlip .50 | Rot +/-5&#xa;Jitter brightness/contrast .08&#xa;Random Erase p=.10" vertex="1">
+          <mxGeometry height="135" width="350" x="760" y="445" as="geometry" />
+        </mxCell>
+        <mxCell id="yolopairedvi_p4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#1f2937;fontSize=13;fontStyle=0;align=center;verticalAlign=middle;spacing=8;" value="VAL / TEST&#xa;CLAHE -&gt; pad -&gt; resize&#xa;ImageNet norm&#xa;no stochastic augmentation" vertex="1">
+          <mxGeometry height="135" width="350" x="1190" y="445" as="geometry" />
+        </mxCell>
+        <mxCell id="yolopairedvi_e4" edge="1" parent="1" source="yolopairedvi_p1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" target="yolopairedvi_p2" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="yolopairedvi_e5" edge="1" parent="1" source="yolopairedvi_p2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" target="yolopairedvi_p3" value="train only">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="yolopairedvi_e6" edge="1" parent="1" source="yolopairedvi_p2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" target="yolopairedvi_p4" value="val/test">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="550" y="610" />
+              <mxPoint x="1365" y="610" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="yolopairedvi_b3" parent="1" style="swimlane;startSize=34;rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#1f2937;fontSize=16;fontStyle=1;horizontal=1;container=1;collapsible=0;pointerEvents=0;" value="FIVE-EPOCH FULL-NETWORK ADAPTATION" vertex="1">
+          <mxGeometry height="360" width="1720" x="40" y="670" as="geometry" />
+        </mxCell>
+        <mxCell id="yolopairedvi_m1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#1f2937;fontSize=13;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" value="BASE CHECKPOINT&#xa;selected original DenseNet-121 CE&#xa;load model_state_dict" vertex="1">
+          <mxGeometry height="150" width="310" x="80" y="750" as="geometry" />
+        </mxCell>
+        <mxCell id="yolopairedvi_m2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#1f2937;fontSize=13;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" value="TRAIN 5 EPOCHS&#xa;all layers trainable&#xa;CE only (no MSE)&#xa;AdamW lr=1e-5&#xa;weight decay=1e-3" vertex="1">
+          <mxGeometry height="180" width="300" x="470" y="735" as="geometry" />
+        </mxCell>
+        <mxCell id="yolopairedvi_m3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#1f2937;fontSize=13;fontStyle=0;align=center;verticalAlign=middle;spacing=8;" value="SAMPLER + SCHEDULE&#xa;full inverse-frequency&#xa;CosineAnnealingLR&#xa;CUDA AMP + clip norm=1.0" vertex="1">
+          <mxGeometry height="150" width="300" x="850" y="750" as="geometry" />
+        </mxCell>
+        <mxCell id="yolopairedvi_m4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#1f2937;fontSize=13;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" value="DUAL-DOMAIN VALIDATION&#xa;published view score&#xa;YOLO ROI score&#xa;per-view selector=.55 QWK+.30 F1+.15 AP" vertex="1">
+          <mxGeometry height="200" width="390" x="1230" y="725" as="geometry" />
+        </mxCell>
+        <mxCell id="yolopairedvi_m5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#1f2937;fontSize=12;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" value="ROBUST CHECKPOINT&#xa;robust = .5 published selection + .5 ROI selection&#xa;save best_model.pth + history.csv + run_config.json" vertex="1">
+          <mxGeometry height="65" width="700" x="470" y="945" as="geometry" />
+        </mxCell>
+        <mxCell id="yolopairedvi_e7" edge="1" parent="1" source="yolopairedvi_m1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" target="yolopairedvi_m2" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="yolopairedvi_e8" edge="1" parent="1" source="yolopairedvi_m2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" target="yolopairedvi_m3" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="yolopairedvi_e9" edge="1" parent="1" source="yolopairedvi_m3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" target="yolopairedvi_m4" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="yolopairedvi_e10" edge="1" parent="1" source="yolopairedvi_m4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" target="yolopairedvi_m5" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1425" y="980" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="yolopairedvi_b4" parent="1" style="swimlane;startSize=34;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#1f2937;fontSize=16;fontStyle=1;horizontal=1;container=1;collapsible=0;pointerEvents=0;" value="ADAPTATION OUTPUT" vertex="1">
+          <mxGeometry height="190" width="1720" x="40" y="1070" as="geometry" />
+        </mxCell>
+        <mxCell id="yolopairedvi_o1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#1f2937;fontSize=14;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" value="Checkpoint&#xa;production-style YOLO ROI adaptation" vertex="1">
+          <mxGeometry height="90" width="330" x="90" y="1135" as="geometry" />
+        </mxCell>
+        <mxCell id="yolopairedvi_o2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#1f2937;fontSize=14;fontStyle=0;align=center;verticalAlign=middle;spacing=8;" value="Evaluation notebook&#xa;loads this checkpoint&#xa;and uses test/ only" vertex="1">
+          <mxGeometry height="90" width="340" x="510" y="1135" as="geometry" />
+        </mxCell>
+        <mxCell id="yolopairedvi_o3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#1f2937;fontSize=14;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" value="Grad-CAM&#xa;DenseNet features.norm5&#xa;predicted + true class maps" vertex="1">
+          <mxGeometry height="100" width="360" x="940" y="1130" as="geometry" />
+        </mxCell>
+        <mxCell id="yolopairedvi_o4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#1f2937;fontSize=14;fontStyle=0;align=center;verticalAlign=middle;spacing=8;" value="Next tab: locked test&#xa;no further tuning" vertex="1">
+          <mxGeometry height="90" width="250" x="1400" y="1135" as="geometry" />
+        </mxCell>
+        <mxCell id="yolopairedvi_e11" edge="1" parent="1" source="yolopairedvi_o1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" target="yolopairedvi_o2" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="yolopairedvi_e12" edge="1" parent="1" source="yolopairedvi_o2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" target="yolopairedvi_o3" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="yolopairedvi_e13" edge="1" parent="1" source="yolopairedvi_o3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" target="yolopairedvi_o4" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="Evaluation" id="2">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" page="1" pageWidth="1800" pageHeight="1350" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="evaluation_title" value="Evaluation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#17324d;strokeColor=#0f2438;fontColor=#ffffff;fontSize=22;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="900" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="evaluation_b1" value="LOCKED TEST EVALUATION" style="swimlane;startSize=34;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#1f2937;fontSize=16;fontStyle=1;horizontal=1;container=1;collapsible=0;pointerEvents=0;" vertex="1" parent="1">
+          <mxGeometry x="40" y="120" width="1720" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="evaluation_d1" value="DATASET ROOT&#xa;derived/densenet121_yolo_square_roi_trainvaltest_v2/test" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#1f2937;fontSize=13;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="80" y="180" width="430" height="105" as="geometry" />
+        </mxCell>
+        <mxCell id="evaluation_d2" value="CLASS SUPPORT&#xa;G0 639 | G1 296 | G2 447&#xa;G3 223 | G4 51&#xa;N=1,656" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#1f2937;fontSize=13;fontStyle=0;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="600" y="170" width="330" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="evaluation_d3" value="CHECKPOINT&#xa;selected paired-view best_model.pth&#xa;load once after validation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#1f2937;fontSize=13;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="180" width="340" height="105" as="geometry" />
+        </mxCell>
+        <mxCell id="evaluation_d4" value="RULE&#xa;No augmentation&#xa;No sampler&#xa;No test-based config changes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#1f2937;fontSize=12;fontStyle=0;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1450" y="180" width="230" height="105" as="geometry" />
+        </mxCell>
+        <mxCell id="evaluation_e1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="evaluation_d1" target="evaluation_d2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="evaluation_e2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="evaluation_d2" target="evaluation_d3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="evaluation_e3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="evaluation_d3" target="evaluation_d4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="evaluation_b2" value="DETERMINISTIC EVALUATION PIPELINE" style="swimlane;startSize=34;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8e8;strokeColor=#5b9bd5;fontColor=#1f2937;fontSize=16;fontStyle=1;horizontal=1;container=1;collapsible=0;pointerEvents=0;" vertex="1" parent="1">
+          <mxGeometry x="40" y="390" width="1720" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="evaluation_p1" value="cv2.imread&#xa;BGR -&gt; RGB" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#1f2937;fontSize=14;fontStyle=0;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="80" y="460" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="evaluation_p2" value="CLAHE 1.25&#xa;LAB L channel" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8e8;strokeColor=#5b9bd5;fontColor=#1f2937;fontSize=14;fontStyle=0;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="350" y="460" width="240" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="evaluation_p3" value="SquarePad&#xa;Resize 384" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8e8;strokeColor=#5b9bd5;fontColor=#1f2937;fontSize=14;fontStyle=0;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="640" y="460" width="240" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="evaluation_p4" value="Tensor + ImageNet&#xa;normalization" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#1f2937;fontSize=14;fontStyle=0;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="930" y="460" width="260" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="evaluation_p5" value="Forward pass&#xa;softmax probabilities&#xa;argmax KL 0-4" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#1f2937;fontSize=14;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1240" y="460" width="300" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="evaluation_e4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="evaluation_p1" target="evaluation_p2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="evaluation_e5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="evaluation_p2" target="evaluation_p3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="evaluation_e6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="evaluation_p3" target="evaluation_p4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="evaluation_e7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="evaluation_p4" target="evaluation_p5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="evaluation_b3" value="METRICS AND FIGURES" style="swimlane;startSize=34;rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#1f2937;fontSize=16;fontStyle=1;horizontal=1;container=1;collapsible=0;pointerEvents=0;" vertex="1" parent="1">
+          <mxGeometry x="40" y="660" width="1720" height="260" as="geometry" />
+        </mxCell>
+        <mxCell id="evaluation_m1" value="Ordinal metrics&#xa;Accuracy | QWK | MAE&#xa;Off-by-1 accuracy" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#1f2937;fontSize=14;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="80" y="735" width="300" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="evaluation_m2" value="Class metrics&#xa;Macro precision/recall/F1&#xa;Macro AP | ROC-AUC&#xa;per-grade P/R/F1/AP/AUC" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#1f2937;fontSize=13;fontStyle=0;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="470" y="720" width="360" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="evaluation_m3" value="Diagnostic figures&#xa;Confusion matrix&#xa;ROC curves&#xa;Precision-recall curves" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8e8;strokeColor=#5b9bd5;fontColor=#1f2937;fontSize=14;fontStyle=0;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="920" y="735" width="330" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="evaluation_m4" value="Artifacts&#xa;test_predictions.csv&#xa;test_metrics.json&#xa;classification report" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#1f2937;fontSize=14;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1340" y="735" width="300" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="evaluation_e8" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="evaluation_m1" target="evaluation_m2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="evaluation_e9" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="evaluation_m2" target="evaluation_m3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="evaluation_e10" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="evaluation_m3" target="evaluation_m4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="evaluation_b4" value="GRAD-CAM AUDIT (EXPLANATION AFTER PREDICTION)" style="swimlane;startSize=34;rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#1f2937;fontSize=16;fontStyle=1;horizontal=1;container=1;collapsible=0;pointerEvents=0;" vertex="1" parent="1">
+          <mxGeometry x="40" y="970" width="1720" height="280" as="geometry" />
+        </mxCell>
+        <mxCell id="evaluation_x1" value="Target&#xa;DenseNet features.norm5" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#1f2937;fontSize=14;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="80" y="1050" width="280" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="evaluation_x2" value="Predicted class map&#xa;backprop selected logit&#xa;Grad-CAM weights + ReLU" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#1f2937;fontSize=13;fontStyle=0;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="430" y="1035" width="330" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="evaluation_x3" value="Misclassified cases&#xa;ROI + predicted-class CAM&#xa;ROI + true-class CAM" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#1f2937;fontSize=13;fontStyle=0;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="830" y="1035" width="330" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="evaluation_x4" value="Evidence&#xa;correct grids by grade&#xa;misclassified pair index&#xa;heatmaps do not change logits" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#1f2937;fontSize=13;fontStyle=0;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1230" y="1035" width="360" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="evaluation_e11" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="evaluation_x1" target="evaluation_x2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="evaluation_e12" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="evaluation_x2" target="evaluation_x3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="evaluation_e13" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="evaluation_x3" target="evaluation_x4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="Overall" id="3">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" page="1" pageWidth="1800" pageHeight="1350" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="overall_title" value="Overall" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#17324d;strokeColor=#0f2438;fontColor=#ffffff;fontSize=22;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="900" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="overall_b1" value="END-TO-END DENSENET-121 LIFECYCLE" style="swimlane;startSize=34;rounded=1;whiteSpace=wrap;html=1;fillColor=#17324d;strokeColor=#0f2438;fontColor=#ffffff;fontSize=16;fontStyle=1;horizontal=1;container=1;collapsible=0;pointerEvents=0;" vertex="1" parent="1">
+          <mxGeometry x="40" y="120" width="1720" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="overall_s1" value="ORIGINAL TRAINING&#xa;Published kneeKL224&#xa;3 stages -&gt; original CE checkpoint" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#1f2937;fontSize=14;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="90" y="180" width="330" height="105" as="geometry" />
+        </mxCell>
+        <mxCell id="overall_s2" value="ADAPTATION&#xa;Published/YOLO paired view&#xa;5 epochs -&gt; robust checkpoint" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8e8;strokeColor=#5b9bd5;fontColor=#1f2937;fontSize=14;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="500" y="180" width="350" height="105" as="geometry" />
+        </mxCell>
+        <mxCell id="overall_s3" value="EVALUATION&#xa;YOLO test only&#xa;metrics + confusion matrix" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#1f2937;fontSize=14;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="930" y="180" width="330" height="105" as="geometry" />
+        </mxCell>
+        <mxCell id="overall_s4" value="EXPLAINABILITY&#xa;Grad-CAM features.norm5&#xa;correct + failed maps" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#1f2937;fontSize=14;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1340" y="180" width="320" height="105" as="geometry" />
+        </mxCell>
+        <mxCell id="overall_e1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="overall_s1" target="overall_s2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="overall_e2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="overall_s2" target="overall_s3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="overall_e3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="overall_s3" target="overall_s4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="overall_b2" value="NON-NEGOTIABLE DATA CONTRACT" style="swimlane;startSize=34;rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#1f2937;fontSize=16;fontStyle=1;horizontal=1;container=1;collapsible=0;pointerEvents=0;" vertex="1" parent="1">
+          <mxGeometry x="40" y="370" width="1720" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="overall_r1" value="SPLITS&#xa;Train/val may select checkpoints&#xa;Test is locked and evaluated once" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#1f2937;fontSize=14;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="100" y="445" width="330" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="overall_r2" value="ROI GEOMETRY&#xa;YOLO box -&gt; expand 1.15x max side&#xa;center square -&gt; black pad outside source" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8e8;strokeColor=#5b9bd5;fontColor=#1f2937;fontSize=13;fontStyle=0;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="540" y="430" width="370" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="overall_r3" value="PREPROCESSING&#xa;CLAHE -&gt; SquarePad -&gt; Resize&#xa;ImageNet normalization&#xa;same geometry in API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8e8;strokeColor=#5b9bd5;fontColor=#1f2937;fontSize=13;fontStyle=0;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="430" width="330" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="overall_r4" value="LOSS / CAM&#xa;CE trains 5 logits&#xa;Grad-CAM is post-hoc only&#xa;no MSE feature matching" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#1f2937;fontSize=12;fontStyle=0;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1450" y="445" width="230" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="overall_e4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="overall_r1" target="overall_r2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="overall_e5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="overall_r2" target="overall_r3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="overall_e6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="overall_r3" target="overall_r4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="overall_b3" value="OPERATIONAL HAND-OFF" style="swimlane;startSize=34;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#1f2937;fontSize=16;fontStyle=1;horizontal=1;container=1;collapsible=0;pointerEvents=0;" vertex="1" parent="1">
+          <mxGeometry x="40" y="690" width="1720" height="320" as="geometry" />
+        </mxCell>
+        <mxCell id="overall_o1" value="TRAINING OUTPUT&#xa;best_model.pth&#xa;history.csv&#xa;run_config / manifest" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#1f2937;fontSize=14;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="100" y="780" width="300" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="overall_o2" value="API INPUT&#xa;YOLO detector crop&#xa;expand + square pad&#xa;384 tensor" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8e8;strokeColor=#5b9bd5;fontColor=#1f2937;fontSize=14;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="490" y="780" width="300" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="overall_o3" value="MODEL INFERENCE&#xa;DenseNet-121 5-logit CE&#xa;KL argmax + probabilities" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#1f2937;fontSize=14;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="880" y="780" width="330" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="overall_o4" value="API EXPLANATION&#xa;Grad-CAM from norm5&#xa;overlay returned with prediction" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#1f2937;fontSize=14;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1310" y="780" width="330" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="overall_e7" value="deploy selected checkpoint" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="overall_o1" target="overall_o2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="overall_e8" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="overall_o2" target="overall_o3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="overall_e9" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#52606d;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="overall_o3" target="overall_o4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="overall_z1" value="This file is the map: Original Training -&gt; YOLO Paired-View Adaptation -&gt; Evaluation -&gt; Overall" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#17324d;strokeColor=#0f2438;fontColor=#ffffff;fontSize=16;fontStyle=1;align=center;verticalAlign=middle;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="300" y="1080" width="1200" height="70" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

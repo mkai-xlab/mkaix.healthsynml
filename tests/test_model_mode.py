@@ -1,13 +1,6 @@
 """
 Tests for app.core.config.normalize_model_mode().
 
-Purpose
--------
-The app accepts model-mode strings from environment variables and API requests.
-These strings may be written in different formats (snake_case, camelCase,
-hyphens, etc.).  normalize_model_mode() maps every accepted alias to one
-canonical key so that the rest of the application uses a consistent enum.
-
 Input
 -----
   - A string value submitted by the user or read from an env var

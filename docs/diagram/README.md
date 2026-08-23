@@ -18,3 +18,13 @@ Exported PNG images are in `ai_model/` folder.
 ## Documentation
 
 See [ai-architecture.md](../ai-architecture.md) for the complete architecture documentation with embedded diagrams and descriptions.
+
+## Training Configuration
+
+The training folder intentionally contains only two editable multi-page files:
+
+- [DenseNet-121 training](training/densenet121_training.drawio)
+- [SE-ResNeXt-50 training](training/seresnext50_training.drawio)
+
+Each file has four tabs: `Original Training`, `YOLO Paired-View Adaptation`,
+`Evaluation`, and `Overall`.
