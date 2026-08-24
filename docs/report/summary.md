@@ -1,6 +1,6 @@
 # Run Summary
 
-All 83 recorded configurations across 57 notebooks. Every row names exactly one notebook; ablation notebooks contribute one row per arm.
+All 78 recorded configurations across 57 notebooks. Every row names exactly one notebook; ablation notebooks contribute one row per arm.
 Full detail (40 columns) is in [`report.csv`](report.csv).
 
 Regenerate with `python docs/report/build_summary.py` after editing `report.csv`.
@@ -26,13 +26,19 @@ a value that exists elsewhere. Metrics are copied verbatim from executed output 
 those settings were chosen. `report.csv` carries the full configuration for every row;
 [`audit_findings.md`](audit_findings.md) lists the discrepancies this audit turned up.
 
-## Artifacts in production (4)
+## Artifacts in production (3)
+
+**A fourth production artifact is missing from this table on purpose:** the
+deployed SE-ResNeXt-50 checkpoint (`checkpoints/se_resnext50_32x4d/2026-08-08_02-51-49_038987_UTC_paired_view_yolo_roi`) has no notebook anywhere in
+the repository - no training run, no test evaluation. A row with no notebook would
+break this table's own rule that every row names one executed notebook, so the gap
+is documented in prose instead: see
+[audit findings, section 4](audit_findings.md#4-the-deployed-se-resnext-50-has-no-notebook-at-all).
 
 | ID | Model | Configuration | Input | Loss | Split | Acc | QWK | Macro F1 | G1 recall | Notebook |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | DN-RUN-09 | DenseNet-121 | Paired-view adaptation: 50% published crop + 50% YOLO square ROI, roi_expansion 1.15 | 384x384 | Cross-Entropy (CE) | validation | — | 0.7969499 (published) / 0.7405191 (ROI) | 0.6706206 (published) / 0.6219707 (ROI) | — | [2026-07-30_03_train_densenet121_paired_view_yolo_384.ipynb](../../notebooks/densenet121/runs/paired_view_yolo_384/2026-07-30_03_train_densenet121_paired_view_yolo_384.ipynb) |
 | DN-RUN-10 | DenseNet-121 | Locked YOLO-ROI test evaluation of the deployed checkpoint | 384x384 | n/a (inference only) | test | 0.5972222 | 0.7702197 | 0.6215203 | — | [2026-07-30_04_evaluate_densenet121_paired_view_yolo_gradcam_384.ipynb](../../notebooks/densenet121/runs/paired_view_yolo_384/2026-07-30_04_evaluate_densenet121_paired_view_yolo_gradcam_384.ipynb) |
-| ORPHAN-01 | SE-ResNeXt-50 32x4d | Paired-view YOLO ROI adaptation (paired_view_probability 0.5, roi_expansion 1.15) | 384x384 (inferred from the paired-view recipe) | ce (from checkpoint metadata) | none — never evaluated in any notebook | — | — | — | — | — |
 | YOLO-02 | YOLOv8n | 100-epoch detector training, 640px | 640 | Ultralytics detection loss | validation | Precision 1.000 | mAP50-95 0.902 | — | — | [yolov8_knee_detection_cli.ipynb](../../notebooks/yolo/yolov8_knee_detection_cli.ipynb) |
 
 ## Locked test-split evaluations (5)
@@ -111,15 +117,6 @@ those settings were chosen. `report.csv` carries the full configuration for ever
 | ID | Model | Configuration | Input | Loss | Split | Acc | QWK | Macro F1 | G1 recall | Notebook |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | YOLO-01 | YOLOv8n | 50-epoch detector training, 640px | 640 | Ultralytics detection loss | validation | Precision 0.989 | mAP50-95 0.745 | — | — | [yolov8_knee_detection.ipynb](../../notebooks/yolo/yolov8_knee_detection.ipynb) |
-
-## Checkpoints with no notebook (4)
-
-| ID | Model | Configuration | Input | Loss | Split | Acc | QWK | Macro F1 | G1 recall | Notebook |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| ORPHAN-05 | DenseNet-121 | Canonical laterality production candidate, final linear CAM head, CE | 384x384 (input_resize 400, input_crop 384) | ce | validation (from checkpoint metadata only) | 0.6682809 | 0.8138684 | 0.6952091 | 0.4052288 | — |
-| ORPHAN-03 | DenseNet-121 | Natural-orientation CE training with Grad-CAM (3-stage) | 384x384 | ce | validation (from checkpoint metadata only) | 0.658596 | 0.8071397 | 0.6904353 | 0.5228758 | — |
-| ORPHAN-04 | DenseNet-121 | Canonical (mirrored) laterality, final linear CAM head, CE | 384x384 | ce | validation (from checkpoint metadata only) | 0.6440678 | 0.8000991 | 0.6837016 | 0.4640523 | — |
-| ORPHAN-02 | SE-ResNeXt-50 32x4d | Paired-view YOLO ROI adaptation, native-CAM head (paired_view_probability 0.5, roi_expansion 1.15) | 384x384 (inferred) | ce (from checkpoint metadata) | none — never evaluated in any notebook | — | — | — | — | — |
 
 ## Incomplete, stale, or never executed (15)
 
