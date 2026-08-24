@@ -11,6 +11,7 @@ from app.api.v1.router import api_router
 REPOSITORY_ROOT = Path(__file__).resolve().parent
 TOOLS_HOME = REPOSITORY_ROOT / "tools" / "unified_dashboard" / "index.html"
 RESPONSE_VIEWER_PAGE = REPOSITORY_ROOT / "tools" / "kl_response_viewer" / "index.html"
+ARCHITECTURE_VIEWER_ROOT = REPOSITORY_ROOT / "tools" / "architecture_viewer"
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -79,6 +80,31 @@ def response_viewer_asset(asset_path: str) -> FileResponse:
         from fastapi import HTTPException
 
         raise HTTPException(status_code=404, detail="Viewer asset not found")
+    return FileResponse(candidate)
+
+
+@app.get(
+    "/architecture",
+    tags=["Architecture Viewer"],
+    summary="Open the model architecture viewer",
+    description=(
+        "Presentation page: DenseNet-121 and SE-ResNeXt-50 diagrams with the "
+        "measured layer counts, feature shapes, and locked test-split metrics."
+    ),
+    include_in_schema=False,
+)
+def architecture_viewer_page() -> FileResponse:
+    return FileResponse(ARCHITECTURE_VIEWER_ROOT / "index.html")
+
+
+@app.get("/architecture/{asset_path:path}", include_in_schema=False)
+def architecture_viewer_asset(asset_path: str) -> FileResponse:
+    """Serve the viewer stylesheet and diagram images."""
+    candidate = (ARCHITECTURE_VIEWER_ROOT / asset_path).resolve()
+    if ARCHITECTURE_VIEWER_ROOT.resolve() not in candidate.parents or not candidate.is_file():
+        from fastapi import HTTPException
+
+        raise HTTPException(status_code=404, detail="Architecture asset not found")
     return FileResponse(candidate)
 
 
