@@ -40,22 +40,28 @@ def normalize_model_mode(value: str) -> str:
 class Settings:
     """Runtime settings read once when the process starts."""
 
+    # Defaults below are the deployed configuration, so the service starts
+    # correctly with no .env present. Keep them in step with env/ai.env.
     MODEL_MODE: str = normalize_model_mode(
-        os.getenv("MODEL_MODE", "densenet121")
+        os.getenv("MODEL_MODE", "ensemble")
     )
     DENSENET121_CHECKPOINT_PATH: str = os.getenv(
         "DENSENET121_CHECKPOINT_PATH",
-        "checkpoints/densenet121/best_model.pth",
+        (
+            "checkpoints/densenet121/"
+            "2026-07-30_09-03-29_850983_UTC_paired_view_yolo_roi/best_model.pth"
+        ),
     )
     SE_RESNEXT_CHECKPOINT_PATH: str = os.getenv(
         "SE_RESNEXT_CHECKPOINT_PATH",
         (
             "checkpoints/se_resnext50_32x4d/"
-            "2026-08-08_08-35-38_UTC_linear_gradcam/best_model.pth"
+            "2026-08-08_02-51-49_038987_UTC_paired_view_yolo_roi/best_model.pth"
         ),
     )
     YOLO_CHECKPOINT_PATH: str = os.getenv(
-        "YOLO_CHECKPOINT_PATH", "checkpoints/yolov8/best.pt"
+        "YOLO_CHECKPOINT_PATH",
+        "checkpoints/yolov8/2026-07-26_20-49-25_joint_detection/best.pt",
     )
     IMG_SIZE: int = int(os.getenv("IMG_SIZE", "384"))
 

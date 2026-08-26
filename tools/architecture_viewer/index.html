@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Model Architecture Viewer &mdash; Knee OA</title>
+<link rel="stylesheet" href="/architecture/styles.css">
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Knee OA &mdash; Model Architecture</h1>
+  <p>Diagrams and the numbers behind them. Every figure below is measured from the
+     checkpoints this service loads; nothing is estimated. Click a diagram to enlarge.</p>
+</header>
+
+<div class="tabs" role="tablist">
+  <button class="tab" role="tab" aria-selected="true"  data-panel="p-pipe">Inference pipeline</button>
+  <button class="tab" role="tab" aria-selected="false" data-panel="p-dn">DenseNet-121</button>
+  <button class="tab" role="tab" aria-selected="false" data-panel="p-se">SE-ResNeXt-50</button>
+</div>
+
+<!-- ============================================================ PIPELINE -->
+<section class="panel" id="p-pipe" role="tabpanel">
+  <div class="stats">
+    <div class="stat"><b>2</b><span>CNNs ensembled</span></div>
+    <div class="stat"><b>384&times;384</b><span>Classifier input</span></div>
+    <div class="stat"><b>5</b><span>KL grades (0&ndash;4)</span></div>
+    <div class="stat yolo"><b>0.902</b><span>YOLO mAP50-95</span></div>
+    <div class="stat"><b>1656</b><span>Locked test images</span></div>
+  </div>
+
+  <figure>
+    <img src="/architecture/img/inference-pipeline.png" alt="End-to-end inference pipeline">
+    <figcaption>
+      <strong>End to end: X-ray &rarr; KL grade + Grad-CAM</strong>
+      <span>YOLOv8n locates the tibiofemoral joint, the crop is expanded to a square ROI and
+      preprocessed, both CNNs score it, their probabilities are soft-voted, and the winning
+      model supplies the Grad-CAM overlay.</span>
+    </figcaption>
+  </figure>
+
+  <div class="notes">
+    <h3>Preprocessing &mdash; identical in training and serving</h3>
+    <table>
+      <tr><td>Colour space / CLAHE</td><td>LAB, clipLimit <b>1.25</b>, tile grid <b>8&times;8</b></td></tr>
+      <tr><td>Geometry</td><td>SquarePad (black border) &rarr; resize <b>384&times;384</b>, PIL bilinear</td></tr>
+      <tr><td>Normalisation</td><td>ImageNet mean/std</td></tr>
+      <tr><td>ROI expansion</td><td><b>1.15</b> &times; max(box width, box height)</td></tr>
+      <tr><td>YOLO confidence threshold</td><td><b>0.45</b></td></tr>
+    </table>
+
+    <h3>Ensemble</h3>
+    <table>
+      <tr><td>Rule</td><td>Per-model softmax, then weighted average, then argmax</td></tr>
+      <tr><td>Weights</td><td>DenseNet-121 <b>0.55</b> &nbsp;/&nbsp; SE-ResNeXt-50 <b>0.45</b></td></tr>
+      <tr><td>Grad-CAM source</td><td>The component with the highest probability for the predicted class</td></tr>
+      <tr><td>Weights were</td><td>Set by hand, not tuned &mdash; and the ensemble itself has no measured test score</td></tr>
+    </table>
+
+    <h3>Detector &mdash; YOLOv8n <span class="pill">100 epochs</span></h3>
+    <table>
+      <tr><td>Input size</td><td>640</td></tr>
+      <tr><td>Precision / Recall</td><td><b>1.000</b> / <b>0.991</b></td></tr>
+      <tr><td>mAP50 / mAP50-95</td><td><b>0.995</b> / <b>0.902</b></td></tr>
+      <tr><td>Validation set</td><td>58 images, 117 instances</td></tr>
+    </table>
+
+    <h3>Locked test split &mdash; 1656 images</h3>
+    <table>
+      <tr><td>Per grade</td><td>G0 <b>639</b> &nbsp; G1 <b>296</b> &nbsp; G2 <b>447</b> &nbsp; G3 <b>223</b> &nbsp; G4 <b>51</b></td></tr>
+      <tr><td>Why Grade 1 is hard</td><td>&ldquo;Doubtful&rdquo; is defined by the <em>absence</em> of clear findings, so it sits between two classes with real evidence</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ============================================================ DENSENET -->
+<section class="panel" id="p-dn" role="tabpanel" hidden>
+  <div class="stats">
+    <div class="stat dn"><b>6.96 M</b><span>Parameters</span></div>
+    <div class="stat dn"><b>120</b><span>Conv2d layers</span></div>
+    <div class="stat dn"><b>1024&times;12&times;12</b><span>Final feature map</span></div>
+    <div class="stat dn"><b>0.7702</b><span>Test QWK</span></div>
+    <div class="stat dn"><b>0.55</b><span>Ensemble weight</span></div>
+  </div>
+
+  <figure>
+    <img src="/architecture/img/densenet121-01.png" alt="DenseNet-121 overall architecture">
+    <figcaption><strong>1 &mdash; Overall architecture</strong>
+      <span>384&times;384&times;3 &rarr; conv 7&times;7 &rarr; maxpool &rarr; Dense Block 1 (6 layers, k=32) &rarr;
+      Transition 1 (&theta;=0.5) &rarr; Block 2 (12) &rarr; Transition 2 &rarr; Block 3 (24) &rarr;
+      Transition 3 &rarr; Block 4 (16) &rarr; BN+ReLU &rarr; global average pool &rarr; FC to 5 logits.
+      k is the growth rate, &theta; the compression factor.</span></figcaption>
+  </figure>
+
+  <figure>
+    <img src="/architecture/img/densenet121-02.png" alt="DenseNet-121 dense block and transition">
+    <figcaption><strong>2 &mdash; Dense block and transition layer</strong>
+      <span>Every layer inside a block concatenates its output onto all previous feature maps,
+      so channels accumulate. A transition layer then halves both the channel count (&theta;=0.5)
+      and the spatial resolution.</span></figcaption>
+  </figure>
+
+  <figure>
+    <img src="/architecture/img/densenet121-03.png" alt="DenseNet-121 dense layer internals">
+    <figcaption><strong>3 &mdash; Inside one dense layer</strong>
+      <span>BN &rarr; ReLU &rarr; conv 1&times;1 (C&rarr;4k bottleneck) &rarr; BN &rarr; ReLU &rarr;
+      conv 3&times;3 (4k&rarr;k) &rarr; concatenate with the input. Each layer adds exactly k=32 channels.</span></figcaption>
+  </figure>
+
+  <figure>
+    <img src="/architecture/img/densenet121-04.png" alt="DenseNet-121 transition layer">
+    <figcaption><strong>4 &mdash; Transition layer</strong>
+      <span>BN &rarr; ReLU &rarr; conv 1&times;1 that drops channels by &theta;=0.5 &rarr; average pool 2&times;2.
+      This is what stops the concatenation from growing without bound.</span></figcaption>
+  </figure>
+
+  <div class="notes">
+    <h3>Measured from the loaded checkpoint</h3>
+    <table>
+      <tr><td>Parameters</td><td><b>6,958,981</b> (6.96 M)</td></tr>
+      <tr><td>Conv2d / BatchNorm2d / Linear</td><td>120 / 121 / 1</td></tr>
+      <tr><td>Input</td><td>384&times;384&times;3</td></tr>
+      <tr><td>Final feature map</td><td>1024 &times; 12 &times; 12</td></tr>
+      <tr><td>Classifier</td><td>Linear 1024 &rarr; 5, dropout 0.20</td></tr>
+      <tr><td>Grad-CAM layer</td><td><code>backbone.features.norm5</code></td></tr>
+      <tr><td>Checkpoint</td><td>2026-07-30_09-03-29, epoch 4, paired-view p=0.50</td></tr>
+    </table>
+
+    <h3>Locked test result <span class="pill">n = 1656</span></h3>
+    <table>
+      <tr><td>Accuracy</td><td><b>0.5972</b></td></tr>
+      <tr><td>QWK (primary metric)</td><td><b>0.7702</b></td></tr>
+      <tr><td>Macro precision / recall / F1</td><td>0.6177 / 0.6420 / <b>0.6215</b></td></tr>
+      <tr><td>Macro AP / macro AUC</td><td>0.6696 / 0.8611</td></tr>
+      <tr><td>Per-grade F1</td><td>G0 0.7163 &nbsp; G1 <b>0.3227</b> &nbsp; G2 0.5249 &nbsp; G3 0.7333 &nbsp; G4 0.8103</td></tr>
+      <tr><td>Grade 1 precision / recall</td><td>0.2832 / <b>0.3750</b> &nbsp;(296 images)</td></tr>
+    </table>
+
+    <h3>If you are asked one question, it will be Grade 1</h3>
+    <table>
+      <tr><td>What happens</td><td>Grade 1 F1 is 0.32 while G3 and G4 clear 0.73 and 0.81</td></tr>
+      <tr><td>Where the errors go</td><td>Almost entirely into the neighbouring grades 0 and 2, not far away &mdash; which is why QWK stays at 0.77 while accuracy is 0.60</td></tr>
+      <tr><td>Why QWK is the right metric</td><td>KL is ordinal: confusing G0 with G1 is a small error, confusing G0 with G4 is not. Accuracy treats them the same, QWK does not.</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ============================================================ SE-RESNEXT -->
+<section class="panel" id="p-se" role="tabpanel" hidden>
+  <div class="stats">
+    <div class="stat se"><b>25.5 M</b><span>Parameters</span></div>
+    <div class="stat se"><b>85</b><span>Conv2d layers</span></div>
+    <div class="stat se"><b>2048&times;12&times;12</b><span>Final feature map</span></div>
+    <div class="stat se"><b>32</b><span>Cardinality (groups)</span></div>
+    <div class="stat se"><b>0.45</b><span>Ensemble weight</span></div>
+  </div>
+
+  <figure>
+    <img src="/architecture/img/resnext50-01.png" alt="SE-ResNeXt-50 overall architecture">
+    <figcaption><strong>1 &mdash; Overall architecture</strong>
+      <span>384&times;384&times;3 &rarr; conv 7&times;7 &rarr; maxpool &rarr; Layer 1 (3 blocks) &rarr;
+      Layer 2 (4 blocks, stride 2) &rarr; Layer 3 (6 blocks) &rarr; Layer 4 (3 blocks) &rarr;
+      global average pool &rarr; 5 logits. g=32 is the cardinality of the grouped convolutions.</span></figcaption>
+  </figure>
+
+  <figure>
+    <img src="/architecture/img/resnext50-02.png" alt="SE-ResNeXt-50 stage detail">
+    <figcaption><strong>2 &mdash; One stage</strong>
+      <span>Blocks stack inside a layer: conv 1&times;1 &rarr; grouped conv 3&times;3 (g=32) &rarr;
+      conv 1&times;1 &rarr; SE attention &rarr; residual add. Dashed lines are the skip connections.</span></figcaption>
+  </figure>
+
+  <figure>
+    <img src="/architecture/img/resnext50-03.png" alt="SE-ResNeXt-50 bottleneck block">
+    <figcaption><strong>3 &mdash; SE-bottleneck block</strong>
+      <span>The ResNeXt idea: instead of one wide 3&times;3 convolution, split the channels into
+      32 parallel groups and convolve each separately. Same parameter budget, more diverse filters.</span></figcaption>
+  </figure>
+
+  <figure>
+    <img src="/architecture/img/resnext50-04.png" alt="Squeeze-and-Excitation module">
+    <figcaption><strong>4 &mdash; Squeeze-and-Excitation</strong>
+      <span>H&times;W&times;C &rarr; global average pool (squeeze to 1&times;1&times;C) &rarr; FC C&rarr;C/16 &rarr; ReLU
+      &rarr; FC C/16&rarr;C &rarr; sigmoid &rarr; rescale each channel. Reduction ratio r=16. This is
+      channel attention: the network learns which feature maps matter for this image.</span></figcaption>
+  </figure>
+
+  <div class="notes">
+    <h3>Measured from the loaded checkpoint</h3>
+    <table>
+      <tr><td>Parameters</td><td><b>25,521,141</b> (25.5 M) &mdash; 3.7&times; DenseNet-121</td></tr>
+      <tr><td>Conv2d / BatchNorm2d / Linear</td><td>85 / 53 / 1 &nbsp;<span style="color:var(--muted)">(SE gates are 1&times;1 convs, so they count as Conv2d)</span></td></tr>
+      <tr><td>Input</td><td>384&times;384&times;3</td></tr>
+      <tr><td>Final feature map</td><td>2048 &times; 12 &times; 12</td></tr>
+      <tr><td>Classifier</td><td>Linear 2048 &rarr; 5 after global average pool</td></tr>
+      <tr><td>Grad-CAM layer</td><td><code>backbone.layer4</code></td></tr>
+      <tr><td>Checkpoint in production</td><td>2026-08-08_02-51-49, epoch 4, paired-view p=0.50</td></tr>
+    </table>
+  </div>
+
+  <div class="warn">
+    <strong>Be careful with this one if you are asked for its test score</strong>
+    The SE-ResNeXt-50 checkpoint currently in production has <em>no</em> test evaluation in the
+    record &mdash; no notebook trains or evaluates it. The numbers below belong to a
+    <em>different</em> SE-ResNeXt checkpoint (2026-08-14_23-59-46), which is the best measured one
+    but is not the one being served. Quote them as such.
+  </div>
+
+  <div class="notes">
+    <h3>Best measured SE-ResNeXt &mdash; checkpoint 2026-08-14 <span class="pill">not deployed</span></h3>
+    <table>
+      <tr><td>Accuracy</td><td>0.5876</td></tr>
+      <tr><td>QWK</td><td>0.7437</td></tr>
+      <tr><td>Macro precision / recall / F1</td><td>0.6088 / 0.6155 / 0.6079</td></tr>
+      <tr><td>Macro AP / macro AUC</td><td>0.6377 / 0.8507</td></tr>
+      <tr><td>Per-grade F1</td><td>KL0 0.7149 &nbsp; KL1 0.2917 &nbsp; KL2 0.5136 &nbsp; KL3 0.7302 &nbsp; KL4 0.7890</td></tr>
+    </table>
+
+    <h3>Why keep two different backbones</h3>
+    <table>
+      <tr><td>DenseNet-121</td><td>Dense concatenation reuses features; small (7 M) and the stronger of the two here</td></tr>
+      <tr><td>SE-ResNeXt-50</td><td>Grouped convolutions plus channel attention; larger receptive capacity, different error pattern</td></tr>
+      <tr><td>The point of the pair</td><td>Two architectures that fail on different images average out better than either alone &mdash; the standard ensemble argument</td></tr>
+    </table>
+  </div>
+</section>
+
+</div>
+
+<div id="lightbox"><img alt=""></div>
+
+<script>
+(function () {
+  var tabs = document.querySelectorAll('.tab');
+  tabs.forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      tabs.forEach(function (other) {
+        other.setAttribute('aria-selected', String(other === tab));
+        document.getElementById(other.dataset.panel).hidden = other !== tab;
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+
+  var box = document.getElementById('lightbox');
+  var boxImg = box.querySelector('img');
+  document.querySelectorAll('figure img').forEach(function (img) {
+    img.addEventListener('click', function () {
+      boxImg.src = img.src;
+      boxImg.alt = img.alt;
+      box.classList.add('on');
+    });
+  });
+  box.addEventListener('click', function () { box.classList.remove('on'); });
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape') { box.classList.remove('on'); }
+  });
+})();
+</script>
+</body>
+</html>

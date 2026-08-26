@@ -116,9 +116,19 @@ def main():
     for name, group in buckets.items():
         if not group:
             continue
+        lines += [f"## {name} ({len(group)})", ""]
+        if name == "Artifacts in production":
+            lines += [
+                "**A fourth production artifact is missing from this table on purpose:** the",
+                "deployed SE-ResNeXt-50 checkpoint (`checkpoints/se_resnext50_32x4d/"
+                "2026-08-08_02-51-49_038987_UTC_paired_view_yolo_roi`) has no notebook anywhere in",
+                "the repository - no training run, no test evaluation. A row with no notebook would",
+                "break this table's own rule that every row names one executed notebook, so the gap",
+                "is documented in prose instead: see",
+                "[audit findings, section 4](audit_findings.md#4-the-deployed-se-resnext-50-has-no-notebook-at-all).",
+                "",
+            ]
         lines += [
-            f"## {name} ({len(group)})",
-            "",
             "| ID | Model | Configuration | Input | Loss | Split | Acc | QWK | Macro F1 | G1 recall | Notebook |",
             "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
         ]

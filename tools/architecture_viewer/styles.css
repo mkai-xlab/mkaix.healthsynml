@@ -1,0 +1,86 @@
+/* Architecture viewer - presentation aid for the knee OA models. */
+:root {
+  --bg: #f6f7f9;   --panel: #ffffff;  --ink: #14181f;  --muted: #5b6472;
+  --line: #dfe3e9; --accent: #1f6feb; --accent-soft: #e8f0fe;
+  --warn-bg: #fff8e6; --warn-line: #e6c869; --warn-ink: #6b4e00;
+  --dn: #2a7d5f; --se: #7a4fb5; --yolo: #b5591f;
+  --radius: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1319; --panel: #161b23; --ink: #e6e9ee; --muted: #98a2b3;
+    --line: #262d38; --accent: #5599ff; --accent-soft: #16233a;
+    --warn-bg: #2a2314; --warn-line: #6b5a22; --warn-ink: #e8cf8a;
+    --dn: #57c99c; --se: #b18ae0; --yolo: #e0955c;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.6 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+.wrap { max-width: 1180px; margin: 0 auto; padding: 28px 20px 72px; }
+
+header h1 { margin: 0 0 4px; font-size: 26px; letter-spacing: -0.01em; }
+header p  { margin: 0 0 22px; color: var(--muted); }
+
+/* ---- tabs ---- */
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+.tab {
+  border: 1px solid var(--line); background: var(--panel); color: var(--ink);
+  padding: 9px 16px; border-radius: 999px; cursor: pointer; font-size: 14px;
+  font-weight: 600; transition: background .12s, border-color .12s;
+}
+.tab:hover { border-color: var(--accent); }
+.tab[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.panel[hidden] { display: none; }
+
+/* ---- key-number strip ---- */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 22px; }
+.stat { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 13px 15px; }
+.stat b { display: block; font-size: 21px; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+.stat span { display: block; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin-top: 2px; }
+.stat.dn b { color: var(--dn); } .stat.se b { color: var(--se); } .stat.yolo b { color: var(--yolo); }
+
+/* ---- figures ---- */
+figure {
+  margin: 0 0 22px; background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--radius); overflow: hidden;
+}
+figure img {
+  display: block; width: 100%; height: auto; background: #fff; cursor: zoom-in;
+}
+figcaption { padding: 13px 17px; border-top: 1px solid var(--line); font-size: 14px; }
+figcaption strong { display: block; margin-bottom: 3px; }
+figcaption span { color: var(--muted); }
+
+/* ---- speaker notes ---- */
+.notes { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 4px 20px 18px; }
+.notes h3 { font-size: 15px; margin: 18px 0 8px; }
+.notes table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.notes td { padding: 6px 10px 6px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+.notes td:first-child { color: var(--muted); width: 42%; }
+.notes td:last-child { font-variant-numeric: tabular-nums; }
+.pill { display: inline-block; background: var(--accent-soft); color: var(--accent); border-radius: 5px; padding: 1px 7px; font-size: 12px; font-weight: 600; }
+
+.warn {
+  background: var(--warn-bg); border: 1px solid var(--warn-line); color: var(--warn-ink);
+  border-radius: var(--radius); padding: 13px 17px; margin-bottom: 20px; font-size: 14px;
+}
+.warn strong { display: block; margin-bottom: 3px; }
+
+/* ---- lightbox ---- */
+#lightbox {
+  position: fixed; inset: 0; background: rgba(0,0,0,.9); display: none;
+  align-items: center; justify-content: center; z-index: 50; cursor: zoom-out; padding: 24px;
+}
+#lightbox.on { display: flex; }
+#lightbox img { max-width: 100%; max-height: 100%; background: #fff; border-radius: 6px; }
+
+@media print {
+  .tabs, #lightbox { display: none !important; }
+  .panel[hidden] { display: block !important; }
+  body { background: #fff; }
+  figure { break-inside: avoid; }
+}

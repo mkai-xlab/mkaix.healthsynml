@@ -667,7 +667,7 @@ Two caveats attach to this table:
 
 ## Source Data
 
-Full experiment data available in: [`report.csv`](report.csv) — 83 rows, one per configuration
+Full experiment data available in: [`report.csv`](report.csv) — 78 rows, one per configuration
 (ablation notebooks contribute one row per compared arm), each carrying the single `notebook` that
 produced it plus its `run_directory` and `base_checkpoint`. The file-by-file audit behind it is
 [`audit_findings.md`](audit_findings.md).

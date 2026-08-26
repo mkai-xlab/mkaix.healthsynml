@@ -6,7 +6,7 @@ its stored metadata via `torch.load`. Ablation notebooks were split so that **ea
 configuration is its own row** in [`report.csv`](report.csv), pointing back at the single file
 it came from.
 
-**Coverage: 57 notebooks → 83 rows. No notebook is unmapped.**
+**Coverage: 57 notebooks → 78 rows, each row backed by exactly one executed notebook. No notebook is unmapped, and no row lacks a notebook.**
 
 Metrics are copied verbatim from executed cells. Where a notebook produced no number, the cell
 reads `—`. Nothing in these files is estimated, inferred, or reconstructed.
@@ -93,6 +93,21 @@ The closest *measured* SE-ResNeXt result is `SE-RUN-07` — a **different** chec
 `notebooks/seresnext50_32x4d/runs/optimized/2026-08-21_01_seresnext50_384_yolo_evaluate_only.ipynb`
 with `RUN_DIR` pointed at the 2026-08-08 checkpoint. It is a parameterised evaluation-only
 notebook, so this is a path change and one execution.
+
+Three older DenseNet-121 archive checkpoints are in the same position — a `.pth` file survives with
+a `validation_metrics` dict inside it, but no notebook produced that dict and none evaluates it on
+test:
+
+| Checkpoint | Validation QWK (from checkpoint metadata) | Notes |
+| --- | ---: | --- |
+| `densenet121/2026-07-27_04-05-44_natural_orientation_ce_gradcam` | 0.8071397 | ancestor of the 2026-07-29 base checkpoint used by the ROI ablations |
+| `densenet121/archive/2026-07-21_15-07-17_..._canonical_final_linear_cam` | 0.8000991 | this is the checkpoint the old (pre-audit) report.csv attributed a test QWK of 0.8238 to — that number appears in no notebook and no checkpoint |
+| `densenet121/archive/2026-07-23_01-31-37_..._canonical_final_linear_cam_production` | 0.8138684 | archived; superseded by the natural-orientation line |
+
+None of these five orphan checkpoints (the two SE-ResNeXt ones above plus these three) appear as
+rows in `report.csv` — a row with no notebook would contradict the file's own rule that every row
+names one executed notebook. They are recorded here instead, so the gap in provenance is documented
+without being disguised as a notebook-backed result.
 
 ## 5. A macro-recall value was reported as macro F1
 
